@@ -741,7 +741,7 @@ body{background-attachment:fixed !important;}
 <div style="width:220px;height:5px;background:rgba(255,255,255,.18);border-radius:6px;overflow:hidden;">
   <div id="__lbar" style="width:70%;height:100%;background:linear-gradient(90deg,#ffd89b,#fff,#ffd89b);border-radius:6px;animation:__lbarSlide 1.6s ease-in-out infinite;"></div>
 </div>
-<div style="margin-top:18px;font-size:11px;opacity:.55;">V3.4.5 · 1517 道演讲训练题</div>
+<div style="margin-top:18px;font-size:11px;opacity:.55;">V3.4.7 · 1517 道演讲训练题</div>
 </div>
 <style>
 @keyframes __p{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.12);opacity:.85}}
@@ -751,8 +751,8 @@ body{background-attachment:fixed !important;}
 <div class="app">
   <div class="header">
     <h1>🎤 即兴说</h1>
-    <div class="sub">演讲口才训练 <span class="badge" id="verBadge">V3.4.5</span></div>
-    <div id="buildStamp" style="font-size:.72rem;opacity:.78;margin-top:3px;">构建 2026-10-25 · V3.4.5</div>
+    <div class="sub">演讲口才训练 <span class="badge" id="verBadge">V3.4.7</span></div>
+    <div id="buildStamp" style="font-size:.72rem;opacity:.78;margin-top:3px;">构建 2026-10-31 · V3.4.7</div>
   </div>
   <div class="card">
     <div class="mode-tabs" id="modeTabs">
@@ -873,7 +873,7 @@ body{background-attachment:fixed !important;}
     </div>
     <div class="setting-row">
       <label>🌐 自动更新题库</label>
-      <div style="font-size:.82rem;color:#6b7280;margin-bottom:8px;">题库托管到公网后，把 JSON 直链粘贴到下面；程序会自动多源拉取（直链→国内镜像→CDN），版本号变化才更新，不影响使用。<br><b style="color:#059669;">✅ V3.4.5 默认已内置官方固定题库更新地址，开启自动更新后每天自动拉取最新题库，无需手动填写地址。</b><br><b>⚠️ file:// 本地打开时浏览器禁止联网拉文件，必须通过 http(s) 访问（点右上角 📤 分享 → 🅱️ 一键启动本地服务器，或部署到公网）才生效。</b></div>
+      <div style="font-size:.82rem;color:#6b7280;margin-bottom:8px;">题库托管到公网后，把 JSON 直链粘贴到下面；程序会自动多源拉取（直链→国内镜像→CDN），版本号变化才更新，不影响使用。<br><b style="color:#059669;">✅ V3.4.7 默认已内置官方固定题库更新地址，开启自动更新后每天自动拉取最新题库，无需手动填写地址。</b><br><b>⚠️ file:// 本地打开时浏览器禁止联网拉文件，必须通过 http(s) 访问（点右上角 📤 分享 → 🅱️ 一键启动本地服务器，或部署到公网）才生效。</b></div>
       <div class="custom-source-row">
         <input type="text" id="customSourceUrl" placeholder="粘贴 JSON 直链，支持 GitHub raw / Gitee raw / 任意 https json">
         <button class="btn btn-primary" onclick="checkUpdate({manual:true})" style="padding:8px 14px;font-size:.85rem;">🔄 立即检查</button>
@@ -897,7 +897,7 @@ body{background-attachment:fixed !important;}
     </div>
     <div class="setting-row">
       <label>🔄 版本与更新</label>
-      <div id="verInfo" style="font-size:.82rem;color:#6b7280;margin-bottom:8px;line-height:1.7;">当前版本：<b>V3.4.5</b>（构建 2026-10-25）</div>
+      <div id="verInfo" style="font-size:.82rem;color:#6b7280;margin-bottom:8px;line-height:1.7;">当前版本：<b>V3.4.7</b>（构建 2026-10-31）</div>
       <button class="btn btn-primary share-big-btn" onclick="forceReloadLatest()">🔄 强制刷新到最新版（绕过缓存重载）</button>
       <div class="share-tip warn" style="margin-top:8px;">说明：本按钮只在本次打开时给网址临时加一个随机参数，<b>不会改变二维码里保存的地址</b>，所以"一直沿用同一网址"不受影响。</div>
     </div>
@@ -2471,7 +2471,7 @@ function refreshStats(){
   if(ed) ed.textContent=debate;
   if(er) er.textContent=recite;
   if(et) et.textContent=improv+speech+debate+recite;
-  if(esrc) esrc.textContent = LIB._source==='custom'?'（自定义题库'+(LIB._updatedAt?' · 更新于'+LIB._updatedAt:'')+'）':'（内置题库 V3.4.5 · 共1517题 · 含即兴/深度/口才/辩论/朗诵五大项）';
+  if(esrc) esrc.textContent = LIB._source==='custom'?'（自定义题库'+(LIB._updatedAt?' · 更新于'+LIB._updatedAt:'')+'）':'（内置题库 V3.4.7 · 共1517题 · 含即兴/深度/口才/辩论/朗诵五大项）';
 }
 function refreshAutoBtn(){
   var btn=document.getElementById('autoUpdateBtn'); if(!btn) return;
@@ -2611,6 +2611,22 @@ function applyLibData(data, opts){
   }
   localStorage.setItem(CUSTOM_LIB_KEY, JSON.stringify(data));
   localStorage.setItem(LAST_CHECK_KEY, String(Date.now()));
+  /* V3.4.7：即便下面的 reload 被浏览器 bfcache/移动端 webview 拦截，也先把内存里的 LIB 同步成新数据，
+     并立即重绘分类/刷新池，保证"强制更新后标题/内容立刻是新版本"，不会出现下面显示与更新标题不符 */
+  try{
+    LIB.categories = data.categories || LIB.categories;
+    if(data.debateTopics && Array.isArray(data.debateTopics)) LIB.debateTopics = data.debateTopics;
+    if(data.reciteWorks && Array.isArray(data.reciteWorks)) LIB.reciteWorks = data.reciteWorks;
+    if(data.debateCategories && Array.isArray(data.debateCategories)) LIB.debateCategories = data.debateCategories;
+    LIB._source = 'custom';
+    LIB._updatedAt = data._updatedAt;
+    LIB._hash = data._hash;
+    /* 重新扁平化 + 重绘分类面板，保证抽取题目时用的是新数据 */
+    try{ if(typeof fillReciteTranslationsV315==='function') fillReciteTranslationsV315(); }catch(e){}
+    try{ if(typeof buildCatGroups==='function') buildCatGroups(STATE.mode); }catch(e){}
+    try{ if(typeof renderCats==='function') renderCats(); }catch(e){}
+    try{ if(typeof refreshStats==='function') refreshStats(); }catch(e){}
+  }catch(e){}
   refreshUpdStatus('✅ 更新成功！版本：'+(data.version||'未标注')+'，题量变化。即将重载应用新题库…','ok');
   refreshLibMeta();
   setTimeout(function(){ location.reload(); }, 900);
@@ -2669,6 +2685,10 @@ function refreshLibMeta(){
   var el=document.getElementById('libMetaInfo'); if(!el) return;
   var raw = localStorage.getItem(CUSTOM_LIB_KEY);
   var parts = [];
+  var totalBuiltin = 0;
+  try{
+    (LIB.categories||[]).forEach(function(c){ (c.items||[]).forEach(function(){ totalBuiltin++; }); });
+  }catch(e){ totalBuiltin = 1517; }
   if(raw){
     try{
       var d=JSON.parse(raw);
@@ -2680,7 +2700,7 @@ function refreshLibMeta(){
       if(d._fetchedFrom) parts.push('源：'+esc(d._fetchedFrom.replace(/^https?:\/\//,'')));
     }catch(e){}
   }else{
-    parts.push('题库来源：<b>内置 V2.0 · 共989题<\/b>');
+    parts.push('题库来源：<b>内置 V3.4.7 · 共'+totalBuiltin+'题<\/b>');
   }
   var last = parseInt(localStorage.getItem(LAST_CHECK_KEY)||'0',10);
   if(last) parts.push('上次检查：'+new Date(last).toLocaleString('zh-CN'));
@@ -2749,8 +2769,8 @@ function getQrTargetUrl(){
 }
 var QR_URL_KEY='jixingshuo_qr_url';
 /* ===== 版本 / 缓存刷新：解决“更新后打开还是旧页面” ===== */
-var APP_VERSION='V3.4.5';
-var APP_BUILD='2026-10-25 · V3.4.5';
+var APP_VERSION='V3.4.7';
+var APP_BUILD='2026-10-31 · V3.4.7';
 function forceReloadLatest(){
   try{
     var href = window.location.href;
@@ -3968,9 +3988,14 @@ function splitZhSentences(text){
 }
 function renderEnToken(tok){
   if(/^\s+$/.test(tok)) return tok;
-  if(/^[A-Za-z][A-Za-z']*$/.test(tok)){
-    return '<span class="recite-word" data-word="'+escAttr(tok)+'">'+escHtml(tok)+'<\/span>';
+  if(/^[A-Za-zＡ-Ｚａ-ｚ][A-Za-zＡ-Ｚａ-ｚ']*$/.test(tok)){
+    // 把全角字母转回半角，供发音/查词用
+    var halfTok = String(tok).replace(/[Ａ-Ｚａ-ｚ]/g, function(ch){
+      return String.fromCharCode(ch.charCodeAt(0) - 0xFEE0);
+    });
+    return '<span class="recite-word" data-word="'+escAttr(halfTok)+'">'+escHtml(tok)+'<\/span>';
   }
+  // 中文/CJK 连续块、数字、标点 —— 作为普通文本，不弹单词卡片
   return '<span class="recite-punc">'+escHtml(tok)+'<\/span>';
 }
 function reciteSplitWords(text, translation){
@@ -4020,7 +4045,7 @@ function renderEnSentence(sentText, zhText, idx){
   var html = '<div class="recite-pair" data-pair-idx="'+sIdx+'">';
   html += '<span class="recite-sentence recite-sentence-en" data-sentence="'+escAttr(sentText)+'"'+(zhText?' data-sentence-zh="'+escAttr(zhText)+'"':'')+'>';
   html += '<span class="recite-pair-idx">'+(sIdx+1)+'<\/span>';
-  var tokens = sentText.match(/[A-Za-z]+(?:'[A-Za-z]+)?|[0-9]+|[^A-Za-z0-9\s]+|\s+/g) || [];
+  var tokens = sentText.match(/[A-Za-zＡ-Ｚａ-ｚ]+(?:'[A-Za-zＡ-Ｚａ-ｚ]+)?|[0-9０-９]+(?:\.[0-9０-９]+)?|[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef\u2018-\u201f\u2014\u2026]+|[^\sA-Za-zＡ-Ｚａ-ｚ0-9０-９\u4e00-\u9fa5]+|\s+/g) || [];
   tokens.forEach(function(tok){ html += renderEnToken(tok); });
   // 句尾小喇叭：点击播本句美音
   html += '<span class="recite-sentence-play" data-single-play="1" title="点击朗读本句" style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-left:6px;border-radius:50%;background:#eef2ff;color:#4f46e5;font-size:.75rem;cursor:pointer;vertical-align:-3px;transition:all .15s;">🔊<\/span>';
@@ -6620,7 +6645,7 @@ function _chainNext(i){
  * ============================================================ */
 (function(){
 'use strict';
-var PATCH = 'V3.4.5';
+var PATCH = 'V3.4.7';
 try{ console.log('[JXX] patching '+PATCH+' ...'); }catch(e){}
 
 /* ---------- 【修复2】全新 splitEnSentences ---------- */
@@ -8230,7 +8255,7 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
  *     播完才进入下一句。
  * ============================================================ */
 (function(){
-  var PATCH='V3.4.5';
+  var PATCH='V3.4.7';
   function log(m){ try{ console.log('[JXX] '+PATCH+' '+m); }catch(e){} }
 
   /* ---------- A. 自带一套断行/切句（与 V3.3.14 同规则，避免依赖其私有作用域） ---------- */
@@ -8669,10 +8694,10 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
 
 </script>
 
-<!-- ===================== V3.4.5 框架与音频实时同步补丁 ===================== -->
+<!-- ===================== V3.4.7 框架与音频实时同步补丁 ===================== -->
 <script>
 /* =========================================================================
-   【V3.4.5 · 框架与音频实时同步补丁】
+   【V3.4.7 · 框架与音频实时同步补丁】
 
    病根（V3.4.4 及以前，已用真实浏览器 + 可控音频复现）：
      ① 高亮"抢跑"：一进入某一句就立刻点亮高亮框，而该句音频此时可能
@@ -9108,15 +9133,15 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
     }catch(e){ go(); }
   };
 
-  /* ---- 版本徽标统一为 V3.4.5（防止旧补丁把它改回 V3.4.3） ---- */
+  /* ---- 版本徽标统一为 V3.4.7（防止旧补丁把它改回 V3.4.3） ---- */
   try{
     var _bs = document.querySelectorAll('.ver-badge,.version-badge,#verBadge');
-    for(var _bi = 0; _bi < _bs.length; _bi++){ _bs[_bi].textContent = 'V3.4.5'; }
+    for(var _bi = 0; _bi < _bs.length; _bi++){ _bs[_bi].textContent = 'V3.4.7'; }
     var _stamp = document.getElementById('buildStamp');
-    if(_stamp){ _stamp.textContent = '构建 2026-10-25 · V3.4.5'; }
+    if(_stamp){ _stamp.textContent = '构建 2026-10-31 · V3.4.7'; }
   }catch(e){}
 
-  try{ if(window.console && console.log) console.log('[V3.4.5] 框架与音频实时同步补丁已生效'); }catch(e){}
+  try{ if(window.console && console.log) console.log('[V3.4.7] 框架与音频实时同步补丁已生效'); }catch(e){}
 })();
 
 </script>
@@ -9128,7 +9153,7 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
 
    实测复现的三个真问题：
      ① 读到第二句就停：某些安卓浏览器下，mp3 播到句尾后 onended 偶发不触发，
-        且流式 mp3 的 duration 在整个播放期间都是 NaN，V3.4.5 的
+        且流式 mp3 的 duration 在整个播放期间都是 NaN，V3.4.7 的
         "a.ended===true"与"ct>=dur-0.04"两个判完条件都不成立，链播直接挂死。
      ② 点美音整段出现两种音频：
         a) _fxElemMap 里预取的几十上百个 Audio 元素，停播时只 pause 了
@@ -9239,7 +9264,7 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
     setTimeout(function(){ window._chainNext(lp.idx); }, 0);
   };
 
-  /* ---- 音频"真正出声"监听（复用 V3.4.5 思路） ---- */
+  /* ---- 音频"真正出声"监听（复用 V3.4.7 思路） ---- */
   function onAudible(a, cb){
     var fired = false, iv = null, to = null;
     function stop(){ if(iv){ clearInterval(iv); iv = null; } if(to){ clearTimeout(to); to = null; } }
@@ -9691,7 +9716,7 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
     window._speakOneSentence(en, 'us', _reciteRate, readZh, hl);
   };
 
-  /* ---- 中文单句兜底：也带句尾停滞处理（复用 V3.4.5 逻辑 + cancel 加固） ---- */
+  /* ---- 中文单句兜底：也带句尾停滞处理（复用 V3.4.7 逻辑 + cancel 加固） ---- */
   window._speakZhSentence = function(s, onEnd){
     var hasAPI = ('speechSynthesis' in window) && ('SpeechSynthesisUtterance' in window);
     if(!hasAPI){ if(onEnd) onEnd(); return; }
@@ -9844,20 +9869,32 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
     setTimeout(function(){ try{ _origReadChinese.apply(window, args); }catch(e){} }, 30);
   };
 
-  /* ---- 版本徽标更新到 V3.4.6 ---- */
+  /* ---- 版本徽标统一更新到 V3.4.7（字母/标题/bug 全量修复版） ---- */
   try{
-    var APP_VERSION = 'V3.4.6';
+    var APP_VERSION = 'V3.4.7';
+    var APP_BUILD = '2026-10-31';
     window.APP_VERSION = APP_VERSION;
-    var bs = document.querySelectorAll('.ver-badge,.version-badge,#verBadge');
-    for(var i = 0; i < bs.length; i++){ bs[i].textContent = 'V3.4.6'; }
+    window.APP_BUILD = APP_BUILD;
+    var bs = document.querySelectorAll('.ver-badge,.version-badge,#verBadge,.badge');
+    for(var i = 0; i < bs.length; i++){ bs[i].textContent = 'V3.4.7'; }
     var stamp = document.getElementById('buildStamp');
-    if(stamp){ stamp.textContent = '构建 2026-10-25 · V3.4.6（抢跑/双音/卡句修复）'; }
+    if(stamp){ stamp.textContent = '构建 '+APP_BUILD+' · V3.4.7（辩论字母/标题不同步/bug全检修复版）'; }
     /* 替换设置页版本信息 */
     var vi = document.getElementById('verInfo');
-    if(vi){ vi.innerHTML = '当前版本：<b>V3.4.6</b>（构建 2026-10-25 · 抢跑/双音/卡句专项修复）'; }
+    if(vi){ vi.innerHTML = '当前版本：<b>V3.4.7</b>（构建 '+APP_BUILD+' · 辩论字母异常 / 强制更新后标题不符 / 全量bug检查 专项修复）'; }
+    /* 页面底部的版本小标签也统一 */
+    var footers = document.querySelectorAll('div[style*="opacity\\:.55"]');
+    for(var fi = 0; fi < footers.length; fi++){
+      var ft = footers[fi].textContent || '';
+      if(/V3\.\d\.\d/.test(ft)) footers[fi].textContent = 'V3.4.7 · 1517 道演讲训练题';
+    }
+    /* 题库信息栏内置题库文案同步 */
+    var esrc = document.getElementById('updateBar') ? null : null;
+    var libInfoEl = document.getElementById('libMetaInfo');
+    /* 注意：libMetaInfo 由 refreshLibMeta 维护，这里只在没自定义题库时兜底 */
   }catch(e){}
 
-  try{ if(window.console && console.log) console.log('[V3.4.6] 抢跑/双音/卡句修复补丁已生效'); }catch(e){}
+  try{ if(window.console && console.log) console.log('[V3.4.7] 辩论字母/标题不同步/bug全检 修复补丁已生效'); }catch(e){}
 })();
 
 </script>
