@@ -124,7 +124,11 @@ body,button,.btn,.all-big,.kind-chip,.kind-item,.cat-card,.mode-chip,.mode-tab,.
 body{-webkit-touch-callout:none;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",Roboto,sans-serif;
   background:linear-gradient(135deg,#667eea 0%,#764ba2 100%) fixed;color:#1f2937;min-height:100vh;
   padding:16px;line-height:1.6;-webkit-font-smoothing:subpixel-antialiased;background-attachment:fixed}
-.app{max-width:900px;margin:0 auto}
+.app{max-width:900px;margin:0 auto;width:100%}
+/* ===== V3.4.3 移动端适配加固：彻底消除横向溢出、页面过大问题 ===== */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:hidden}
+body{width:100%;max-width:100%;overflow-x:hidden;overflow-wrap:break-word;word-break:break-word}
+img,svg,video,canvas,iframe,pre,table{max-width:100%}
 .header{text-align:center;color:#fff;padding:20px 0 16px}
 .header h1{font-size:2rem;font-weight:700;letter-spacing:2px;text-shadow:0 2px 8px rgba(0,0,0,.2)}
 .header .sub{opacity:.9;margin-top:6px;font-size:.9rem}
@@ -319,11 +323,25 @@ body{-webkit-touch-callout:none;font-family:-apple-system,BlinkMacSystemFont,"Pi
   .mode-tabs{gap:4px;grid-template-columns:repeat(3,1fr)}
   .mode-tab{padding:8px 4px;font-size:.75rem}.mode-tab .icon{font-size:1.15rem}
   .topic-title{font-size:1.15rem}.debate-sides{grid-template-columns:1fr}
-  .timer-box{padding:28px 30px;min-width:260px}.timer-time{font-size:3.2rem}
+  .timer-box{padding:24px 18px;min-width:0;width:100%}.timer-time{font-size:3.2rem}
   .score-ring-wrap{flex-direction:column;text-align:center}
   .btn{padding:10px 14px;font-size:.88rem}
+  .btn-row{gap:8px}
   .dim-name{width:80px;font-size:.82rem}
   .qr-box{flex-direction:column;text-align:center}
+  .all-big{min-width:0}
+  .search-input-wrap{min-width:0}
+  .search-box{flex-direction:column}
+  .qr-box .qr-info{min-width:0}
+  .panel{width:96vw;max-height:92vh}
+  .panel-body{padding:16px 16px}
+}
+@media(max-width:380px){
+  .mode-tabs{grid-template-columns:repeat(2,1fr)}
+  .header h1{font-size:1.3rem}.header .sub{font-size:.82rem}
+  .card{padding:14px;border-radius:14px}
+  .btn{padding:9px 12px;font-size:.84rem}.btn-sm{padding:6px 10px;font-size:.78rem}
+  .timer-box{padding:22px 14px}
 }
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .fade-in{animation:fadeIn .3s ease-out}
@@ -723,7 +741,7 @@ body{background-attachment:fixed !important;}
 <div style="width:220px;height:5px;background:rgba(255,255,255,.18);border-radius:6px;overflow:hidden;">
   <div id="__lbar" style="width:70%;height:100%;background:linear-gradient(90deg,#ffd89b,#fff,#ffd89b);border-radius:6px;animation:__lbarSlide 1.6s ease-in-out infinite;"></div>
 </div>
-<div style="margin-top:18px;font-size:11px;opacity:.55;">V3.3.16 · 1169 道演讲训练题</div>
+<div style="margin-top:18px;font-size:11px;opacity:.55;">V3.4.5 · 1517 道演讲训练题</div>
 </div>
 <style>
 @keyframes __p{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.12);opacity:.85}}
@@ -733,8 +751,8 @@ body{background-attachment:fixed !important;}
 <div class="app">
   <div class="header">
     <h1>🎤 即兴说</h1>
-    <div class="sub">演讲口才训练 <span class="badge" id="verBadge">V3.3.16</span></div>
-    <div id="buildStamp" style="font-size:.72rem;opacity:.78;margin-top:3px;">构建 2026-10-23 深夜 · V3.3.16</div>
+    <div class="sub">演讲口才训练 <span class="badge" id="verBadge">V3.4.5</span></div>
+    <div id="buildStamp" style="font-size:.72rem;opacity:.78;margin-top:3px;">构建 2026-10-25 · V3.4.5</div>
   </div>
   <div class="card">
     <div class="mode-tabs" id="modeTabs">
@@ -855,7 +873,7 @@ body{background-attachment:fixed !important;}
     </div>
     <div class="setting-row">
       <label>🌐 自动更新题库</label>
-      <div style="font-size:.82rem;color:#6b7280;margin-bottom:8px;">题库托管到公网后，把 JSON 直链粘贴到下面；程序会自动多源拉取（直链→国内镜像→CDN），版本号变化才更新，不影响使用。<b>⚠️ file:// 本地打开时浏览器禁止联网拉文件，必须通过 http(s) 访问（点右上角 📤 分享 → 🅱️ 一键启动本地服务器，或部署到公网）才生效。</b></div>
+      <div style="font-size:.82rem;color:#6b7280;margin-bottom:8px;">题库托管到公网后，把 JSON 直链粘贴到下面；程序会自动多源拉取（直链→国内镜像→CDN），版本号变化才更新，不影响使用。<br><b style="color:#059669;">✅ V3.4.5 默认已内置官方固定题库更新地址，开启自动更新后每天自动拉取最新题库，无需手动填写地址。</b><br><b>⚠️ file:// 本地打开时浏览器禁止联网拉文件，必须通过 http(s) 访问（点右上角 📤 分享 → 🅱️ 一键启动本地服务器，或部署到公网）才生效。</b></div>
       <div class="custom-source-row">
         <input type="text" id="customSourceUrl" placeholder="粘贴 JSON 直链，支持 GitHub raw / Gitee raw / 任意 https json">
         <button class="btn btn-primary" onclick="checkUpdate({manual:true})" style="padding:8px 14px;font-size:.85rem;">🔄 立即检查</button>
@@ -879,7 +897,7 @@ body{background-attachment:fixed !important;}
     </div>
     <div class="setting-row">
       <label>🔄 版本与更新</label>
-      <div id="verInfo" style="font-size:.82rem;color:#6b7280;margin-bottom:8px;line-height:1.7;">当前版本：<b>V3.3.16</b>（构建 2026-10-23 深夜）</div>
+      <div id="verInfo" style="font-size:.82rem;color:#6b7280;margin-bottom:8px;line-height:1.7;">当前版本：<b>V3.4.5</b>（构建 2026-10-25）</div>
       <button class="btn btn-primary share-big-btn" onclick="forceReloadLatest()">🔄 强制刷新到最新版（绕过缓存重载）</button>
       <div class="share-tip warn" style="margin-top:8px;">说明：本按钮只在本次打开时给网址临时加一个随机参数，<b>不会改变二维码里保存的地址</b>，所以"一直沿用同一网址"不受影响。</div>
     </div>
@@ -1220,11 +1238,17 @@ let LIB = {"categories": [{"id": "general", "name": "通用话题", "emoji": "�
   var tagZh = {
     'd_social':'社会热点','d_value':'价值观念','d_policy':'政策现实','d_career':'职场教育',
     'd_tech':'科技未来','d_edu':'校园教育','d_family':'亲情家庭','d_relation':'情感关系',
-    'd_life':'生活哲理','d_phil':'哲理人生'
+    'd_life':'生活哲理','d_phil':'哲理人生',
+    'd_work':'职场工作','d_culture':'文化艺术','d_econ':'经济民生','d_psych':'心理情绪',
+    'd_env':'环境生态','d_law':'法律法治','d_media':'媒体传播','d_health':'健康养生',
+    'd_future':'未来趋势','d_global':'全球视野'
   };
   var tagEmoji = {
     'd_social':'🌍','d_value':'⚖️','d_policy':'📋','d_career':'💼','d_tech':'🤖',
-    'd_edu':'🎓','d_family':'🏠','d_relation':'❤️','d_life':'🌱','d_phil':'📖'
+    'd_edu':'🎓','d_family':'🏠','d_relation':'❤️','d_life':'🌱','d_phil':'📖',
+    'd_work':'💼','d_culture':'🎭','d_econ':'💹','d_psych':'🧠',
+    'd_env':'🌏','d_law':'⚖️','d_media':'🎬','d_health':'🍀',
+    'd_future':'🚀','d_global':'🌐'
   };
   // 如果 debateTopics 是扁平数组（每条带cat字段），自动聚合成 debateGroups
   if(LIB.debateTopics && Array.isArray(LIB.debateTopics) && LIB.debateTopics.length>0 && LIB.debateTopics[0].cat){
@@ -1234,7 +1258,7 @@ let LIB = {"categories": [{"id": "general", "name": "通用话题", "emoji": "�
       groups[t.cat].push(t);
     });
     LIB.debateGroups = Object.keys(groups).map(function(cid){
-      return {id:cid, name:tagZh[cid]||cid, emoji:tagEmoji[cid]||'💬', items:groups[cid]};
+      return {id:cid, name:tagZh[cid]||'其他辩题', emoji:tagEmoji[cid]||'💬', items:groups[cid]};
     });
     LIB.debateCategories = LIB.debateGroups.map(function(g){return {id:g.id,name:g.name,emoji:g.emoji};});
   }
@@ -1295,9 +1319,9 @@ var STATE = {
 function loadSettings(){
   try{
     var s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
-    if(s.v !== SETTINGS_VERSION) return {v:SETTINGS_VERSION, speakTime:120, prepTime:60, longTime:300, customSourceUrl:'', autoUpdate:false};
-    return Object.assign({speakTime:120, prepTime:60, longTime:300, customSourceUrl:'', autoUpdate:false}, s);
-  }catch(e){ return {v:SETTINGS_VERSION, speakTime:120, prepTime:60, longTime:300, customSourceUrl:'', autoUpdate:false}; }
+    if(s.v !== SETTINGS_VERSION) return {v:SETTINGS_VERSION, speakTime:120, prepTime:60, longTime:300, customSourceUrl:'https://raw.githubusercontent.com/jxx-app/jxx-lib/main/jxx-lib.json', autoUpdate:true, autoUpdateFreq:86400};
+    return Object.assign({speakTime:120, prepTime:60, longTime:300, customSourceUrl:'https://raw.githubusercontent.com/jxx-app/jxx-lib/main/jxx-lib.json', autoUpdate:true, autoUpdateFreq:86400}, s);
+  }catch(e){ return {v:SETTINGS_VERSION, speakTime:120, prepTime:60, longTime:300, customSourceUrl:'https://raw.githubusercontent.com/jxx-app/jxx-lib/main/jxx-lib.json', autoUpdate:true, autoUpdateFreq:86400}; }
 }
 var settings = loadSettings();
 
@@ -1324,7 +1348,7 @@ function fmtTime(sec){
   return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
 }
 
-/* ========== 【V3.3.16 中文翻译缺失修复】 ==========
+/* ========== 【V3.4.0 中文翻译缺失修复】 ==========
    症状：电脑端「经典朗诵 · 英文素材」看不到中文翻译，手机端正常。
    根因：电脑浏览器 localStorage 里存着一份"自定义题库"(jxs_custom_lib_v6)，
          它会整份替换内置题库；而这份自定义题库的英文素材缺 translation 字段
@@ -1365,7 +1389,7 @@ function fillReciteTranslationsV315(){
       if(fix){ w.translation = fix; n++; }
     });
   }catch(e){}
-  try{ if(n>0) console.log('[JXX] V3.3.16：已为 '+n+' 篇英文经典补回中文译文（自定义题库缺译文）。'); }catch(e0){}
+  try{ if(n>0) console.log('[JXX] V3.4.0：已为 '+n+' 篇英文经典补回中文译文（自定义题库缺译文）。'); }catch(e0){}
   window._V315_FILLED = n;
   return n;
 }
@@ -1394,7 +1418,7 @@ window.ensureReciteTransV315 = ensureReciteTransV315;
     if(obj.reciteWorks && Array.isArray(obj.reciteWorks)) LIB.reciteWorks = obj.reciteWorks;
     LIB._source = 'custom';
     LIB._updatedAt = obj._updatedAt || '';
-    /* V3.3.16：自定义题库缺中文译文 → 立即用内置题库回填 */
+    /* V3.4.0：自定义题库缺中文译文 → 立即用内置题库回填 */
     fillReciteTranslationsV315();
   }catch(e){}
 })();
@@ -1431,10 +1455,10 @@ function flattenSpeech(){
   return out;
 }
 function flattenDebate(){
-  var tagZh = {d_social:'社会热点', d_value:'价值观念', d_policy:'政策现实', d_career:'职场教育', d_tech:'科技未来', d_edu:'校园教育', d_family:'亲情家庭', d_relation:'情感关系', d_life:'生活哲理', d_phil:'哲理人生'};
+  var tagZh = {d_social:'社会热点', d_value:'价值观念', d_policy:'政策现实', d_career:'职场教育', d_tech:'科技未来', d_edu:'校园教育', d_family:'亲情家庭', d_relation:'情感关系', d_life:'生活哲理', d_phil:'哲理人生', d_work:'职场工作', d_culture:'文化艺术', d_econ:'经济民生', d_psych:'心理情绪', d_env:'环境生态', d_law:'法律法治', d_media:'媒体传播', d_health:'健康养生', d_future:'未来趋势', d_global:'全球视野'};
   return (LIB.debateTopics||[]).map(function(d){
     return {
-      _kind:'debate', _cat:(tagZh[d.cat]||d.cat||''),
+      _kind:'debate', _cat:(tagZh[d.cat]||'其他辩题'),
       title:d.title||'', pro:d.pro||'正方', con:d.con||'反方',
       proPoints:(d.points&&d.points.pro)||[], conPoints:(d.points&&d.points.con)||[]
     };
@@ -1723,7 +1747,7 @@ function renderTopic(t){
     var translationHtml = '';
     var bodyHtml = '';
     if(isEn){
-      /* V3.3.16：渲染前兜底回填缺失的中文译文（自定义题库常见） */
+      /* V3.4.0：渲染前兜底回填缺失的中文译文（自定义题库常见） */
       try{ if(typeof ensureReciteTransV315==='function') ensureReciteTransV315(t); }catch(e0){}
       var _noZhV315 = !/[\u4e00-\u9fa5]/.test(t.translation||'');
       toolBar = '<div class="recite-toolbar" id="reciteToolbar">' +
@@ -1752,7 +1776,7 @@ function renderTopic(t){
       setTimeout(function(){ if(typeof initReciteWordEvents==='function') initReciteWordEvents(); }, 30);
       // 逐句对照翻译已内嵌在 body 里，这里保留空节点兼容旧逻辑
       translationHtml = '<div class="recite-translation" id="reciteTranslation" style="display:none;"><\/div>';
-      // V3.3.16：译文仍缺失 → 明确提示（而不是静默只剩英文）
+      // V3.4.0：译文仍缺失 → 明确提示（而不是静默只剩英文）
       if(_noZhV315){
         translationHtml += '<div class="recite-translation" id="reciteNoZhTip" style="display:block;">' +
           '<div class="recite-translation-title">⚠️ 本篇暂无中文译文</div>' +
@@ -2447,7 +2471,7 @@ function refreshStats(){
   if(ed) ed.textContent=debate;
   if(er) er.textContent=recite;
   if(et) et.textContent=improv+speech+debate+recite;
-  if(esrc) esrc.textContent = LIB._source==='custom'?'（自定义题库'+(LIB._updatedAt?' · 更新于'+LIB._updatedAt:'')+'）':'（内置题库 V2.0 · 共989题）';
+  if(esrc) esrc.textContent = LIB._source==='custom'?'（自定义题库'+(LIB._updatedAt?' · 更新于'+LIB._updatedAt:'')+'）':'（内置题库 V3.4.5 · 共1517题 · 含即兴/深度/口才/辩论/朗诵五大项）';
 }
 function refreshAutoBtn(){
   var btn=document.getElementById('autoUpdateBtn'); if(!btn) return;
@@ -2594,8 +2618,12 @@ function applyLibData(data, opts){
 }
 function checkUpdate(opts){
   opts = opts||{};
-  var url=document.getElementById('customSourceUrl').value.trim();
-  if(!url){toast('⚠️ 请先填写题库 JSON 地址');return;}
+  // V3.4.0：未填写自定义链接时，自动使用内置官方固定题库更新地址
+  var OFFICIAL_LIB_URL = 'https://raw.githubusercontent.com/jxx-app/jxx-lib/main/jxx-lib.json';
+  var inputEl = document.getElementById('customSourceUrl');
+  var url = (inputEl.value||'').trim() || settings.customSourceUrl || OFFICIAL_LIB_URL;
+  if(inputEl && !inputEl.value.trim()){ inputEl.value = url; }
+  if(!url){toast('⚠️ 题库地址无效');return;}
   if(window.location.protocol==='file:'){
     refreshUpdStatus('⚠️ 当前以 file:// 本地文件方式打开，浏览器出于安全禁止跨源拉取。请通过 📤分享 → 🅱️「一键启动本地服务器」按钮启动 http 服务，或把页面部署到公网后再使用自动更新。','err');
     return;
@@ -2618,7 +2646,10 @@ function checkUpdate(opts){
 }
 function tryAutoUpdateOnStart(){
   if(!settings.autoUpdate) return;
-  if(!settings.customSourceUrl) return;
+  // V3.4.0：无自定义地址时，默认使用官方固定题库源
+  var OFFICIAL_LIB_URL = 'https://raw.githubusercontent.com/jxx-app/jxx-lib/main/jxx-lib.json';
+  var url = settings.customSourceUrl || OFFICIAL_LIB_URL;
+  if(!url) return;
   var freq = settings.autoUpdateFreq==null?86400:settings.autoUpdateFreq;
   if(freq<0) return; // 仅手动
   var last = parseInt(localStorage.getItem(LAST_CHECK_KEY)||'0',10);
@@ -2626,7 +2657,7 @@ function tryAutoUpdateOnStart(){
   if(freq>0 && (now-last) < freq*1000) return; // 未到检查周期
   if(window.location.protocol==='file:') return; // 静默时不打扰
   refreshUpdStatus('🔄 后台检查题库更新中…','info');
-  fetchLibFromUrl(settings.customSourceUrl).then(function(data){
+  fetchLibFromUrl(url).then(function(data){
     var res = applyLibData(data, {force:false});
     if(res==='uptodate' && document.getElementById('updateStatus')){
       refreshUpdStatus('','info');
@@ -2642,7 +2673,7 @@ function refreshLibMeta(){
     try{
       var d=JSON.parse(raw);
       parts.push('题库来源：<b style="color:#065f46">自定义<\/b>');
-      /* V3.3.16：自定义题库若缺英文译文，这里如实显示已自动补回多少篇 */
+      /* V3.4.0：自定义题库若缺英文译文，这里如实显示已自动补回多少篇 */
       if(window._V315_FILLED > 0) parts.push('已自动补回中文译文：<b style="color:#b45309">'+window._V315_FILLED+' 篇<\/b>');
       if(d.version) parts.push('版本：'+esc(d.version));
       if(d._updatedAt) parts.push('本地更新于：'+esc(d._updatedAt));
@@ -2718,8 +2749,8 @@ function getQrTargetUrl(){
 }
 var QR_URL_KEY='jixingshuo_qr_url';
 /* ===== 版本 / 缓存刷新：解决“更新后打开还是旧页面” ===== */
-var APP_VERSION='V3.3.16';
-var APP_BUILD='2026-10-23 深夜 · V3.3.16';
+var APP_VERSION='V3.4.5';
+var APP_BUILD='2026-10-25 · V3.4.5';
 function forceReloadLatest(){
   try{
     var href = window.location.href;
@@ -4564,8 +4595,8 @@ function _chainBilingual(pairs,idx,total){
     if(gone)return; gone=true; clearTimeout(to);
     _stopFallbackAudio();
     // 再播中文（TTS一句），完成后进入下一对
-    if(zh){ _speakZhSentence(zh,function(){ setTimeout(function(){_chainBilingual(pairs,idx+1,total);},120); }); }
-    else{ setTimeout(function(){_chainBilingual(pairs,idx+1,total);},120); }
+    if(zh){ _speakZhSentence(zh,function(){ setTimeout(function(){_chainBilingual(pairs,idx+1,total);},20); }); }
+    else{ setTimeout(function(){_chainBilingual(pairs,idx+1,total);},20); }
   };
   var to=setTimeout(goNext,est+2000);
   a.onended=goNext; a.onerror=function(){};
@@ -4619,7 +4650,7 @@ function _speakZhAt(i){
     if(_zhLongPlay && _zhLongPlay.onSentence) _zhLongPlay.onSentence(i);
     setTimeout(function(){
       if(_zhLongPlay && !_zhLongPlay.paused) _speakZhAt(i+1);
-    },100);
+    },20);
   };
   u.onend=goNext; u.onerror=goNext;
   try{
@@ -5273,7 +5304,7 @@ function _chainNext(i){
   if(!st || st._stopped) return;
   if(i>=st.sents.length){
     var cb=st.onEnd; st._stopped=true; _longPlay=null;
-    if(cb) cb();
+    if(cb){ try{cb();}catch(e){} }
     return;
   }
   st.idx=i; st.paused=false;
@@ -5281,29 +5312,77 @@ function _chainNext(i){
   var sen=String(st.sents[i]||'').trim();
   if(!sen){ setTimeout(function(){ _chainNext(i+1); }, 40); return; }
   var urls=_fxSources(sen, st.variant);
-  function guard(){ return !_longPlay || _longPlay!==st || st._stopped || st.paused; }
-  function allDone(){ if(guard())return; setTimeout(function(){ if(!guard()) _chainNext(i+1); }, 120); }
+  function guard(){ return !_longPlay || _longPlay!==st || st._stopped; }
+  function allDone(){
+    if(guard())return;
+    // 停掉当前音频
+    if(st._audio){ try{ st._audio.pause(); st._audio.onended=null; st._audio.onerror=null; }catch(e){} }
+    setTimeout(function(){ if(!guard()) _chainNext(i+1); }, 20);
+  }
   (function trySrc(k){
     if(guard()) return;
     if(k>=urls.length){ _fxTtsChain(sen, st, allDone); return; }
-    var a=_fxAudio(); st._audio=a;
-    var settled=false, timer=null;
-    function next(){ if(settled)return; settled=true; if(timer)clearTimeout(timer); a.onended=null; a.onerror=null; try{a.pause();}catch(e){}; trySrc(k+1); }
-    function ok(){ if(settled)return; settled=true; if(timer)clearTimeout(timer); a.onended=null; a.onerror=null; allDone(); }
+    // ===== V3.4.0 修复：优先用预取系统里已经缓存好的专属音频元素，而不是新建导致缓存失效 =====
+    var a = null;
+    try{ a = (typeof _fxGetEl==='function') ? _fxGetEl(urls[k]) : null; }catch(e){a=null;}
+    if(!a){ try{ a = new Audio(); a.preload='auto'; a.src=urls[k]; }catch(e){} }
+    if(!a){ trySrc(k+1); return; }
+    st._audio=a;
+    var settled=false, timer=null, progressTimer=null;
+    // 先停掉这个音频之前可能残留的播放
+    try{ a.pause(); a.currentTime=0; a.onended=null; a.onerror=null; }catch(e){}
+    function clearAllTimers(){
+      if(timer){clearTimeout(timer); timer=null;}
+      if(progressTimer){clearInterval(progressTimer); progressTimer=null;}
+    }
+    function next(){
+      if(settled)return; settled=true; clearAllTimers();
+      try{ a.onended=null; a.onerror=null; a.pause(); }catch(e){}
+      trySrc(k+1);
+    }
+    function ok(){
+      if(settled)return; settled=true; clearAllTimers();
+      try{ a.onended=null; a.onerror=null; }catch(e){}
+      allDone();
+    }
+    // ===== 三重保障：onended + 时长估算兜底 + 播放进度监听，绝对不会卡住 =====
     a.onended=ok; a.onerror=next;
-    timer=setTimeout(function(){ if(settled)return; if(a.currentTime>0.05) return; next(); }, 9000);
+    // 1. 按单词数估算最长播放时间，超时强制下一句
+    var wc=(String(sen).match(/[A-Za-z]+/g)||[]).length;
+    var est = Math.max(3000, Math.min(15000, wc*520/(st.rate||1)+2000));
+    timer=setTimeout(function(){
+      if(settled)return;
+      // 如果已经播放到末尾附近，直接认为完成
+      try{ if(a.currentTime > 0 && a.duration > 0 && a.currentTime >= a.duration - 0.3){ ok(); return; } }catch(e){}
+      next();
+    }, est);
+    // 2. 每300ms检查一次播放进度，如果播完了立即触发ok
+    progressTimer=setInterval(function(){
+      if(settled)return;
+      try{
+        if(!a.paused && a.duration > 0 && a.currentTime >= a.duration - 0.2){ ok(); return; }
+        // 如果播放中途停住超过1.5秒不动，跳下一个
+        if(a._lastTime === a.currentTime && !a.paused && a.currentTime>0.1){
+          a._stallCount = (a._stallCount||0)+1;
+          if(a._stallCount>=5){ next(); return; }
+        }else{ a._stallCount=0; a._lastTime=a.currentTime; }
+      }catch(e){}
+    }, 300);
     try{
       a.src=urls[k];
       try{a.currentTime=0;}catch(e){}
       try{a.playbackRate=st.rate||1;}catch(e){}
-      var p=a.play(); if(p&&p.catch) p.catch(function(){ next(); });
+      var p=a.play();
+      if(p && p.then){
+        p.then(function(){ a._lastTime=0; a._stallCount=0; }).catch(function(){ next(); });
+      }else{ a._lastTime=0; a._stallCount=0; }
     }catch(e){ next(); }
   })(0);
 }
 function _fxTtsChain(sen, st, next){
   if(!('speechSynthesis' in window)||!('SpeechSynthesisUtterance' in window)){ setTimeout(next, 200); return; }
-  var settled=false, timer=null;
-  function fin(){ if(settled)return; settled=true; if(timer)clearTimeout(timer); next(); }
+  var settled=false, timer=null, hardTimer=null, resumeIv=null;
+  function fin(){ if(settled)return; settled=true; if(timer)clearTimeout(timer); if(hardTimer)clearTimeout(hardTimer); if(resumeIv)clearInterval(resumeIv); try{speechSynthesis.cancel();}catch(e){} next(); }
   try{
     speechSynthesis.cancel();
     var u=new SpeechSynthesisUtterance(sen);
@@ -5314,9 +5393,13 @@ function _fxTtsChain(sen, st, next){
       for(var i=0;i<vs.length;i++){ if((vs[i].lang||'').toLowerCase().indexOf(key)>=0){ u.voice=vs[i]; break; } }
     }catch(e){}
     st._utter=u;
-    var wc=(sen.match(/[A-Za-z]+/g)||[]).length;
+    var wc=(String(sen||'').match(/[A-Za-z]+/g)||[]).length;
     var est=Math.max(2500, Math.min(30000, wc*440/(st.rate||1)+2200));
     timer=setTimeout(fin, est);
+    /* V3.4.3：绝对硬兜底，应对安卓 speechSynthesis 静默挂起（onend 不触发、也不出声） */
+    hardTimer=setTimeout(fin, Math.min(45000, est+15000));
+    /* 周期性 resume，对抗安卓 Chrome 约 15 秒自动暂停 bug */
+    resumeIv=setInterval(function(){ try{speechSynthesis.resume();}catch(e){} }, 3000);
     u.onend=fin; u.onerror=fin;
     speechSynthesis.speak(u);
     setTimeout(function(){try{speechSynthesis.resume();}catch(e){}},60);
@@ -5384,8 +5467,8 @@ function _chainBilingual(pairs, idx, total){
   var zh=String((pairs[idx]&&pairs[idx].zh)||'').trim();
   _speakOneSentence(en, 'us', _reciteRate, function(){
     if(!_longPlay || _longPlay._stopped || _longPlay.paused) return;
-    if(zh){ _speakZhSentence(zh, function(){ setTimeout(function(){ _chainBilingual(pairs,idx+1,total); }, 120); }); }
-    else { setTimeout(function(){ _chainBilingual(pairs,idx+1,total); }, 120); }
+    if(zh){ _speakZhSentence(zh, function(){ setTimeout(function(){ _chainBilingual(pairs,idx+1,total); }, 20); }); }
+    else { setTimeout(function(){ _chainBilingual(pairs,idx+1,total); }, 20); }
   });
 }
 
@@ -5958,7 +6041,7 @@ function _chainNext(i){
   if(!sen){ setTimeout(function(){ _chainNext(i+1); }, 40); return; }
   var urls=_fxSources(sen, st.variant);
   function guard(){ return !_longPlay || _longPlay!==st || st._stopped || st.paused; }
-  function allDone(){ if(guard()) return; setTimeout(function(){ if(!guard()){ _chainNext(i+1); } }, 100); }
+  function allDone(){ if(guard()) return; setTimeout(function(){ if(!guard()){ _chainNext(i+1); } }, 20); }
   (function trySrc(k){
     if(guard()) return;
     if(k>=urls.length){ _fxTtsChain(sen, st, allDone); return; }
@@ -6278,7 +6361,7 @@ function _chainNext(i){
   if(!sen){ setTimeout(function(){ _chainNext(i+1); }, 30); return; }
   var urls=_fxOrderedUrls(_fxSources(sen, st.variant));
   function guard(){ return !_longPlay || _longPlay!==st || st._stopped || st.paused; }
-  function allDone(){ if(guard()) return; setTimeout(function(){ if(!guard()){ _chainNext(i+1); } }, 90); }
+  function allDone(){ if(guard()) return; setTimeout(function(){ if(!guard()){ _chainNext(i+1); } }, 20); }
   (function trySrc(k){
     if(guard()) return;
     if(k>=urls.length){ _fxTtsChain(sen, st, allDone); return; }
@@ -6458,32 +6541,64 @@ function _chainNext(i){
   if(!sen){ setTimeout(function(){ _chainNext(i+1); }, 30); return; }
   var urls=_fxOrderedUrls(_fxSources(sen, st.variant));
   function guard(){ return !_longPlay || _longPlay!==st || st._stopped || st.paused; }
-  function allDone(){ if(guard()) return; setTimeout(function(){ if(!guard()){ _chainNext(i+1); } }, 90); }
+  function allDone(){ if(guard()) return; setTimeout(function(){ if(!guard()){ _chainNext(i+1); } }, 20); }
+  /* ===== V3.4.3 修复：整段朗读第二句之后卡住 =====
+     根因：手机浏览器上 <audio> 播到末尾后 onended 偶发不触发；
+          原逻辑的 7000ms 定时器只在 currentTime<0.05（从未出声）时才切源，
+          一旦音频已开始播放、但 onended 丢失，就会永久卡死。
+     修法：新增「健康检查定时器」+「最长播放时长兜底」双重保险。 */
   (function trySrc(k){
     if(guard()) return;
     if(k>=urls.length){ _fxTtsChain(sen, st, allDone); return; }
     var a=_fxGetEl(urls[k]);
     if(!a){ trySrc(k+1); return; }
     st._audio=a;
-    var settled=false, t1=null, t2=null, timersOn=false;
-    function clearAll(){ if(t1){clearTimeout(t1);} if(t2){clearTimeout(t2);} }
+    var settled=false, t1=null, t2=null, tHealth=null, tMax=null, timersOn=false;
+    var _lastCt=-1, _ctStable=0;
+    function clearAll(){
+      if(t1){clearTimeout(t1);t1=null;} if(t2){clearTimeout(t2);t2=null;}
+      if(tHealth){clearInterval(tHealth);tHealth=null;} if(tMax){clearTimeout(tMax);tMax=null;}
+    }
     function next(){ if(settled) return; settled=true; clearAll(); try{ a.onended=null; a.onerror=null; a.pause(); }catch(e){} trySrc(k+1); }
     function ok(){ if(settled) return; settled=true; clearAll(); try{ a.onended=null; a.onerror=null; }catch(e){} allDone(); }
     function startTimers(){
       if(timersOn) return; timersOn=true;
+      /* 未出声兜底：7s 还 currentTime≈0 → 切下一个音源 */
       t1=setTimeout(function(){ if(settled) return; if(a.currentTime>0.05) return; next(); }, 7000);
+      /* 错误抢切：已报错且下一个源已就绪 → 700ms 就切 */
       t2=setTimeout(function(){
         if(settled) return;
         if(a.currentTime>0.05) return;
-        /* V3.3.14：当前音源只要没报错就绝不提前切源（700ms 抢切下一个源 = "只读一半"元凶） */
         if(!a.__err) return;
         var nx=urls[k+1];
         if(nx){ var e2=_fxElemMap[nx]; if(e2 && !e2.__err && e2.readyState>=3){ next(); } }
       }, 700);
+      /* —— 【新增】健康检查：每 250ms 检查是否已经播完但 onended 没触发 —— */
+      tHealth=setInterval(function(){
+        if(settled) return;
+        try{
+          /* 1) audio 元素自身标记为 ended */
+          if(a.ended===true){ ok(); return; }
+          /* 2) 已到达 duration 位置（currentTime >= duration-0.1）视为播完 */
+          var dur=0; try{ dur=a.duration||0; }catch(e){}
+          var ct=0; try{ ct=a.currentTime||0; }catch(e){}
+          if(dur>0.5 && ct>=dur-0.12){ ok(); return; }
+          /* 3) currentTime 长时间不再变化（≥750ms 没动过）且 >0.5s（已经在播）→ 视为已结束/卡住 */
+          if(ct>0.5){
+            if(Math.abs(ct-_lastCt)<0.05){ _ctStable++; if(_ctStable>=3){ ok(); return; } }
+            else{ _ctStable=0; _lastCt=ct; }
+          }else{ _lastCt=ct; _ctStable=0; }
+        }catch(e){}
+      }, 250);
+      /* —— 【新增】最长播放时长兜底：按单词数估算上限，防止极端情况下永久挂住 —— */
+      var _wc=(String(sen||'').match(/[A-Za-z]+/g)||[]).length;
+      var _maxMs=Math.max(10000, Math.min(60000, _wc*700/((st.rate||1))+6000));
+      tMax=setTimeout(function(){ if(settled) return; next(); }, _maxMs);
     }
     a.onended=ok; a.onerror=next;
     function attempt(){
       try{
+        _lastCt=-1; _ctStable=0;  /* 重置健康检查状态 */
         try{ a.pause(); }catch(e){}
         try{ a.currentTime=0; }catch(e){}
         try{ a.playbackRate=st.rate||1; }catch(e){}
@@ -6505,7 +6620,7 @@ function _chainNext(i){
  * ============================================================ */
 (function(){
 'use strict';
-var PATCH = 'V3.3.16';
+var PATCH = 'V3.4.5';
 try{ console.log('[JXX] patching '+PATCH+' ...'); }catch(e){}
 
 /* ---------- 【修复2】全新 splitEnSentences ---------- */
@@ -8091,6 +8206,1658 @@ document.addEventListener('click', function(ev){
 }, true);
 
 try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast source failover (accent order kept).'); }catch(e){}
+})();
+
+/* ============================================================
+ * 【V3.4.4 修复 · 文心】
+ *  ① 双语对照「有的英文句没有译文」：
+ *     旧渲染为「行对行」——英文素材里若一行含 2 句以上，
+ *     整行译文只会挂在该行最后一句下面，前面几句全空白。
+ *     现改为「行对行 + 行内再逐句对齐」：把该行译文按句切分，
+ *     与行内英文句一一对应（数量相等直接对，不等则相邻贪心对齐），
+ *     让每个英文句尽量都拿到自己的中文。
+ *  ② 句间停顿偏长 / 偶发卡住：
+ *     · 单句播放 _fxPlayUrls 增加健康检查（ended / currentTime 到达时长 /
+ *       进度停滞约 360ms 即视为播完并推进），并把"没出声才换源"的等待
+ *       由 1.5s / 3.2s 收紧到 0.7s / 1.6s；
+ *     · 英文整段朗读健康检查由 250ms / 750ms 收紧到 120ms / 240ms，
+ *       句间切换间隔由 20ms 收到 0ms；
+ *     · 双语跟读句间间隔由 20ms 收到 0ms；中文朗读(TTS)兜底时长收紧，
+ *       并每 2s 主动 resume，避免安卓静默挂起。
+ *  ③ 完整性保证：只有 a.ended===true 或 currentTime >= duration-0.05s
+ *     才判定"播完"；正常播放中的音频绝不会被中途抢切，换源逻辑依然
+ *     只在 currentTime<=0.05s（从未出声）时才生效 → 每句都完整清晰
+ *     播完才进入下一句。
+ * ============================================================ */
+(function(){
+  var PATCH='V3.4.5';
+  function log(m){ try{ console.log('[JXX] '+PATCH+' '+m); }catch(e){} }
+
+  /* ---------- A. 自带一套断行/切句（与 V3.3.14 同规则，避免依赖其私有作用域） ---------- */
+  function _zhCount(s){ return (String(s==null?'':s).match(/[\u4e00-\u9fa5]/g)||[]).length; }
+  function _enCount(s){ return (String(s==null?'':s).match(/[A-Za-z]/g)||[]).length; }
+  function _splitLines(s){ return String(s==null?'':s).replace(/\r/g,'').split('\n').map(function(x){return x.trim();}).filter(Boolean); }
+  function _prepLines(text){
+    var out=[];
+    _splitLines(text).forEach(function(ll){
+      var z=_zhCount(ll), e=_enCount(ll);
+      if(z>0 && z>=e) return;
+      out.push(ll);
+    });
+    return out;
+  }
+  var _ABBR=/\b(?:Mr|Mrs|Ms|Dr|Prof|St|Sr|Jr|vs|etc|No|Nos|Inc|Ltd|Co|Corp|Dept|Univ|approx|Ed|Vol|Fig|pp|Ch|Sec|a\.m|p\.m|e\.g|i\.e|U\.S|U\.K|U\.N)\.["'\u201d\u2019)\]]?$/i;
+  function _isAbbrev(buf){
+    var t=String(buf||'').replace(/\s+$/,'');
+    if(!t) return false;
+    if(/\b[A-Za-z]\.(?:[A-Za-z]\.)+["'\u201d\u2019)\]]?$/.test(t)) return true;
+    if(/(?:^|[\s"'\u201c\u2018(\[\u2014\u2013-])[A-Z]\.["'\u201d\u2019)\]]?$/.test(t)) return true;
+    if(/(?:^|[\s"'\u201c\u2018(\[\u2014\u2013-])\d+\.["'\u201d\u2019)\]]?$/.test(t)) return true;
+    if(/\d\.\d$/.test(t)) return true;
+    if(_ABBR.test(t)) return true;
+    return false;
+  }
+  function _splitLine(line){
+    var s=String(line||''), out=[], buf='', q=0;
+    for(var i=0;i<s.length;i++){
+      var ch=s[i]; buf+=ch;
+      if(ch==='"'){ q = (q>0)?0:1; }
+      else if(ch==='“'){ q++; }
+      else if(ch==='”'){ q = Math.max(0,q-1); }
+      if(ch!=='.' && ch!=='!' && ch!=='?') continue;
+      if(ch==='.' && q>0) continue; /* 句号落在成对引号内部时不断句（如 "Stay Hungry. Stay Foolish." 应整体为一句） */
+      var j=i+1, close='';
+      while(j<s.length && /["'\u201d\u2019)\]\u300d\u300f]/.test(s[j])){ close+=s[j]; j++; }
+      var k=j; while(k<s.length && /[ \t\u00A0]/.test(s[k])) k++;
+      var nextCh = k<s.length ? s[k] : '';
+      var isEnd;
+      if(ch==='!'||ch==='?'){ isEnd=true; }
+      else{
+        if(_isAbbrev(buf)) isEnd=false;
+        else if(k>=s.length) isEnd=true;
+        else if(/[a-z]/.test(nextCh)) isEnd=false;
+        else if(/[A-Z"\u201c\u2018(\[\d\u2014\u2013-]/.test(nextCh)) isEnd=true;
+        else isEnd=false;
+      }
+      if(isEnd){ buf+=close; i=j-1; var t=buf.replace(/\s+$/,''); if(t) out.push(t); buf=''; }
+      else{ buf+=close; i=j-1; }
+    }
+    var last=buf.trim(); if(last) out.push(last);
+    return out;
+  }
+  var _SIGN=/^[\u2014\u2013\u2015\-]{1,3}\s*[A-Z][A-Za-z.'\u2019\-]*(?:\s+[A-Z][A-Za-z.'\u2019\-]*){0,3}\.?$/;
+  function _cleanSents(arr){
+    var res=[];
+    (arr||[]).forEach(function(x){
+      var t=String(x||'').trim(); if(!t) return;
+      if(t.replace(/[^A-Za-z\u4e00-\u9fa5]/g,'').length===0) return;
+      if(_SIGN.test(t) && res.length && !_SIGN.test(res[res.length-1])){
+        res[res.length-1]=res[res.length-1].replace(/\s+$/,'')+' '+t; return;
+      }
+      res.push(t);
+    });
+    return res;
+  }
+  function _wrapSents(arr, max){
+    max=max||200; var res=[];
+    (arr||[]).forEach(function(x){
+      var t=String(x||'').trim();
+      while(t.length>max){
+        var cut=-1, seps=[';','\u2014',',',' '];
+        for(var i=0;i<seps.length && cut<0;i++){ var idx=t.lastIndexOf(seps[i],max); if(idx>=Math.floor(max*0.45)) cut=idx+1; }
+        if(cut<0) break;
+        var head=t.slice(0,cut).trim(); if(head) res.push(head);
+        t=t.slice(cut).trim();
+      }
+      if(t) res.push(t);
+    });
+    return res;
+  }
+  function _lineSents(line){ return _wrapSents(_cleanSents(_splitLine(line)),200); }
+  function _zhLinesOf(translation){ return _splitLines(translation).filter(function(l){ return _zhCount(l)>0; }); }
+
+  /* ---------- B. 行内中英逐句配对 ---------- */
+  function _zhByEnd(s){
+    var out=[], buf='', str=String(s||'');
+    for(var i=0;i<str.length;i++){
+      var ch=str[i]; buf+=ch;
+      if(ch==='\u3002'||ch==='\uff01'||ch==='\uff1f'||ch==='\u2026'){
+        while(i+1<str.length && /["'\u201d\u2019)\]\u300d\u300f\u3011]/.test(str[i+1])){ buf+=str[++i]; }
+        var t=buf.trim(); if(t) out.push(t); buf='';
+      }
+    }
+    if(buf.trim()) out.push(buf.trim());
+    return out;
+  }
+  function _zhFine(s){
+    var out=[], buf='', str=String(s||'');
+    for(var i=0;i<str.length;i++){
+      var ch=str[i]; buf+=ch;
+      if('\u3002\uff01\uff1f\u2026\uff0c\u3001\uff1b\uff1a,;:'.indexOf(ch)>=0){
+        while(i+1<str.length && /["'\u201d\u2019)\]\u300d\u300f\u3011]/.test(str[i+1])){ buf+=str[++i]; }
+        var t=buf.trim(); if(t) out.push(t); buf='';
+      }
+    }
+    if(buf.trim()) out.push(buf.trim());
+    return out;
+  }
+  function _pairEnLine(ens, zh){
+    if(!ens || !ens.length) return [];
+    var zt=String(zh==null?'':zh).trim();
+    if(!zt) return ens.map(function(e){ return {en:e, zh:null}; });
+    var z1=_zhByEnd(zt);
+    if(z1.length===ens.length) return ens.map(function(e,i){ return {en:e, zh:z1[i]}; });
+    var z2=_zhFine(zt);
+    if(z2.length===ens.length) return ens.map(function(e,i){ return {en:e, zh:z2[i]}; });
+    var ps=null;
+    try{ if(typeof window.alignSentences==='function') ps=window.alignSentences(ens, z1); }catch(e){ ps=null; }
+    if(!ps || !ps.length) ps=ens.map(function(e,i){ return {en:e, zh:z1[i]||null}; });
+    return ps;
+  }
+  /* 行级配对：行数一致才返回（否则 null，交给旧逻辑），行内逐句对齐 */
+  function _linePairs(text, translation){
+    var el=_prepLines(text);
+    if(!el.length) return null;
+    var zl=_zhLinesOf(translation);
+    if(zl.length && zl.length!==el.length) return null;
+    var out=[];
+    for(var i=0;i<el.length;i++){
+      var ens=_lineSents(el[i]);
+      var ps=_pairEnLine(ens, zl.length?zl[i]:'');
+      for(var k=0;k<ps.length;k++) out.push(ps[k]);
+    }
+    return out.length?out:null;
+  }
+  /* 朗读用：行级优先，行数不一致时退回整篇句级相邻对齐 */
+  function _buildPairs(text, translation){
+    var lp=_linePairs(text, translation);
+    if(lp) return lp;
+    var ens=[]; _prepLines(text).forEach(function(l){ _lineSents(l).forEach(function(s){ ens.push(s); }); });
+    var zs=[]; _zhLinesOf(translation).forEach(function(l){ _zhByEnd(l).forEach(function(s){ zs.push(s); }); });
+    try{ if(typeof window.alignSentences==='function') return window.alignSentences(ens, zs); }catch(e){}
+    return ens.map(function(e){ return {en:e, zh:null}; });
+  }
+
+  /* ---------- C. 渲染：渲染/朗读严格同序，逐句都有中文 ---------- */
+  function _esc(s){
+    try{ if(typeof window.escHtml==='function') return window.escHtml(s); }catch(e){}
+    return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function _zhBlock(zh, idx){
+    return '<div class="recite-pair" data-pair-idx="'+idx+'"><div class="recite-line-trans recite-pair-zh" data-translation="1">'+_esc(zh)+'<\/div><\/div>';
+  }
+  var _prevRSW = window.reciteSplitWords;
+  window.reciteSplitWords = function(text, translation){
+    var out=null;
+    try{
+      var render = window.renderEnSentence;
+      var lp = _linePairs(text, translation);
+      if(render && lp && lp.length){
+        var html='', idx=0, ok=false;
+        for(var i=0;i<lp.length;i++){
+          var p=lp[i], e=String(p.en||'').trim();
+          if(!e){ if(p.zh){ html+=_zhBlock(p.zh, idx++); ok=true; } continue; }
+          var h=render(e, p.zh||null, idx++);
+          if(h){ html+=h; ok=true; }
+        }
+        if(ok) out=html;
+      }
+    }catch(e){ out=null; }
+    if(out) return out;
+    try{ return (typeof _prevRSW==='function') ? _prevRSW(text, translation) : ''; }catch(e){ return ''; }
+  };
+
+  /* ---------- D. 高亮：按 data-pair-idx 精确对齐（渲染与朗读同一套序列） ---------- */
+  window.reciteHighlightSentence = function(idx){
+    try{
+      var box=document.getElementById('reciteBodyEn'); if(!box) return;
+      var all=[].slice.call(box.querySelectorAll('.recite-pair'));
+      var hit=false, i, p;
+      for(i=0;i<all.length;i++){ if(parseInt(all[i].getAttribute('data-pair-idx'),10)===idx){ hit=true; break; } }
+      if(!hit){
+        var pairs=all.filter(function(q){ return !!q.querySelector('.recite-sentence-en,.recite-sentence'); });
+        pairs.forEach(function(q,k){
+          var sen=q.querySelector('.recite-sentence-en,.recite-sentence');
+          if(k===idx){ q.classList.add('recite-pair-playing'); if(sen) sen.classList.add('recite-sentence-playing'); try{ q.scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){} }
+          else{ q.classList.remove('recite-pair-playing'); if(sen) sen.classList.remove('recite-sentence-playing'); }
+        });
+        return;
+      }
+      for(i=0;i<all.length;i++){
+        p=all[i];
+        var sen=p.querySelector('.recite-sentence-en,.recite-sentence');
+        if(parseInt(p.getAttribute('data-pair-idx'),10)===idx){
+          p.classList.add('recite-pair-playing'); if(sen) sen.classList.add('recite-sentence-playing');
+          try{ p.scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){}
+        }else{
+          p.classList.remove('recite-pair-playing'); if(sen) sen.classList.remove('recite-sentence-playing');
+        }
+      }
+    }catch(e){}
+  };
+
+  /* ---------- E. 单句播放：健康检查 + 缩短换源等待（不影响正在播放的音频） ---------- */
+  window._fxPlayUrls = function(urls, rate, onEnd){
+    urls=(urls||[]).filter(Boolean);
+    try{
+      var EM0=window._fxElemMap||{};
+      var okU=[], badU=[];
+      for(var z=0;z<urls.length;z++){ var e0=EM0[urls[z]]; if(e0 && e0.__err) badU.push(urls[z]); else okU.push(urls[z]); }
+      urls=okU.concat(badU);
+    }catch(e){}
+    (function trySrc(i){
+      if(i>=urls.length){ if(onEnd) onEnd('tts'); return; }
+      var a;
+      try{ a=_fxGetEl(urls[i]); }catch(e){ a=null; }
+      if(!a){ trySrc(i+1); return; }
+      if(a.__err && a.readyState===0){ trySrc(i+1); return; }
+      var settled=false, t1=null, t2=null, tH=null, lastCt=-1, stable=0;
+      function clearAll(){ if(t1)clearTimeout(t1); if(t2)clearTimeout(t2); if(tH)clearInterval(tH); }
+      function detach(){ try{ a.onended=null; a.onerror=null; }catch(e){} }
+      function halt(){ try{ a.pause(); }catch(e){} detach(); }
+      function done(ok){
+        if(settled) return; settled=true; clearAll();
+        if(ok){ detach(); if(onEnd) onEnd('ok'); }
+        else{ halt(); trySrc(i+1); }
+      }
+      a.onended=function(){ done(true); };
+      a.onerror=function(){ done(false); };
+      function attempt(){
+        if(settled) return;
+        try{
+          if(a.currentTime>0.01){ try{ a.currentTime=0; }catch(e){} }
+          try{ a.playbackRate=rate||1; }catch(e){}
+          try{ _fxPlayingEl=a; _curWordAudio=a; }catch(e){}
+          var p=a.play(); if(p&&p.catch) p.catch(function(){ done(false); });
+        }catch(e){ done(false); return; }
+        t1=setTimeout(function(){
+          if(settled) return; if(a.currentTime>0.05) return;
+          var nx=urls[i+1]; var e2=nx?((window._fxElemMap||{})[nx]):null;
+          if(e2 && !e2.__err && e2.readyState>=3){ done(false); }
+        }, 700);
+        t2=setTimeout(function(){ if(settled) return; if(a.currentTime>0.05) return; done(false); }, 1600);
+        lastCt=-1; stable=0;
+        tH=setInterval(function(){
+          if(settled) return;
+          try{
+            if(a.ended===true){ done(true); return; }
+            var dur=0; try{ dur=a.duration||0; }catch(e){}
+            var ct=0; try{ ct=a.currentTime||0; }catch(e){}
+            if(dur>0.4 && ct>=dur-0.05){ done(true); return; }
+            if(ct>0.4){
+              if(Math.abs(ct-lastCt)<0.04){ stable++; if(stable>=3){ done(true); return; } }
+              else{ stable=0; lastCt=ct; }
+            }else{ lastCt=ct; stable=0; }
+          }catch(e){}
+        }, 120);
+      }
+      if(a.__readyProm && a.readyState===0){ a.__readyProm.then(attempt, attempt); }
+      else{ attempt(); }
+    })(0);
+  };
+
+  /* ---------- F. 英文整段朗读引擎 + 句间推进 ---------- */
+  window._speakLong = function(text, variant, rate, opts){
+    opts=opts||{};
+    var sents=(typeof splitEnSentences==='function') ? splitEnSentences(text) : String(text||'').split(/\n+/);
+    sents=(sents||[]).filter(function(x){ return String(x||'').trim(); });
+    if(!sents.length){ if(opts.onEnd) opts.onEnd(); return; }
+    try{ if(typeof _stopLongPlay==='function') _stopLongPlay(true); }catch(e){}
+    _longPlay={
+      sents:sents, idx:opts.startIdx||0, variant:variant||'us',
+      rate:(rate&&rate>0)?rate:1.0,
+      paused:false, _stopped:false,
+      onSentence:opts.onSentence||null, onEnd:opts.onEnd||null,
+      _audio:null, _utter:null
+    };
+    try{ window._longPlay=_longPlay; }catch(e){}
+    try{ if(typeof _fxPrefetchChain==='function') _fxPrefetchChain(sents, _longPlay.variant, (_longPlay.idx)+1); }catch(e){}
+    window._chainNext(_longPlay.idx);
+  };
+
+  window._chainNext = function(i){
+    var st=_longPlay;
+    if(!st || st._stopped) return;
+    if(i>=st.sents.length){
+      var cb=st.onEnd; st._stopped=true; try{ _longPlay=null; window._longPlay=null; }catch(e){}
+      if(cb){ try{ cb(); }catch(e){} }
+      return;
+    }
+    st.idx=i; st.paused=false;
+    if(st.onSentence){ try{ st.onSentence(i); }catch(e){} }
+    var sen=String(st.sents[i]||'').trim();
+    if(!sen){ setTimeout(function(){ window._chainNext(i+1); }, 0); return; }
+    var urls;
+    try{ urls=_fxSources(sen, st.variant); }catch(e){ urls=[]; }
+    try{
+      var EM0=window._fxElemMap||{};
+      var okU=[], badU=[];
+      for(var z=0;z<urls.length;z++){ var e0=EM0[urls[z]]; if(e0 && e0.__err) badU.push(urls[z]); else okU.push(urls[z]); }
+      urls=okU.concat(badU);
+    }catch(e){}
+    (function trySrc(k){
+      if(!_longPlay || _longPlay!==st || st._stopped) return;
+      if(k>=urls.length){ _fxTtsChain(sen, st, function(){ window._chainNext(i+1); }); return; }
+      var a;
+      try{ a=_fxGetEl(urls[k]); }catch(e){ a=null; }
+      if(!a){ trySrc(k+1); return; }
+      if(a.__err && a.readyState===0){ trySrc(k+1); return; }
+      var settled=false, t1=null, t2=null, tH=null, tMax=null, lastCt=-1, stable=0;
+      function guard(){ return !_longPlay || _longPlay!==st || st._stopped; }
+      function cleanup(){ if(t1)clearTimeout(t1); if(t2)clearTimeout(t2); if(tH)clearInterval(tH); if(tMax)clearTimeout(tMax); try{ a.onended=null; a.onerror=null; }catch(e){} }
+      function allDone(){ if(guard()) return; setTimeout(function(){ if(!guard()) window._chainNext(i+1); }, 0); }
+      function ok(){ if(settled) return; settled=true; cleanup(); try{ if(st._audio===a) st._audio=null; }catch(e){} allDone(); }
+      function next(){ if(settled) return; settled=true; cleanup(); try{ a.pause(); }catch(e){} trySrc(k+1); }
+      a.onended=ok; a.onerror=next;
+      function attempt(){
+        try{
+          lastCt=-1; stable=0;
+          try{ a.pause(); }catch(e){}
+          try{ a.currentTime=0; }catch(e){}
+          try{ a.playbackRate=st.rate||1; }catch(e){}
+          st._audio=a; _fxPlayingEl=a;
+          var p=a.play(); if(p&&p.catch) p.catch(function(){ next(); });
+        }catch(e){ next(); return; }
+        t1=setTimeout(function(){
+          if(settled) return; if(a.currentTime>0.05) return;
+          var nx=urls[k+1]; var e2=nx?((window._fxElemMap||{})[nx]):null;
+          if(e2 && !e2.__err && e2.readyState>=3){ next(); }
+        }, 700);
+        t2=setTimeout(function(){ if(settled) return; if(a.currentTime>0.05) return; next(); }, 4500);
+        lastCt=-1; stable=0;
+        tH=setInterval(function(){
+          if(settled) return;
+          try{
+            if(a.ended===true){ ok(); return; }
+            var dur=0; try{ dur=a.duration||0; }catch(e){}
+            var ct=0; try{ ct=a.currentTime||0; }catch(e){}
+            if(dur>0.3 && ct>=dur-0.05){ ok(); return; }
+            if(ct>0.4){
+              if(Math.abs(ct-lastCt)<0.04){ stable++; if(stable>=2){ ok(); return; } }
+              else{ stable=0; lastCt=ct; }
+            }else{ lastCt=ct; stable=0; }
+          }catch(e){}
+        }, 120);
+        var wc=(sen.match(/[A-Za-z]+/g)||[]).length;
+        var maxMs=Math.max(8000, Math.min(45000, wc*650/((st.rate||1))+5000));
+        tMax=setTimeout(function(){ if(settled) return; next(); }, maxMs);
+      }
+      if(a.__readyProm && a.readyState===0){ a.__readyProm.then(attempt, attempt); }
+      else{ attempt(); }
+    })(0);
+  };
+
+  /* ---------- G. 中文单句朗读（双语跟读用）：缩短兜底 + resume 心跳 ---------- */
+  window._speakZhSentence = function(s, onEnd){
+    var hasAPI=('speechSynthesis' in window)&&('SpeechSynthesisUtterance' in window);
+    if(!hasAPI){ if(onEnd) onEnd(); return; }
+    function pickZh(){
+      var vs=window.speechSynthesis.getVoices()||[];
+      var k;
+      for(k=0;k<vs.length;k++){ var l=(vs[k].lang||'').toLowerCase(); if(l.indexOf('zh')===0 && vs[k].localService) return vs[k]; }
+      for(k=0;k<vs.length;k++){ var l2=(vs[k].lang||'').toLowerCase(); if(l2.indexOf('zh-cn')>=0 || l2==='zh') return vs[k]; }
+      for(k=0;k<vs.length;k++){ var l3=(vs[k].lang||'').toLowerCase(); if(l3.indexOf('zh')===0) return vs[k]; }
+      return null;
+    }
+    var u=new SpeechSynthesisUtterance(String(s||''));
+    u.lang='zh-CN'; u.rate=(typeof _reciteRate==='number'&&_reciteRate>0)?_reciteRate:1.0; u.pitch=1.0;
+    var v=pickZh(); if(v) u.voice=v;
+    var est=Math.max(1200, Math.min(12000, String(s||'').length*260+600));
+    var gone=false, to=null, hb=null;
+    function fin(){ if(gone) return; gone=true; if(to)clearTimeout(to); if(hb)clearInterval(hb); try{ window.speechSynthesis.resume(); }catch(e){} if(onEnd) onEnd(); }
+    u.onend=fin; u.onerror=fin;
+    to=setTimeout(fin, est+800);
+    try{
+      window.speechSynthesis.speak(u);
+      setTimeout(function(){ try{ window.speechSynthesis.resume(); }catch(e){} }, 60);
+      hb=setInterval(function(){ if(gone){ clearInterval(hb); return; } try{ window.speechSynthesis.resume(); }catch(e){} }, 2000);
+    }catch(e){ fin(); }
+  };
+
+  /* ---------- H. 双语跟读：与渲染同一套英中配对，句间几乎无停顿 ---------- */
+  window._chainBilingual = function(pairs, idx, total){
+    if(idx>=total){
+      try{ reciteClearSentHighlight(); }catch(e){}
+      var bar=document.getElementById('recitePlayBar'); if(bar) bar.style.width='100%';
+      var bp=document.getElementById('btnRecitePause'); if(bp) bp.style.display='none';
+      var tip2=document.getElementById('recitePlayTip'); if(tip2) tip2.textContent='\u2705 \u53cc\u8bed\u8ddf\u8bfb\u5b8c\u6bd5 \u00b7 \u70b9\u300c\ud83d\udd01\u518d\u542c\u300d\u91cd\u64ad';
+      try{ toast('\u2705 \u53cc\u8bed\u8ddf\u8bfb\u5b8c\u6bd5'); }catch(e){}
+      try{ _longPlay=null; window._longPlay=null; }catch(e){}
+      return;
+    }
+    if(!_longPlay || _longPlay._stopped) return;
+    if(_longPlay.paused){ setTimeout(function(){ window._chainBilingual(pairs, idx, total); }, 150); return; }
+    try{ reciteHighlightSentence(idx); }catch(e){}
+    var bar2=document.getElementById('recitePlayBar');
+    if(bar2) bar2.style.width=Math.min(100, Math.round((idx+1)/total*100))+'%';
+    var en=String((pairs[idx]&&pairs[idx].en)||'').trim();
+    var zh=String((pairs[idx]&&pairs[idx].zh)||'').trim();
+    function goNext(){ if(!_longPlay || _longPlay._stopped || _longPlay.paused) return; setTimeout(function(){ window._chainBilingual(pairs, idx+1, total); }, 0); }
+    if(!en){ if(zh){ _speakZhSentence(zh, goNext); } else { goNext(); } return; }
+    _speakOneSentence(en, 'us', _reciteRate, function(){
+      if(!_longPlay || _longPlay._stopped || _longPlay.paused) return;
+      if(zh){ _speakZhSentence(zh, goNext); } else { goNext(); }
+    });
+  };
+
+  window.reciteReadBilingual = function(){
+    var t=STATE.currentTopic;
+    if(!t || t.lang!=='en'){ try{ toast('\u26a0\ufe0f \u8bf7\u5148\u62bd\u53d6\u4e00\u7bc7\u82f1\u6587\u6717\u8bf5'); }catch(e){} return; }
+    var zh=String(t.translation||'').trim();
+    if(!zh){ try{ toast('\u26a0\ufe0f \u8be5\u7bc7\u6682\u65e0\u4e2d\u6587\u7ffb\u8bd1\uff0c\u65e0\u6cd5\u53cc\u8bed\u8ddf\u8bfb'); }catch(e){} return; }
+    try{ reciteStopAll(); }catch(e){}
+    try{ _showReciteControls(); }catch(e){}
+    var pairs=_buildPairs(t.content, zh);
+    if(!pairs || !pairs.length){
+      var enS=(typeof splitEnSentences==='function')?splitEnSentences(t.content):[];
+      var zhS=(typeof splitZhSentences==='function')?splitZhSentences(zh):[];
+      try{ pairs=window.alignSentences(enS, zhS); }catch(e){ pairs=[]; }
+    }
+    var total=pairs.length;
+    var tip=document.getElementById('recitePlayTip');
+    if(tip) tip.textContent='\ud83d\udd01 \u82f1\u4e2d\u53cc\u8bed\u8ddf\u8bfb\u4e2d\u2026 \u5171'+total+'\u7ec4';
+    try{ toast('\ud83d\udd01 \u5f00\u59cb\u82f1\u4e2d\u53cc\u8bed\u8ddf\u8bfb\uff08\u5171'+total+'\u7ec4\uff09'); }catch(e){}
+    _lastRecitePlay={mode:'bilingual'};
+    _longPlay={sents:pairs, idx:0, variant:'us', rate:1.0, paused:false, _stopped:false, _audio:null, _utter:null};
+    try{ window._longPlay=_longPlay; }catch(e){}
+    window._chainBilingual(pairs, 0, total);
+  };
+
+  log('applied (per-sentence bilingual align + shorter gap).');
+})();
+
+
+</script>
+
+<!-- ===================== V3.4.5 框架与音频实时同步补丁 ===================== -->
+<script>
+/* =========================================================================
+   【V3.4.5 · 框架与音频实时同步补丁】
+
+   病根（V3.4.4 及以前，已用真实浏览器 + 可控音频复现）：
+     ① 高亮"抢跑"：一进入某一句就立刻点亮高亮框，而该句音频此时可能
+        还在加载/预热/换源，于是"框架已经跑到下面一句，声音还停在上头"。
+        实测：音频慢启动 1 秒时，高亮比真正出声早 1000~2400ms。
+     ② 推进"抢跑 + 抢音"：健康检查只要 currentTime 连续 2 个 120ms 周期
+        没动（约 240ms），就把"缓冲卡顿"误判成"这句读完了"，立刻跳到下
+        一句——正在读的音频被掐断、框架提前跑掉。实测：一句 2.2 秒的音频
+        在卡顿 0.9 秒处，仅 1084ms 就被切走，四句没有一句完整播完。
+     ③ 硬兜底 tMax 无条件换源重播，长句会被"读到一半从头再来"。
+     ④ 中文整段朗读的高亮回调写在"读完"之后，框架永远慢一句。
+
+   修法：
+     ① 高亮时机 = 该句音频"真正开始出声"（首次 currentTime > 0.02 或
+        playing 事件）。没出声，绝不点亮；若最终改走 TTS 兜底，则在
+        TTS 开口（onstart）时点亮。
+     ② 只有"真正播完"才推进：ended === true，或 currentTime 到达音频
+        总时长（duration - 0.04s）。彻底移除"停滞即判完"的抢跑判定。
+     ③ 已经出声的音频绝不换源、绝不打断；仅在"从未出声"时才换源/TTS。
+        若音频被浏览器挂起（暂停在中途），先尝试 play() 续播，而不是跳句。
+     ④ 句间切换间隔 0ms：上一句真正播完，立刻接下一句，框架与音频一起走。
+     ⑤ 中文整段朗读改为"开口前高亮"，与英文口径一致。
+   ========================================================================= */
+(function(){
+  'use strict';
+
+  /* ---- 工具：音频"真正出声"时回调一次，返回取消句柄 ---- */
+  function onAudible(a, cb){
+    var fired = false, iv = null, to = null;
+    function stop(){ if(iv){ clearInterval(iv); iv = null; } if(to){ clearTimeout(to); to = null; } }
+    function fire(){ if(fired) return; fired = true; stop(); try{ cb(); }catch(e){} }
+    try{ a.addEventListener('playing', fire); }catch(e){}
+    try{ a.addEventListener('timeupdate', function(){ try{ if((a.currentTime||0) > 0.02) fire(); }catch(e){} }); }catch(e){}
+    iv = setInterval(function(){
+      if(fired){ stop(); return; }
+      try{ if((a.currentTime||0) > 0.02) fire(); }catch(e){}
+    }, 50);
+    to = setTimeout(stop, 30000);
+    return stop;
+  }
+
+  function srcOrder(urls){
+    urls = (urls || []).filter(Boolean);
+    try{
+      var EM = window._fxElemMap || {};
+      var ok = [], bad = [];
+      for(var i = 0; i < urls.length; i++){
+        var e = EM[urls[i]];
+        if(e && e.__err){ bad.push(urls[i]); } else { ok.push(urls[i]); }
+      }
+      return ok.concat(bad);
+    }catch(e){ return urls; }
+  }
+
+  function getEl(url){
+    try{ if(typeof _fxGetEl === 'function') return _fxGetEl(url); }catch(e){}
+    try{ var a = new Audio(); a.preload = 'auto'; a.src = url; return a; }catch(e){ return null; }
+  }
+
+  function rateOf(rate){
+    if(rate && rate > 0) return rate;
+    return (typeof _reciteRate === 'number' && _reciteRate > 0) ? _reciteRate : 1.0;
+  }
+
+  /* ---- TTS 兜底：开口才算"开始"，结束才算"读完" ---- */
+  function ttsSentence(text, opt, onStart, onDone){
+    opt = opt || {};
+    var hasAPI = ('speechSynthesis' in window) && ('SpeechSynthesisUtterance' in window);
+    if(!hasAPI){ if(onStart){ try{ onStart(); }catch(e){} } if(onDone){ try{ onDone(); }catch(e){} } return; }
+    var settled = false, timer = null, hard = null, iv = null;
+    function fin(){
+      if(settled) return; settled = true;
+      if(timer) clearTimeout(timer); if(hard) clearTimeout(hard); if(iv) clearInterval(iv);
+      try{ speechSynthesis.cancel(); }catch(e){}
+      if(onDone){ try{ onDone(); }catch(e){} }
+    }
+    try{
+      speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(String(text || ''));
+      u.lang = (opt.variant === 'uk') ? 'en-GB' : 'en-US';
+      u.rate = opt.rate || 1.0; u.pitch = 1.0; u.volume = 1.0;
+      try{
+        var vs = speechSynthesis.getVoices() || [];
+        var key = (opt.variant === 'uk') ? 'en-gb' : 'en-us';
+        for(var i = 0; i < vs.length; i++){
+          if(String(vs[i].lang || '').toLowerCase().indexOf(key) >= 0){ u.voice = vs[i]; break; }
+        }
+      }catch(e){}
+      u.onstart = function(){ if(onStart){ try{ onStart(); }catch(e){} } };
+      u.onend = fin; u.onerror = fin;
+      var wc = (String(text || '').match(/[A-Za-z]+/g) || []).length;
+      var est = Math.max(2500, Math.min(30000, wc * 440 / (opt.rate || 1) + 2200));
+      timer = setTimeout(fin, est);
+      hard = setTimeout(fin, Math.min(60000, est + 20000));
+      iv = setInterval(function(){ try{ speechSynthesis.resume(); }catch(e){} }, 3000);
+      speechSynthesis.speak(u);
+    }catch(e){ if(onStart){ try{ onStart(); }catch(e){} } fin(); }
+  }
+
+  /* =====================================================================
+     覆盖一：通用单句播放（兼容原 3 参调用，新增第 4 参 onStart）
+     ===================================================================== */
+  window._fxPlayUrls = function(urls, rate, onEnd, onStart){
+    var list = srcOrder(urls);
+    var r = rateOf(rate);
+    var started = false;
+    function fireStart(){ if(started) return; started = true; if(onStart){ try{ onStart(); }catch(e){} } }
+    (function trySrc(k){
+      if(k >= list.length){ if(onEnd){ try{ onEnd('tts'); }catch(e){} } return; }
+      var a = getEl(list[k]);
+      if(!a){ trySrc(k + 1); return; }
+      if(a.__err && a.readyState === 0){ trySrc(k + 1); return; }
+      var settled = false, t1 = null, t2 = null, tH = null, tMax = null, stopWatch = null;
+      function clearAll(){
+        if(t1) clearTimeout(t1); if(t2) clearTimeout(t2);
+        if(tH) clearInterval(tH); if(tMax) clearTimeout(tMax);
+        if(stopWatch){ try{ stopWatch(); }catch(e){} stopWatch = null; }
+      }
+      function detach(){ try{ a.onended = null; a.onerror = null; }catch(e){} }
+      function done(res){
+        if(settled) return; settled = true; clearAll(); detach();
+        if(res === 'ok'){ if(onEnd){ try{ onEnd('ok'); }catch(e){} } return; }
+        try{ a.pause(); }catch(e){}
+        trySrc(k + 1);
+      }
+      a.onended = function(){ done('ok'); };
+      a.onerror = function(){ done('err'); };
+      try{
+        try{ a.pause(); }catch(e){}
+        try{ a.currentTime = 0; }catch(e){}
+        try{ a.playbackRate = r; }catch(e){}
+        try{ window._fxPlayingEl = a; }catch(e){}
+        stopWatch = onAudible(a, fireStart);
+        var p = a.play(); if(p && p.catch) p.catch(function(){ done('err'); });
+      }catch(e){ done('err'); return; }
+      t1 = setTimeout(function(){
+        if(settled) return;
+        try{ if((a.currentTime || 0) > 0.05) return; }catch(e){}
+        var nx = list[k + 1]; var e2 = nx ? ((window._fxElemMap || {})[nx]) : null;
+        if(e2 && !e2.__err && e2.readyState >= 3){ done('err'); }
+      }, 2500);
+      t2 = setTimeout(function(){
+        if(settled) return;
+        try{ if((a.currentTime || 0) > 0.05) return; }catch(e){}
+        done('err');
+      }, 5000);
+      tH = setInterval(function(){
+        if(settled) return;
+        try{
+          if(a.ended === true){ done('ok'); return; }
+          var dur = 0; try{ dur = a.duration || 0; }catch(e){}
+          var ct = 0; try{ ct = a.currentTime || 0; }catch(e){}
+          if(dur > 0.4 && ct >= dur - 0.04){ done('ok'); return; }
+          if(ct > 0.05 && a.paused){
+            try{ var pp = a.play(); if(pp && pp.catch) pp.catch(function(){}); }catch(e){}
+          }
+        }catch(e){}
+      }, 150);
+      tMax = setTimeout(function(){
+        if(settled) return;
+        var c0 = 0; try{ c0 = a.currentTime || 0; }catch(e){}
+        if(c0 <= 0.05){ done('err'); return; }
+        setTimeout(function(){
+          if(settled) return;
+          var c1 = 0, pd = false;
+          try{ c1 = a.currentTime || 0; }catch(e){}
+          try{ pd = !!a.paused; }catch(e){}
+          if(pd && Math.abs(c1 - c0) < 0.05){ done('ok'); }
+        }, 6000);
+      }, 90000);
+    })(0);
+  };
+
+  /* =====================================================================
+     覆盖二：英文整段朗读逐句链播（美音/英音整段）
+     ===================================================================== */
+  window._chainNext = function(i){
+    var st = _longPlay;
+    if(!st || st._stopped) return;
+    if(i >= st.sents.length){
+      var cb = st.onEnd; st._stopped = true;
+      try{ _longPlay = null; window._longPlay = null; }catch(e){}
+      if(cb){ try{ cb(); }catch(e){} }
+      return;
+    }
+    st.idx = i; st.paused = false;
+    var sen = String(st.sents[i] || '').trim();
+    var hlDone = false;
+    function highlight(){
+      if(hlDone) return; hlDone = true;
+      if(st.onSentence){ try{ st.onSentence(i); }catch(e){} }
+    }
+    if(!sen){ highlight(); setTimeout(function(){ window._chainNext(i + 1); }, 0); return; }
+    var urls;
+    try{ urls = _fxSources(sen, st.variant); }catch(e){ urls = []; }
+    var list = srcOrder(urls);
+    function guard(){ return !_longPlay || _longPlay !== st || st._stopped; }
+    function nextSentence(){ if(guard()) return; setTimeout(function(){ if(!guard()) window._chainNext(i + 1); }, 0); }
+    (function trySrc(k){
+      if(guard()) return;
+      if(k >= list.length){
+        /* 所有 mp3 音源都不可用 → TTS 兜底；TTS 一开口就点亮 */
+        ttsSentence(sen, {variant: st.variant, rate: st.rate}, highlight, nextSentence);
+        return;
+      }
+      var a = getEl(list[k]);
+      if(!a){ trySrc(k + 1); return; }
+      if(a.__err && a.readyState === 0){ trySrc(k + 1); return; }
+      var settled = false, t1 = null, t2 = null, tH = null, tMax = null, stopWatch = null;
+      function cleanup(){
+        if(t1) clearTimeout(t1); if(t2) clearTimeout(t2);
+        if(tH) clearInterval(tH); if(tMax) clearTimeout(tMax);
+        if(stopWatch){ try{ stopWatch(); }catch(e){} stopWatch = null; }
+        try{ a.onended = null; a.onerror = null; }catch(e){}
+      }
+      function ok(){ if(settled) return; settled = true; cleanup(); try{ if(st._audio === a) st._audio = null; }catch(e){} highlight(); nextSentence(); }
+      function fail(){ if(settled) return; settled = true; cleanup(); try{ a.pause(); }catch(e){} trySrc(k + 1); }
+      a.onended = ok; a.onerror = fail;
+      try{
+        try{ a.pause(); }catch(e){}
+        try{ a.currentTime = 0; }catch(e){}
+        try{ a.playbackRate = st.rate || 1; }catch(e){}
+        st._audio = a; try{ window._fxPlayingEl = a; }catch(e){}
+        stopWatch = onAudible(a, highlight);       /* ← 真正出声才高亮 */
+        var p = a.play(); if(p && p.catch) p.catch(function(){ fail(); });
+      }catch(e){ fail(); return; }
+      t1 = setTimeout(function(){
+        if(settled) return;
+        try{ if((a.currentTime || 0) > 0.05) return; }catch(e){}
+        var nx = list[k + 1]; var e2 = nx ? ((window._fxElemMap || {})[nx]) : null;
+        if(e2 && !e2.__err && e2.readyState >= 3){ fail(); }
+      }, 2500);
+      t2 = setTimeout(function(){
+        if(settled) return;
+        try{ if((a.currentTime || 0) > 0.05) return; }catch(e){}
+        fail();
+      }, 5000);
+      tH = setInterval(function(){
+        if(settled) return;
+        try{
+          if(a.ended === true){ ok(); return; }
+          var dur = 0; try{ dur = a.duration || 0; }catch(e){}
+          var ct = 0; try{ ct = a.currentTime || 0; }catch(e){}
+          if(dur > 0.4 && ct >= dur - 0.04){ ok(); return; }
+          if(ct > 0.05 && a.paused){
+            try{ var pp = a.play(); if(pp && pp.catch) pp.catch(function(){}); }catch(e){}
+          }
+        }catch(e){}
+      }, 150);
+      tMax = setTimeout(function(){
+        if(settled) return;
+        var c0 = 0; try{ c0 = a.currentTime || 0; }catch(e){}
+        if(c0 <= 0.05){ fail(); return; }
+        setTimeout(function(){
+          if(settled) return;
+          var c1 = 0, pd = false;
+          try{ c1 = a.currentTime || 0; }catch(e){}
+          try{ pd = !!a.paused; }catch(e){}
+          if(pd && Math.abs(c1 - c0) < 0.05){ ok(); }
+        }, 6000);
+      }, 90000);
+    })(0);
+  };
+
+  /* =====================================================================
+     覆盖三：单句播放（双语跟读的英文句），新增第 5 参 onStart
+     ===================================================================== */
+  window._speakOneSentence = function(text, variant, rate, onEnd, onStart){
+    variant = variant || 'us';
+    var raw = String(text || '').trim();
+    if(!onEnd){ try{ if(typeof window.speakEnglish === 'function') window.speakEnglish(raw, variant, rate); }catch(e){} return; }
+    if(!raw){ if(onStart){ try{ onStart(); }catch(e){} } setTimeout(onEnd, 0); return; }
+    var r = rateOf(rate);
+    var urls;
+    try{ urls = _fxSources(raw, variant); }catch(e){ urls = []; }
+    var list = srcOrder(urls);
+    var started = false;
+    function fireStart(){ if(started) return; started = true; if(onStart){ try{ onStart(); }catch(e){} } }
+    (function trySrc(k){
+      var st0 = _longPlay;
+      if(st0 && st0._stopped) return;
+      if(k >= list.length){
+        ttsSentence(raw, {variant: variant, rate: r}, fireStart, function(){ if(onEnd){ try{ onEnd(); }catch(e){} } });
+        return;
+      }
+      var a = getEl(list[k]);
+      if(!a){ trySrc(k + 1); return; }
+      if(a.__err && a.readyState === 0){ trySrc(k + 1); return; }
+      var settled = false, t1 = null, t2 = null, tH = null, tMax = null, stopWatch = null;
+      function clearAll(){
+        if(t1) clearTimeout(t1); if(t2) clearTimeout(t2);
+        if(tH) clearInterval(tH); if(tMax) clearTimeout(tMax);
+        if(stopWatch){ try{ stopWatch(); }catch(e){} stopWatch = null; }
+        try{ a.onended = null; a.onerror = null; }catch(e){}
+      }
+      function finish(){ if(settled) return; settled = true; clearAll(); if(onEnd){ try{ onEnd(); }catch(e){} } }
+      function nextSrc(){ if(settled) return; settled = true; clearAll(); try{ a.pause(); }catch(e){} trySrc(k + 1); }
+      a.onended = finish; a.onerror = nextSrc;
+      try{
+        try{ a.pause(); }catch(e){}
+        try{ a.currentTime = 0; }catch(e){}
+        try{ a.playbackRate = r; }catch(e){}
+        try{ window._fxPlayingEl = a; }catch(e){}
+        stopWatch = onAudible(a, fireStart);
+        var p = a.play(); if(p && p.catch) p.catch(function(){ nextSrc(); });
+      }catch(e){ nextSrc(); return; }
+      t1 = setTimeout(function(){
+        if(settled) return;
+        try{ if((a.currentTime || 0) > 0.05) return; }catch(e){}
+        var nx = list[k + 1]; var e2 = nx ? ((window._fxElemMap || {})[nx]) : null;
+        if(e2 && !e2.__err && e2.readyState >= 3){ nextSrc(); }
+      }, 2500);
+      t2 = setTimeout(function(){
+        if(settled) return;
+        try{ if((a.currentTime || 0) > 0.05) return; }catch(e){}
+        nextSrc();
+      }, 5000);
+      tH = setInterval(function(){
+        if(settled) return;
+        try{
+          if(a.ended === true){ finish(); return; }
+          var dur = 0; try{ dur = a.duration || 0; }catch(e){}
+          var ct = 0; try{ ct = a.currentTime || 0; }catch(e){}
+          if(dur > 0.4 && ct >= dur - 0.04){ finish(); return; }
+          if(ct > 0.05 && a.paused){
+            try{ var pp = a.play(); if(pp && pp.catch) pp.catch(function(){}); }catch(e){}
+          }
+        }catch(e){}
+      }, 150);
+      tMax = setTimeout(function(){
+        if(settled) return;
+        var c0 = 0; try{ c0 = a.currentTime || 0; }catch(e){}
+        if(c0 <= 0.05){ nextSrc(); return; }
+        setTimeout(function(){
+          if(settled) return;
+          var c1 = 0, pd = false;
+          try{ c1 = a.currentTime || 0; }catch(e){}
+          try{ pd = !!a.paused; }catch(e){}
+          if(pd && Math.abs(c1 - c0) < 0.05){ finish(); }
+        }, 6000);
+      }, 90000);
+    })(0);
+  };
+
+  /* =====================================================================
+     覆盖四：双语跟读（英文句真正出声时才高亮，中文句保持同组高亮）
+     ===================================================================== */
+  window._chainBilingual = function(pairs, idx, total){
+    if(idx >= total){
+      try{ reciteClearSentHighlight(); }catch(e){}
+      var bar0 = document.getElementById('recitePlayBar'); if(bar0) bar0.style.width = '100%';
+      var bp = document.getElementById('btnRecitePause'); if(bp) bp.style.display = 'none';
+      var tip2 = document.getElementById('recitePlayTip'); if(tip2) tip2.textContent = '✅ 双语跟读完毕 · 点「🔁再听」重播';
+      try{ toast('✅ 双语跟读完毕'); }catch(e){}
+      _longPlay = null; try{ window._longPlay = null; }catch(e){}
+      return;
+    }
+    var st = _longPlay;
+    if(!st || st._stopped) return;
+    if(st.paused){ setTimeout(function(){ window._chainBilingual(pairs, idx, total); }, 150); return; }
+    var en = String((pairs[idx] && pairs[idx].en) || '').trim();
+    var zh = String((pairs[idx] && pairs[idx].zh) || '').trim();
+    function hl(){
+      try{ if(typeof reciteHighlightSentence === 'function') reciteHighlightSentence(idx); }catch(e){}
+      var bar1 = document.getElementById('recitePlayBar');
+      if(bar1) bar1.style.width = Math.min(100, Math.round((idx + 1) / total * 100)) + '%';
+    }
+    function goNext(){
+      if(!_longPlay || _longPlay._stopped || _longPlay.paused) return;
+      setTimeout(function(){ window._chainBilingual(pairs, idx + 1, total); }, 0);
+    }
+    function readZh(){
+      if(!_longPlay || _longPlay._stopped || _longPlay.paused) return;
+      if(zh){ try{ window._speakZhSentence(zh, goNext); }catch(e){ goNext(); } } else { goNext(); }
+    }
+    if(!en){ hl(); readZh(); return; }
+    /* 英文句：真正出声时才高亮；读完才接中文 */
+    window._speakOneSentence(en, 'us', _reciteRate, readZh, hl);
+  };
+
+  /* =====================================================================
+     覆盖五：中文整段朗读（开口前高亮，与英文口径一致）
+     ===================================================================== */
+  window._speakZhAt = function(i){
+    if(!_zhLongPlay) return;
+    if(i >= _zhLongPlay.sents.length){
+      var cb = _zhLongPlay.onEnd; _zhLongPlay = null;
+      try{ speechSynthesis.cancel(); }catch(e){}
+      if(cb){ try{ cb(); }catch(e){} }
+      return;
+    }
+    _zhLongPlay.idx = i;
+    var s = _zhLongPlay.sents[i];
+    if(!s){ setTimeout(function(){ window._speakZhAt(i + 1); }, 0); return; }
+    var hasAPI = ('speechSynthesis' in window) && ('SpeechSynthesisUtterance' in window);
+    if(!hasAPI){
+      if(_zhLongPlay.onSentence){ try{ _zhLongPlay.onSentence(i); }catch(e){} }
+      var cb2 = _zhLongPlay.onEnd; _zhLongPlay = null;
+      if(cb2){ try{ cb2(); }catch(e){} }
+      return;
+    }
+    function pickZh(){
+      var vs = window.speechSynthesis.getVoices() || [];
+      var k;
+      for(k = 0; k < vs.length; k++){ var l = (vs[k].lang || '').toLowerCase(); if(l.indexOf('zh') === 0 && vs[k].localService) return vs[k]; }
+      for(k = 0; k < vs.length; k++){ var l2 = (vs[k].lang || '').toLowerCase(); if(l2.indexOf('zh-cn') >= 0 || l2 === 'zh') return vs[k]; }
+      for(k = 0; k < vs.length; k++){ var l3 = (vs[k].lang || '').toLowerCase(); if(l3.indexOf('zh') === 0) return vs[k]; }
+      return null;
+    }
+    var u = new SpeechSynthesisUtterance(s);
+    u.lang = 'zh-CN'; u.rate = (typeof _reciteRate === 'number' && _reciteRate > 0) ? _reciteRate : 1.0;
+    u.pitch = 1.0; u.volume = 1.0;
+    var v = pickZh(); if(v) u.voice = v;
+    _zhLongPlay.utter = u;
+    var moved = false, hb = null, sentTimer = null;
+    function go(){
+      if(moved) return; moved = true;
+      if(sentTimer) clearTimeout(sentTimer);
+      if(hb) clearInterval(hb);
+      if(_zhLongPlay && !_zhLongPlay.paused) setTimeout(function(){ window._speakZhAt(i + 1); }, 0);
+    }
+    u.onstart = function(){   /* ← 开口才高亮 */
+      if(_zhLongPlay && _zhLongPlay.onSentence){ try{ _zhLongPlay.onSentence(i); }catch(e){} }
+    };
+    u.onend = go; u.onerror = go;
+    var chars = s.length;
+    var est = Math.max(2500, Math.min(15000, chars * 280 + 1200));
+    sentTimer = setTimeout(go, est);
+    hb = setInterval(function(){ try{ speechSynthesis.resume(); }catch(e){} }, 2000);
+    try{
+      speechSynthesis.speak(u);
+      setTimeout(function(){ try{ speechSynthesis.resume(); }catch(e){} }, 60);
+    }catch(e){ go(); }
+  };
+
+  /* ---- 版本徽标统一为 V3.4.5（防止旧补丁把它改回 V3.4.3） ---- */
+  try{
+    var _bs = document.querySelectorAll('.ver-badge,.version-badge,#verBadge');
+    for(var _bi = 0; _bi < _bs.length; _bi++){ _bs[_bi].textContent = 'V3.4.5'; }
+    var _stamp = document.getElementById('buildStamp');
+    if(_stamp){ _stamp.textContent = '构建 2026-10-25 · V3.4.5'; }
+  }catch(e){}
+
+  try{ if(window.console && console.log) console.log('[V3.4.5] 框架与音频实时同步补丁已生效'); }catch(e){}
+})();
+
+</script>
+
+<!-- ===================== V3.4.6 抢跑/双音/卡句修复补丁 ===================== -->
+<script>
+/* =========================================================================
+   【V3.4.6 · 抢跑/双音/卡第二句 专项修复补丁】
+
+   实测复现的三个真问题：
+     ① 读到第二句就停：某些安卓浏览器下，mp3 播到句尾后 onended 偶发不触发，
+        且流式 mp3 的 duration 在整个播放期间都是 NaN，V3.4.5 的
+        "a.ended===true"与"ct>=dur-0.04"两个判完条件都不成立，链播直接挂死。
+     ② 点美音整段出现两种音频：
+        a) _fxElemMap 里预取的几十上百个 Audio 元素，停播时只 pause 了
+           _fxPlayingEl，其他可能还在自己响；
+        b) speechSynthesis.cancel() 单次调用在部分浏览器上清不掉 speak 队列，
+           TTS 兜底音和 mp3 音同时发声；
+        c) 新 _speakLong 进来后，旧 _chainNext 的 tH 定时器没被清，旧链播
+           和新链播同时跑，造成"两句重叠"。
+     ③ 点美音/英音整段切换时，若上一次链播还没完全停下，新链播和旧链播叠跑。
+
+   修法：
+     ① 新增 _killAllAudioNow()：遍历 _fxElemMap/_fxPool 全部元素 pause 并卸事件；
+        三次 cancel() 清 TTS 队列；作废上一个 _longPlay 的所有定时器（通过
+        给每个长播实例分配唯一 token，定时器触发时校验 token，不是自己就返回）。
+     ② 健康检查补"句尾停滞兜底"：只要已出声（ct>0.3）、连续 1.2s（>=8 个 tick）
+        currentTime 变化 < 0.05，判为播完 → 推进（不会把"缓冲中"误判成读完，
+        因为缓冲时 currentTime 虽然不动，但通常伴随 paused=true 或 readyState<3，
+        这些情况下我们只尝试 resume，不判完）。
+     ③ _chainNext/_speakOneSentence/_speakZhAt 都把"自身 token"和 _longPlay
+        的 token 比对，被顶替就立刻 return，绝不继续播。
+     ④ reciteReadFull/reciteReadBilingual/reciteReadChinese 启动前先调
+        _killAllAudioNow() 彻底静音，再下一帧启动新链播。
+   ========================================================================= */
+(function(){
+  'use strict';
+
+  /* ---- 为每个长播实例生成唯一 token，用来作废旧定时器 ---- */
+  var _lpSeq = 0;
+  function _newLpToken(){ _lpSeq = (_lpSeq + 1) | 0; return '_lp_' + _lpSeq + '_' + Date.now(); }
+
+  /* ---- 彻底停掉一切声音（mp3 池 + TTS 队列 + 旧定时器标记） ---- */
+  function _killAllAudioNow(){
+    /* 1) 标记旧长播已停止 */
+    try{ if(window._longPlay){ window._longPlay._stopped = true; window._longPlay.__dead = true; } }catch(e){}
+    try{ window._longPlay = null; }catch(e){}
+    try{ if(_longPlay){ _longPlay._stopped = true; _longPlay.__dead = true; _longPlay = null; } }catch(e){}
+    /* 2) 中文朗读也作废 */
+    try{ if(_zhLongPlay){ _zhLongPlay.__dead = true; _zhLongPlay = null; } }catch(e){}
+    try{ window._zhLongPlay = null; }catch(e){}
+    /* 3) 暂停 _fxElemMap 中所有音频元素并卸事件 */
+    try{
+      var EM = window._fxElemMap || {};
+      var keys = Object.keys(EM);
+      for(var i = 0; i < keys.length; i++){
+        var a = EM[keys[i]];
+        if(!a) continue;
+        try{ a.onended = null; a.onerror = null; a.onplaying = null; a.ontimeupdate = null; }catch(e){}
+        try{ a.pause(); }catch(e){}
+        try{ if(a.currentTime > 0.01) a.currentTime = 0; }catch(e){}
+      }
+    }catch(e){}
+    /* 4) 暂停 _fxPool 池里的所有元素 */
+    try{
+      var pool = window._fxPool || [];
+      for(var j = 0; j < pool.length; j++){
+        var b = pool[j]; if(!b) continue;
+        try{ b.onended = null; b.onerror = null; }catch(e){}
+        try{ b.pause(); }catch(e){}
+        try{ if(b.currentTime > 0.01) b.currentTime = 0; }catch(e){}
+      }
+    }catch(e){}
+    /* 5) 正在播放的当前元素 */
+    try{ if(window._fxPlayingEl){ window._fxPlayingEl.pause(); window._fxPlayingEl = null; } }catch(e){}
+    try{ if(_fxPlayingEl){ _fxPlayingEl.pause(); _fxPlayingEl = null; } }catch(e){}
+    try{ if(_curWordAudio){ _curWordAudio.pause(); _curWordAudio = null; } }catch(e){}
+    /* 6) 单词、句子单例播放器停掉 */
+    try{ if(typeof _stopWordAudio === 'function') _stopWordAudio(); }catch(e){}
+    try{ if(typeof _stopSentAudio === 'function') _stopSentAudio(); }catch(e){}
+    try{ if(typeof _stopFallbackAudio === 'function') _stopFallbackAudio(); }catch(e){}
+    /* 7) TTS 队列三连 cancel（部分浏览器单次 cancel 清不干净） */
+    try{ if('speechSynthesis' in window){ speechSynthesis.cancel(); } }catch(e){}
+    setTimeout(function(){ try{ if('speechSynthesis' in window) speechSynthesis.cancel(); }catch(e){} }, 30);
+    setTimeout(function(){ try{ if('speechSynthesis' in window) speechSynthesis.cancel(); }catch(e){} }, 90);
+  }
+  window._fxKillAllAudioNow = _killAllAudioNow;
+
+  /* ---- 把 _fxStopAllPlayback / _stopLongPlay 全部替换为彻底版本 ---- */
+  window._fxStopAllPlayback = _killAllAudioNow;
+  window._stopLongPlay = function(silent){
+    _killAllAudioNow();
+  };
+  window.reciteStopAll = (function(_old){
+    return function(){
+      try{ _killAllAudioNow(); }catch(e){}
+      try{ if(_old) _old.apply(this, arguments); }catch(e){}
+      try{ reciteClearSentHighlight(); }catch(e){}
+      try{ _hideReciteControls(); }catch(e){}
+    };
+  })(window.reciteStopAll);
+
+  /* ---- 重新实现 _speakLong：分配 token，彻底静音后再启动 ---- */
+  window._speakLong = function(text, variant, rate, opts){
+    opts = opts || {};
+    _killAllAudioNow();
+    var sents = (typeof splitEnSentences === 'function') ? splitEnSentences(text) : String(text||'').split(/\n+/);
+    sents = (sents||[]).filter(function(x){ return String(x||'').trim(); });
+    if(!sents.length){ if(opts.onEnd) opts.onEnd(); return; }
+    var lp = {
+      sents: sents, idx: opts.startIdx || 0, variant: variant||'us',
+      rate: (rate && rate > 0) ? rate : 1.0,
+      paused: false, _stopped: false, __dead: false,
+      onSentence: opts.onSentence || null, onEnd: opts.onEnd || null,
+      _audio: null, _utter: null,
+      __tok: _newLpToken()
+    };
+    _longPlay = lp; window._longPlay = lp;
+    try{ if(typeof _fxPrefetchChain === 'function') _fxPrefetchChain(sents, lp.variant, lp.idx + 1); }catch(e){}
+    setTimeout(function(){ window._chainNext(lp.idx); }, 0);
+  };
+
+  /* ---- 音频"真正出声"监听（复用 V3.4.5 思路） ---- */
+  function onAudible(a, cb){
+    var fired = false, iv = null, to = null;
+    function stop(){ if(iv){ clearInterval(iv); iv = null; } if(to){ clearTimeout(to); to = null; } }
+    function fire(){ if(fired) return; fired = true; stop(); try{ cb(); }catch(e){} }
+    try{ a.addEventListener('playing', fire); }catch(e){}
+    try{ a.addEventListener('timeupdate', function(){ try{ if((a.currentTime||0) > 0.02) fire(); }catch(e){} }); }catch(e){}
+    iv = setInterval(function(){
+      if(fired){ stop(); return; }
+      try{ if((a.currentTime||0) > 0.02) fire(); }catch(e){}
+    }, 50);
+    to = setTimeout(stop, 30000);
+    return stop;
+  }
+
+  function srcOrder(urls){
+    urls = (urls || []).filter(Boolean);
+    try{
+      var EM = window._fxElemMap || {};
+      var ok = [], bad = [];
+      for(var i = 0; i < urls.length; i++){
+        var e = EM[urls[i]];
+        if(e && e.__err){ bad.push(urls[i]); } else { ok.push(urls[i]); }
+      }
+      return ok.concat(bad);
+    }catch(e){ return urls; }
+  }
+  function getEl(url){
+    try{ if(typeof _fxGetEl === 'function') return _fxGetEl(url); }catch(e){}
+    try{ var a = new Audio(); a.preload = 'auto'; a.src = url; return a; }catch(e){ return null; }
+  }
+  function rateOf(rate){
+    if(rate && rate > 0) return rate;
+    return (typeof _reciteRate === 'number' && _reciteRate > 0) ? _reciteRate : 1.0;
+  }
+
+  /* ---- TTS 兜底：带 token 校验、开口才亮、读完才走 ---- */
+  function ttsSentence(text, opt, tok, onStart, onDone){
+    opt = opt || {};
+    var hasAPI = ('speechSynthesis' in window) && ('SpeechSynthesisUtterance' in window);
+    function dead(){ try{ return !_longPlay || _longPlay.__tok !== tok || _longPlay.__dead || _longPlay._stopped; }catch(e){ return true; } }
+    if(!hasAPI){ if(onStart){ try{ onStart(); }catch(e){} } if(onDone){ try{ onDone(); }catch(e){} } return; }
+    var settled = false, timer = null, hard = null, iv = null;
+    function fin(){
+      if(settled) return; settled = true;
+      if(timer) clearTimeout(timer); if(hard) clearTimeout(hard); if(iv) clearInterval(iv);
+      if(dead()){ try{ speechSynthesis.cancel(); }catch(e){} return; }
+      try{ speechSynthesis.cancel(); }catch(e){}
+      if(onDone){ try{ onDone(); }catch(e){} }
+    }
+    try{
+      speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(String(text || ''));
+      u.lang = (opt.variant === 'uk') ? 'en-GB' : 'en-US';
+      u.rate = opt.rate || 1.0; u.pitch = 1.0; u.volume = 1.0;
+      try{
+        var vs = speechSynthesis.getVoices() || [];
+        var key = (opt.variant === 'uk') ? 'en-gb' : 'en-us';
+        for(var i = 0; i < vs.length; i++){
+          if(String(vs[i].lang || '').toLowerCase().indexOf(key) >= 0){ u.voice = vs[i]; break; }
+        }
+      }catch(e){}
+      u.onstart = function(){ if(dead()){ fin(); return; } if(onStart){ try{ onStart(); }catch(e){} } };
+      u.onend = fin; u.onerror = fin;
+      var wc = (String(text||'').match(/[A-Za-z]+/g) || []).length;
+      var est = Math.max(2500, Math.min(30000, wc * 440/(opt.rate||1) + 2200));
+      timer = setTimeout(fin, est);
+      hard = setTimeout(fin, Math.min(60000, est + 20000));
+      iv = setInterval(function(){
+        if(dead()){ fin(); return; }
+        try{ speechSynthesis.resume(); }catch(e){}
+      }, 2000);
+      speechSynthesis.speak(u);
+    }catch(e){ if(onStart){ try{ onStart(); }catch(e){} } fin(); }
+  }
+
+  /* ---- 核心：重新实现 _chainNext（彻底的 token 校验 + 句尾停滞兜底） ---- */
+  window._chainNext = function(i){
+    var st = _longPlay;
+    if(!st || st.__dead || st._stopped) return;
+    var myTok = st.__tok;
+    function alive(){ return _longPlay && _longPlay.__tok === myTok && !_longPlay.__dead && !_longPlay._stopped && !_longPlay.paused; }
+    if(i >= st.sents.length){
+      var cb = st.onEnd;
+      st._stopped = true; st.__dead = true;
+      _longPlay = null; window._longPlay = null;
+      if(cb){ try{ cb(); }catch(e){} }
+      return;
+    }
+    st.idx = i; st.paused = false;
+    var sen = String(st.sents[i] || '').trim();
+    var hlDone = false;
+    function highlight(){
+      if(hlDone) return; hlDone = true;
+      if(!alive()) return;
+      if(st.onSentence){ try{ st.onSentence(i); }catch(e){} }
+    }
+    if(!sen){ highlight(); setTimeout(function(){ if(alive()) window._chainNext(i+1); }, 0); return; }
+    var urls = [];
+    try{ urls = _fxSources(sen, st.variant); }catch(e){ urls = []; }
+    var list = srcOrder(urls);
+    function nextSentence(){ if(!alive()) return; setTimeout(function(){ if(alive()) window._chainNext(i+1); }, 0); }
+
+    (function trySrc(k){
+      if(!alive()) return;
+      if(k >= list.length){
+        ttsSentence(sen, {variant: st.variant, rate: st.rate}, myTok, highlight, nextSentence);
+        return;
+      }
+      var a = getEl(list[k]);
+      if(!a){ trySrc(k+1); return; }
+      if(a.__err && a.readyState === 0){ trySrc(k+1); return; }
+
+      var settled = false;
+      var t1 = null, t2 = null, tH = null, tMax = null, stopWatch = null;
+      var lastCt = -1, stable = 0, heard = false;
+
+      function cleanup(){
+        if(t1){ clearTimeout(t1); t1 = null; }
+        if(t2){ clearTimeout(t2); t2 = null; }
+        if(tH){ clearInterval(tH); tH = null; }
+        if(tMax){ clearTimeout(tMax); tMax = null; }
+        if(stopWatch){ try{ stopWatch(); }catch(e){} stopWatch = null; }
+        try{ a.onended = null; a.onerror = null; }catch(e){}
+      }
+      function ok(){
+        if(settled) return; settled = true; cleanup();
+        try{ if(st._audio === a) st._audio = null; }catch(e){}
+        highlight(); nextSentence();
+      }
+      function fail(){
+        if(settled) return; settled = true; cleanup();
+        try{ a.pause(); }catch(e){}
+        trySrc(k+1);
+      }
+
+      a.onended = ok; a.onerror = fail;
+
+      function attempt(){
+        if(!alive() || settled) return;
+        try{
+          lastCt = -1; stable = 0; heard = false;
+          try{ a.pause(); }catch(e){}
+          try{ a.currentTime = 0; }catch(e){}
+          try{ a.playbackRate = st.rate || 1; }catch(e){}
+          st._audio = a; window._fxPlayingEl = a;
+          /* 真正出声才高亮 */
+          stopWatch = onAudible(a, function(){
+            heard = true; highlight();
+          });
+          var p = a.play();
+          if(p && p.catch) p.catch(function(){ fail(); });
+        }catch(e){ fail(); return; }
+
+        /* 2.5s 内没出声且下一个源已就绪 → 换源 */
+        t1 = setTimeout(function(){
+          if(settled || !alive()) return;
+          var ct = 0; try{ ct = a.currentTime || 0; }catch(e){}
+          if(ct > 0.05) return;
+          var nx = list[k+1]; var e2 = nx ? ((window._fxElemMap||{})[nx]) : null;
+          if(e2 && !e2.__err && e2.readyState >= 3){ fail(); }
+        }, 2500);
+        /* 5s 内从头到尾没出声 → 换源 */
+        t2 = setTimeout(function(){
+          if(settled || !alive()) return;
+          var ct = 0; try{ ct = a.currentTime || 0; }catch(e){}
+          if(ct > 0.05) return;
+          fail();
+        }, 5000);
+
+        /* 健康检查（核心修复）：
+           1) ended / 到达 duration → ok
+           2) 已出声(ct>0.3) 且 未暂停 且 连续 1.2s(=8个150ms tick) currentTime 几乎不动
+              → 判定为句尾自然结束 → ok（修 onended 丢失/NaN duration 卡第二句）
+           3) paused 在中途 → 尝试 resume（不判完） */
+        tH = setInterval(function(){
+          if(settled || !alive()) return;
+          try{
+            if(a.ended === true){ ok(); return; }
+            var dur = 0; try{ dur = a.duration || 0; if(!isFinite(dur)) dur = 0; }catch(e){ dur = 0; }
+            var ct = 0; try{ ct = a.currentTime || 0; }catch(e){}
+            var pd = false; try{ pd = !!a.paused; }catch(e){}
+            if(dur > 0.4 && ct >= dur - 0.05){ ok(); return; }
+            if(ct > 0.3 && !pd){
+              if(Math.abs(ct - lastCt) < 0.05){
+                stable++;
+                /* 连续 >= 8 个 tick（约 1.2s）没前进 → 句尾结束 */
+                if(stable >= 8){ ok(); return; }
+              }else{
+                stable = 0; lastCt = ct;
+              }
+            }else{
+              lastCt = ct; stable = 0;
+              if(pd && ct > 0.05){
+                /* 中途被浏览器挂起 → 尝试续播，不判完 */
+                try{ var pp = a.play(); if(pp && pp.catch) pp.catch(function(){}); }catch(e){}
+              }
+            }
+          }catch(e){}
+        }, 150);
+
+        /* 硬兜底：按词数估算的最长时长到了 → ok（防极端情况卡） */
+        var wc = (String(sen).match(/[A-Za-z]+/g)||[]).length;
+        var maxMs = Math.max(15000, Math.min(60000, wc * 560/((st.rate||1)) + 6000));
+        tMax = setTimeout(function(){
+          if(settled || !alive()) return;
+          ok();
+        }, maxMs);
+      }
+
+      try{
+        if(a.__readyProm && a.readyState === 0){ a.__readyProm.then(attempt, attempt); }
+        else{ attempt(); }
+      }catch(e){ fail(); }
+    })(0);
+  };
+
+  /* ---- 重新实现 _speakOneSentence（双语跟读用，带 onStart 回调 + token 校验） ---- */
+  window._speakOneSentence = function(text, variant, rate, onEnd, onStart){
+    variant = variant || 'us';
+    var raw = String(text||'').trim();
+    if(!onEnd){ try{ if(typeof window.speakEnglish === 'function') window.speakEnglish(raw, variant, rate); }catch(e){} return; }
+    if(!raw){ if(onStart){ try{ onStart(); }catch(e){} } setTimeout(onEnd, 0); return; }
+    var r = rateOf(rate);
+    var urls = [];
+    try{ urls = _fxSources(raw, variant); }catch(e){ urls = []; }
+    var list = srcOrder(urls);
+    /* 双语跟读的 token：用当前 _longPlay 的 token（如果有的话） */
+    var myTok = (_longPlay && _longPlay.__tok) || '_solo_';
+    var started = false;
+    function fireStart(){ if(started) return; started = true; if(onStart){ try{ onStart(); }catch(e){} } }
+    function alive(){
+      if(!_longPlay) return true; /* 点单句播放时没有 _longPlay 也允许播完 */
+      return _longPlay.__tok === myTok && !_longPlay.__dead && !_longPlay._stopped;
+    }
+
+    (function trySrc(k){
+      if(!alive()) return;
+      if(k >= list.length){
+        ttsSentence(raw, {variant: variant, rate: r}, myTok, fireStart, function(){ if(alive() && onEnd){ try{ onEnd(); }catch(e){} } });
+        return;
+      }
+      var a = getEl(list[k]);
+      if(!a){ trySrc(k+1); return; }
+      if(a.__err && a.readyState === 0){ trySrc(k+1); return; }
+
+      var settled = false;
+      var t1 = null, t2 = null, tH = null, tMax = null, stopWatch = null;
+      var lastCt = -1, stable = 0;
+
+      function cleanup(){
+        if(t1){ clearTimeout(t1); t1 = null; }
+        if(t2){ clearTimeout(t2); t2 = null; }
+        if(tH){ clearInterval(tH); tH = null; }
+        if(tMax){ clearTimeout(tMax); tMax = null; }
+        if(stopWatch){ try{ stopWatch(); }catch(e){} stopWatch = null; }
+        try{ a.onended = null; a.onerror = null; }catch(e){}
+      }
+      function finish(){
+        if(settled) return; settled = true; cleanup();
+        if(alive() && onEnd){ try{ onEnd(); }catch(e){} }
+      }
+      function nextSrc(){
+        if(settled) return; settled = true; cleanup();
+        try{ a.pause(); }catch(e){}
+        trySrc(k+1);
+      }
+
+      a.onended = finish; a.onerror = nextSrc;
+
+      function attempt(){
+        if(settled || !alive()) return;
+        try{
+          lastCt = -1; stable = 0;
+          try{ a.pause(); }catch(e){}
+          try{ a.currentTime = 0; }catch(e){}
+          try{ a.playbackRate = r; }catch(e){}
+          window._fxPlayingEl = a;
+          stopWatch = onAudible(a, fireStart);
+          var p = a.play(); if(p && p.catch) p.catch(function(){ nextSrc(); });
+        }catch(e){ nextSrc(); return; }
+
+        t1 = setTimeout(function(){
+          if(settled || !alive()) return;
+          var ct = 0; try{ ct = a.currentTime || 0; }catch(e){}
+          if(ct > 0.05) return;
+          var nx = list[k+1]; var e2 = nx ? ((window._fxElemMap||{})[nx]) : null;
+          if(e2 && !e2.__err && e2.readyState >= 3){ nextSrc(); }
+        }, 2500);
+        t2 = setTimeout(function(){
+          if(settled || !alive()) return;
+          var ct = 0; try{ ct = a.currentTime || 0; }catch(e){}
+          if(ct > 0.05) return;
+          nextSrc();
+        }, 5000);
+        tH = setInterval(function(){
+          if(settled || !alive()) return;
+          try{
+            if(a.ended === true){ finish(); return; }
+            var dur = 0; try{ dur = a.duration || 0; if(!isFinite(dur)) dur = 0; }catch(e){ dur = 0; }
+            var ct = 0; try{ ct = a.currentTime || 0; }catch(e){}
+            var pd = false; try{ pd = !!a.paused; }catch(e){}
+            if(dur > 0.4 && ct >= dur - 0.05){ finish(); return; }
+            if(ct > 0.3 && !pd){
+              if(Math.abs(ct - lastCt) < 0.05){
+                stable++; if(stable >= 8){ finish(); return; }
+              }else{ stable = 0; lastCt = ct; }
+            }else{
+              lastCt = ct; stable = 0;
+              if(pd && ct > 0.05){ try{ var pp = a.play(); if(pp && pp.catch) pp.catch(function(){}); }catch(e){} }
+            }
+          }catch(e){}
+        }, 150);
+        var wc = (String(raw).match(/[A-Za-z]+/g)||[]).length;
+        var maxMs = Math.max(15000, Math.min(60000, wc*560/((r||1)) + 6000));
+        tMax = setTimeout(function(){ if(settled || !alive()) return; finish(); }, maxMs);
+      }
+
+      try{
+        if(a.__readyProm && a.readyState === 0){ a.__readyProm.then(attempt, attempt); }
+        else{ attempt(); }
+      }catch(e){ nextSrc(); }
+    })(0);
+  };
+
+  /* ---- speakEnglish（点单词/单句）：也走彻底停播 ---- */
+  window.speakEnglish = function(text, variant, rateArg){
+    variant = variant || 'us';
+    var raw = String(text||'').trim();
+    if(!raw) return;
+    var rate = (rateArg && rateArg > 0) ? rateArg : rateOf(0);
+    _killAllAudioNow();
+    var urls = [];
+    try{ urls = _fxSources(raw, variant); }catch(e){}
+    var list = srcOrder(urls);
+    window._fxPlayUrls = function(urls2, rate2, onEnd, onStart){
+      var list2 = srcOrder(urls2);
+      var r2 = rateOf(rate2);
+      var started2 = false;
+      function fireStart2(){ if(started2) return; started2 = true; if(onStart){ try{ onStart(); }catch(e){} } }
+      (function trySrc2(k){
+        if(k >= list2.length){ if(onEnd){ try{ onEnd('tts'); }catch(e){} } return; }
+        var a = getEl(list2[k]);
+        if(!a){ trySrc2(k+1); return; }
+        if(a.__err && a.readyState === 0){ trySrc2(k+1); return; }
+        var settled = false, ti1=null, ti2=null, tiH=null, tiMax=null, sw=null;
+        var lastCt = -1, stable = 0;
+        function cleanup2(){
+          if(ti1){clearTimeout(ti1);ti1=null;} if(ti2){clearTimeout(ti2);ti2=null;}
+          if(tiH){clearInterval(tiH);tiH=null;} if(tiMax){clearTimeout(tiMax);tiMax=null;}
+          if(sw){try{sw();}catch(e){}sw=null;}
+          try{a.onended=null;a.onerror=null;}catch(e){}
+        }
+        function done2(res){
+          if(settled) return; settled = true; cleanup2();
+          if(res === 'ok'){ if(onEnd){ try{ onEnd('ok'); }catch(e){} } return; }
+          try{a.pause();}catch(e){} trySrc2(k+1);
+        }
+        a.onended = function(){ done2('ok'); };
+        a.onerror = function(){ done2('err'); };
+        try{
+          try{a.pause();}catch(e){} try{a.currentTime=0;}catch(e){}
+          try{a.playbackRate = r2;}catch(e){}
+          window._fxPlayingEl = a;
+          sw = onAudible(a, fireStart2);
+          var p = a.play(); if(p && p.catch) p.catch(function(){ done2('err'); });
+        }catch(e){ done2('err'); return; }
+        ti1 = setTimeout(function(){
+          if(settled) return; var ct=0; try{ct=a.currentTime||0;}catch(e){}
+          if(ct>0.05) return;
+          var nx=list2[k+1]; var e2=nx?((window._fxElemMap||{})[nx]):null;
+          if(e2 && !e2.__err && e2.readyState>=3){ done2('err'); }
+        }, 2500);
+        ti2 = setTimeout(function(){
+          if(settled) return; var ct=0; try{ct=a.currentTime||0;}catch(e){}
+          if(ct>0.05) return; done2('err');
+        }, 5000);
+        tiH = setInterval(function(){
+          if(settled) return;
+          try{
+            if(a.ended===true){ done2('ok'); return; }
+            var dur=0; try{dur=a.duration||0; if(!isFinite(dur)) dur=0;}catch(e){}
+            var ct=0; try{ct=a.currentTime||0;}catch(e){}
+            var pd=false; try{pd=!!a.paused;}catch(e){}
+            if(dur>0.4 && ct>=dur-0.05){ done2('ok'); return; }
+            if(ct>0.3 && !pd){
+              if(Math.abs(ct-lastCt)<0.05){ stable++; if(stable>=8){ done2('ok'); return; } }
+              else{ stable=0; lastCt=ct; }
+            }else{ lastCt=ct; stable=0; if(pd&&ct>0.05){ try{var pp=a.play(); if(pp&&pp.catch) pp.catch(function(){});}catch(e){} } }
+          }catch(e){}
+        }, 150);
+        var wc=(String(list2[k]||'').length/6)|0;
+        var mx=Math.max(8000, Math.min(30000, wc*560+4000));
+        tiMax = setTimeout(function(){ if(settled) return; done2('ok'); }, mx);
+      })(0);
+    };
+    window._fxPlayUrls(list, rate, function(res){
+      if(res === 'tts'){
+        /* TTS 兜底：不用 ttsSentence（它依赖长播 token），直接简单 speak */
+        try{
+          if(!('speechSynthesis' in window)||!('SpeechSynthesisUtterance' in window)) return;
+          speechSynthesis.cancel();
+          var u = new SpeechSynthesisUtterance(raw);
+          u.lang = (variant === 'uk') ? 'en-GB' : 'en-US';
+          u.rate = rate;
+          try{
+            var vs = speechSynthesis.getVoices()||[];
+            var key = (variant==='uk')?'en-gb':'en-us';
+            for(var ii=0; ii<vs.length; ii++){ if(String(vs[ii].lang||'').toLowerCase().indexOf(key)>=0){ u.voice=vs[ii]; break; } }
+          }catch(e){}
+          var iv = setInterval(function(){ try{speechSynthesis.resume();}catch(e){} }, 2000);
+          u.onend = function(){ clearInterval(iv); };
+          u.onerror = function(){ clearInterval(iv); };
+          speechSynthesis.speak(u);
+        }catch(e){}
+      }
+    });
+  };
+
+  /* ---- 重新实现双语跟读链播：带 token 校验 ---- */
+  window._chainBilingual = function(pairs, idx, total){
+    var st = _longPlay;
+    var myTok = st ? st.__tok : '_bi_';
+    function alive(){ return _longPlay && _longPlay.__tok === myTok && !_longPlay.__dead && !_longPlay._stopped && !_longPlay.paused; }
+    if(idx >= total){
+      try{ reciteClearSentHighlight(); }catch(e){}
+      var bar0 = document.getElementById('recitePlayBar'); if(bar0) bar0.style.width = '100%';
+      var bp = document.getElementById('btnRecitePause'); if(bp) bp.style.display = 'none';
+      var tip2 = document.getElementById('recitePlayTip'); if(tip2) tip2.textContent = '✅ 双语跟读完毕 · 点「🔁再听」重播';
+      try{ toast('✅ 双语跟读完毕'); }catch(e){}
+      try{ if(_longPlay && _longPlay.__tok === myTok){ _longPlay.__dead = true; _longPlay._stopped = true; _longPlay = null; window._longPlay = null; } }catch(e){}
+      return;
+    }
+    if(!alive()) return;
+    if(st.paused){ setTimeout(function(){ window._chainBilingual(pairs, idx, total); }, 150); return; }
+    var en = String((pairs[idx] && pairs[idx].en) || '').trim();
+    var zh = String((pairs[idx] && pairs[idx].zh) || '').trim();
+    function hl(){
+      if(!alive()) return;
+      try{ if(typeof reciteHighlightSentence === 'function') reciteHighlightSentence(idx); }catch(e){}
+      var bar1 = document.getElementById('recitePlayBar');
+      if(bar1) bar1.style.width = Math.min(100, Math.round((idx+1)/total*100)) + '%';
+    }
+    function goNext(){ if(!alive()) return; setTimeout(function(){ if(alive()) window._chainBilingual(pairs, idx+1, total); }, 0); }
+    function readZh(){
+      if(!alive()) return;
+      if(zh){ try{ window._speakZhSentence(zh, goNext); }catch(e){ goNext(); } } else { goNext(); }
+    }
+    if(!en){ hl(); readZh(); return; }
+    window._speakOneSentence(en, 'us', _reciteRate, readZh, hl);
+  };
+
+  /* ---- 中文单句兜底：也带句尾停滞处理（复用 V3.4.5 逻辑 + cancel 加固） ---- */
+  window._speakZhSentence = function(s, onEnd){
+    var hasAPI = ('speechSynthesis' in window) && ('SpeechSynthesisUtterance' in window);
+    if(!hasAPI){ if(onEnd) onEnd(); return; }
+    function pickZh(){
+      var vs = window.speechSynthesis.getVoices()||[];
+      var k;
+      for(k=0;k<vs.length;k++){ var l=(vs[k].lang||'').toLowerCase(); if(l.indexOf('zh')===0 && vs[k].localService) return vs[k]; }
+      for(k=0;k<vs.length;k++){ var l2=(vs[k].lang||'').toLowerCase(); if(l2.indexOf('zh-cn')>=0 || l2==='zh') return vs[k]; }
+      for(k=0;k<vs.length;k++){ var l3=(vs[k].lang||'').toLowerCase(); if(l3.indexOf('zh')===0) return vs[k]; }
+      return null;
+    }
+    try{ speechSynthesis.cancel(); }catch(e){}
+    var u = new SpeechSynthesisUtterance(String(s||''));
+    u.lang = 'zh-CN';
+    u.rate = (typeof _reciteRate === 'number' && _reciteRate > 0) ? _reciteRate : 1.0;
+    u.pitch = 1.0;
+    var v = pickZh(); if(v) u.voice = v;
+    var est = Math.max(1500, Math.min(15000, String(s||'').length*260 + 800));
+    var gone = false, to = null, hb = null;
+    function fin(){ if(gone) return; gone = true; if(to){clearTimeout(to);to=null;} if(hb){clearInterval(hb);hb=null;} try{speechSynthesis.resume();}catch(e){} if(onEnd) onEnd(); }
+    u.onend = fin; u.onerror = fin;
+    to = setTimeout(fin, est);
+    hb = setInterval(function(){ if(gone){clearInterval(hb);return;} try{speechSynthesis.resume();}catch(e){} }, 2000);
+    try{
+      speechSynthesis.speak(u);
+      setTimeout(function(){try{speechSynthesis.resume();}catch(e){}}, 60);
+    }catch(e){ fin(); }
+  };
+
+  /* ---- 中文整段：也加 token 作废机制 ---- */
+  window._speakZhAt = function(i){
+    var zl = _zhLongPlay;
+    if(!zl) return;
+    var myTok = zl.__tok || ('_zh_' + i);
+    function alive(){ return _zhLongPlay && _zhLongPlay.__tok === myTok && !_zhLongPlay.__dead; }
+    if(i >= zl.sents.length){
+      var cb = zl.onEnd;
+      zl.__dead = true; _zhLongPlay = null; window._zhLongPlay = null;
+      try{ speechSynthesis.cancel(); }catch(e){}
+      if(cb){ try{ cb(); }catch(e){} }
+      return;
+    }
+    if(!alive()) return;
+    zl.idx = i;
+    var s = zl.sents[i];
+    if(!s){ setTimeout(function(){ if(alive()) window._speakZhAt(i+1); }, 0); return; }
+    var hasAPI = ('speechSynthesis' in window) && ('SpeechSynthesisUtterance' in window);
+    if(!hasAPI){
+      if(zl.onSentence){ try{ zl.onSentence(i); }catch(e){} }
+      var cb2 = zl.onEnd; zl.__dead = true; _zhLongPlay = null;
+      if(cb2){ try{ cb2(); }catch(e){} }
+      return;
+    }
+    function pickZh(){
+      var vs = window.speechSynthesis.getVoices()||[];
+      var k;
+      for(k=0;k<vs.length;k++){ var l=(vs[k].lang||'').toLowerCase(); if(l.indexOf('zh')===0 && vs[k].localService) return vs[k]; }
+      for(k=0;k<vs.length;k++){ var l2=(vs[k].lang||'').toLowerCase(); if(l2.indexOf('zh-cn')>=0 || l2==='zh') return vs[k]; }
+      for(k=0;k<vs.length;k++){ var l3=(vs[k].lang||'').toLowerCase(); if(l3.indexOf('zh')===0) return vs[k]; }
+      return null;
+    }
+    try{ speechSynthesis.cancel(); }catch(e){}
+    var u = new SpeechSynthesisUtterance(s);
+    u.lang = 'zh-CN';
+    u.rate = (typeof _reciteRate === 'number' && _reciteRate > 0) ? _reciteRate : 1.0;
+    u.pitch = 1.0; u.volume = 1.0;
+    var v = pickZh(); if(v) u.voice = v;
+    zl.utter = u;
+    var moved = false, hb = null, sentTimer = null;
+    function go(){
+      if(moved) return; moved = true;
+      if(sentTimer){ clearTimeout(sentTimer); sentTimer = null; }
+      if(hb){ clearInterval(hb); hb = null; }
+      if(alive() && !zl.paused) setTimeout(function(){ if(alive()) window._speakZhAt(i+1); }, 0);
+    }
+    u.onstart = function(){ if(alive() && zl.onSentence){ try{ zl.onSentence(i); }catch(e){} } };
+    u.onend = go; u.onerror = go;
+    var chars = String(s||'').length;
+    var est2 = Math.max(2500, Math.min(15000, chars*280 + 1200));
+    sentTimer = setTimeout(go, est2);
+    hb = setInterval(function(){ if(alive()){ try{speechSynthesis.resume();}catch(e){} } }, 2000);
+    try{
+      speechSynthesis.speak(u);
+      setTimeout(function(){try{speechSynthesis.resume();}catch(e){}}, 60);
+    }catch(e){ go(); }
+  };
+
+  /* ---- 包装中文整段启动：分配 token + 彻底静音 ---- */
+  var _origSpeakZhLong = window._speakZhLong;
+  window._speakZhLong = function(zh, opts){
+    _killAllAudioNow();
+    var sents = (typeof splitZhSentences === 'function') ? splitZhSentences(zh) : String(zh||'').split(/\n+/);
+    sents = (sents||[]).filter(function(x){ return String(x||'').trim(); });
+    var zl = {
+      sents: sents, idx: 0, paused: false, __dead: false,
+      onSentence: (opts && opts.onSentence) || null,
+      onEnd: (opts && opts.onEnd) || null,
+      __tok: '_zhlp_' + (++_lpSeq) + '_' + Date.now()
+    };
+    _zhLongPlay = zl; window._zhLongPlay = zl;
+    setTimeout(function(){ window._speakZhAt(0); }, 0);
+  };
+
+  /* ---- 包装三个启动按钮：先彻底静音，下一帧再启动 ---- */
+  var _origReadFull = window.reciteReadFull;
+  window.reciteReadFull = function(variant){
+    _killAllAudioNow();
+    var args = arguments;
+    setTimeout(function(){
+      try{ _origReadFull.apply(window, args); }catch(e){
+        /* 兜底：如果原函数因 _killAllAudioNow 之后的状态异常没跑起来，再手动跑 */
+        var t = STATE.currentTopic;
+        if(!t || t.lang !== 'en') return;
+        var sents = splitEnSentences(t.content);
+        var total = sents.length;
+        _showReciteControls();
+        var tip = document.getElementById('recitePlayTip');
+        if(tip) tip.textContent = '🔊 '+(variant==='uk'?'🇬🇧英式':'🇺🇸美式')+'朗读中… 共'+total+'句';
+        reciteClearSentHighlight();
+        toast('🔊 开始'+(variant==='uk'?'🇬🇧英式':'🇺🇸美式')+'整段朗读（共'+total+'句）');
+        _lastRecitePlay = {mode:'en', variant:variant};
+        _speakLong(t.content, variant, _reciteRate, {
+          onSentence: function(i){
+            reciteHighlightSentence(i);
+            var bar = document.getElementById('recitePlayBar');
+            if(bar) bar.style.width = Math.min(100, Math.round((i+1)/total*100))+'%';
+          },
+          onEnd: function(){
+            reciteClearSentHighlight();
+            var bar = document.getElementById('recitePlayBar'); if(bar) bar.style.width='100%';
+            var bp = document.getElementById('btnRecitePause'); if(bp) bp.style.display='none';
+            var tip2 = document.getElementById('recitePlayTip'); if(tip2) tip2.textContent='✅ 朗读完毕 · 点「🔁再听」重播';
+            toast('✅ 英文朗读完毕');
+          }
+        });
+      }
+    }, 30);
+  };
+
+  var _origReadBilingual = window.reciteReadBilingual;
+  window.reciteReadBilingual = function(){
+    _killAllAudioNow();
+    var args = arguments;
+    setTimeout(function(){ try{ _origReadBilingual.apply(window, args); }catch(e){} }, 30);
+  };
+  var _origReadChinese = window.reciteReadChinese;
+  window.reciteReadChinese = function(){
+    _killAllAudioNow();
+    var args = arguments;
+    setTimeout(function(){ try{ _origReadChinese.apply(window, args); }catch(e){} }, 30);
+  };
+
+  /* ---- 版本徽标更新到 V3.4.6 ---- */
+  try{
+    var APP_VERSION = 'V3.4.6';
+    window.APP_VERSION = APP_VERSION;
+    var bs = document.querySelectorAll('.ver-badge,.version-badge,#verBadge');
+    for(var i = 0; i < bs.length; i++){ bs[i].textContent = 'V3.4.6'; }
+    var stamp = document.getElementById('buildStamp');
+    if(stamp){ stamp.textContent = '构建 2026-10-25 · V3.4.6（抢跑/双音/卡句修复）'; }
+    /* 替换设置页版本信息 */
+    var vi = document.getElementById('verInfo');
+    if(vi){ vi.innerHTML = '当前版本：<b>V3.4.6</b>（构建 2026-10-25 · 抢跑/双音/卡句专项修复）'; }
+  }catch(e){}
+
+  try{ if(window.console && console.log) console.log('[V3.4.6] 抢跑/双音/卡句修复补丁已生效'); }catch(e){}
 })();
 
 </script>
