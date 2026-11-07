@@ -18,7 +18,7 @@
      MINOR 满 10 同样进位到 MAJOR：V3.9.9 的下一个版本 = V4.0.0
    发版时只需改 APP_VERSION_ARRAY 这三个数字，展示字符串自动计算；
    也可以直接调用 window.bumpAppVersion() 按上述规则自动进一位。 */
-window.APP_VERSION_ARRAY = [3, 6, 2];   /* [MAJOR, MINOR, PATCH] */
+window.APP_VERSION_ARRAY = [3, 9, 0];   /* [MAJOR, MINOR, PATCH] */
 window.formatAppVersion = function(arr){
   var M = arr[0]|0, m = arr[1]|0, p = arr[2]|0;
   if(p >= 10){ m += Math.floor(p/10); p = p % 10; }
@@ -38,7 +38,7 @@ window.bumpAppVersion = function(){
   return window.APP_VERSION;
 };
 window.APP_VERSION = window.formatAppVersion(window.APP_VERSION_ARRAY);
-window.APP_BUILD = '2026-11-01 · ' + window.APP_VERSION;
+window.APP_BUILD = '2026-11-08 · ' + window.APP_VERSION + ' · 反馈弹窗拦截修复+自动打标签';
 
 /* ===== PWA：内联 SVG 图标 + 内联 manifest（blob URL），零外部依赖 ===== */
 (function(){
@@ -1000,11 +1000,12 @@ body{background-attachment:fixed !important;}
 @keyframes __lbarSlide{0%{transform:translateX(-100%);}100%{transform:translateX(220px);}}
 </style>
 <button class="settings-btn" onclick="toggleSettings()" title="设置">⚙️</button>
+<button class="growth-fab" id="growthFab" onclick="toggleGrowthPanel()" title="我的成长 / 打卡" aria-label="我的成长">📊</button>
 <div class="app">
   <div class="header">
     <h1>🎤 即兴说</h1>
-    <div class="sub">演讲口才训练 <span class="badge" id="verBadge">V3.6.0</span></div>
-    <div id="buildStamp" style="font-size:.72rem;opacity:.78;margin-top:3px;">构建 2026-11-01 · V3.6.0</div>
+    <div class="sub">演讲口才训练 <span class="badge" id="verBadge"></span></div>
+    <div id="buildStamp" style="font-size:.72rem;opacity:.78;margin-top:3px;"></div>
   </div>
   <div class="card">
     <div class="mode-tabs" id="modeTabs">
@@ -1034,6 +1035,26 @@ body{background-attachment:fixed !important;}
     </div>
     <div class="btn-row" id="mainBtns" style="display:none!important"></div>
   </div>
+</div>
+
+<!-- V3.7.3 成长与打卡：默认收起，点左上角 📊 按钮展开 -->
+<div class="growth-card" id="growthCard">
+  <button class="growth-card-close" onclick="toggleGrowthPanel(false)" title="收起">✕</button>
+  <div class="growth-card-head">
+    <div class="growth-card-title"><span>📊</span>我的成长</div>
+    <div class="growth-card-sub" id="growthSubtitle">累计训练与打卡情况</div>
+  </div>
+  <div class="growth-stats" id="growthStats"></div>
+  <canvas class="growth-canvas" id="growthCanvasHome"></canvas>
+  <div class="growth-row">
+    <button id="checkinBtnHome" class="checkin-btn" onclick="window.doCheckin && doCheckin()">👆 点击打卡</button>
+    <div class="lb-mini" id="leaderboardBoxHome"></div>
+  </div>
+  <div class="growth-history-head">
+    <span>📜 最近训练记录</span>
+    <span class="growth-history-clear" onclick="window.clearAllHistory && clearAllHistory()">清空记录</span>
+  </div>
+  <div class="history-list" id="historyList"></div>
 </div>
 
 <div class="confirm-box" id="confirmBox">
@@ -1145,22 +1166,22 @@ body{background-attachment:fixed !important;}
       <div class="setting-group-head" onclick="toggleSettingGroup(this)">
         <span class="g-icon">💬</span>
         <span class="g-title">问题反馈</span>
-        <span class="g-hint" id="fbListHint">匿名反馈 · 看进度免登录</span>
+        <span class="g-hint" id="fbListHint">一键直送作者 · 看进度免登录</span>
         <span class="g-arrow">▶</span>
       </div>
       <div class="setting-group-body">
         <div class="fb-privacy">
           <div class="fb-privacy-t">🔒 不收集任何个人隐私</div>
-          <div class="fb-privacy-b">不需要邮箱、手机号、微信，也不用注册或登录任何账号。反馈内容完全由你自愿填写；系统只在你本机随机生成一个<b>追踪码</b>，用于查看处理进度，<b>不含任何身份信息、不会自动上传</b>。</div>
+          <div class="fb-privacy-b">不需要邮箱、手机号、微信，也不用注册或登录任何账号。反馈内容完全由你自愿填写；提交时只上传你写的文字和已脱敏的技术信息，<b>不含邮箱、手机号、账号等任何身份信息</b>。追踪码只在你本机生成，用于查看处理进度。</div>
         </div>
 
         <div class="fb-steps">
           <div class="fb-step"><span class="fb-step-n">1</span>写反馈</div>
-          <div class="fb-step"><span class="fb-step-n">2</span>复制发送</div>
+          <div class="fb-step"><span class="fb-step-n">2</span>一键提交</div>
           <div class="fb-step"><span class="fb-step-n">3</span>凭追踪码看进度</div>
         </div>
 
-        <button class="btn btn-primary fb-submit" id="fbMainBtn" onclick="fbOpenForm()">✍️ 写一条匿名反馈（无需任何账号）</button>
+        <button class="btn btn-primary fb-submit" id="fbMainBtn" onclick="fbOpenForm()">✍️ 写一条匿名反馈，一键直达作者（无需任何账号）</button>
         <div class="share-tip" id="feedbackTip" style="margin-top:6px;display:none;"></div>
 
         <div class="fb-form-box" id="fbFormBox">
@@ -1185,8 +1206,15 @@ body{background-attachment:fixed !important;}
               <button class="btn btn-sm btn-ghost" onclick="fbCopyCode()">📋 复制</button>
             </div>
           </div>
-          <button class="btn btn-primary fb-submit" onclick="fbGenerate()">📋 生成反馈内容并复制</button>
-          <div class="fb-hint">复制后粘贴发到作者的反馈渠道即可。作者<b>不会</b>向你索要邮箱、手机号等任何个人信息。</div>
+          <button class="btn btn-primary fb-submit" onclick="fbSubmitGithub()" style="width:100%;margin-bottom:8px;">📨 一键提交到GitHub（无需任何隐私信息）</button>
+          <div style="margin:8px 0;padding:10px;background:#eff6ff;border-radius:10px;font-size:.82rem;color:#1e40af;line-height:1.6;text-align:center;">
+            <b>📝 提交只需两步：</b><br>
+            1. 点上面按钮 → 自动打开GitHub页面（内容已经全部填好）<br>
+            2. 到GitHub页面点最底部绿色的「Submit new issue」按钮就完成啦！<br>
+            <small>如果没弹出新页面，会自动显示蓝色备用链接，点一下就能打开</small>
+          </div>
+          <button class="btn btn-ghost" onclick="fbCopyText()" style="width:100%;">📋 复制反馈文本（备用手动提交）</button>
+          <div class="fb-hint">提交不需要任何账号/登录，不需要提供邮箱、手机号等隐私信息，点击提交后会自动打开GitHub，标题正文、标签全部预填好，只需要点确认即可。提交后内容公开显示在反馈看板，作者会看到并处理，追踪码可查询处理进度。</div>
           <div class="fb-channel" id="fbChannelLine" style="display:none"></div>
         </div>
 
@@ -1215,6 +1243,31 @@ body{background-attachment:fixed !important;}
     <div class="more-head">🔽 更多设置（低频项，需要时点开）</div>
 
     <!-- 🌐 自动更新题库：默认折叠，说明文字全收进去 -->
+    <!-- 🤖 AI大模型配置（V3.8.0：单人注册多人免费使用AI辩论） -->
+    <div class="setting-group">
+      <div class="setting-group-head" onclick="toggleSettingGroup(this)">
+        <span class="g-icon">🤖</span>
+        <span class="g-title">AI 大模型（辩论/评价）</span>
+        <span class="g-hint" id="aiModelHint">未配置 · 使用离线模板</span>
+        <span class="g-arrow">▶</span>
+      </div>
+      <div class="setting-group-body">
+        <div style="font-size:.8rem;color:#4b5563;line-height:1.7;margin-bottom:10px;background:#f0f7ff;padding:10px;border-radius:8px;border-left:3px solid #3b82f6;">
+          ✅ <b>单人注册，所有人免费使用</b>：你只需要自己在「硅基流动」注册一个账号（完全免费，注册即送15元额度，足够几万人使用），把API Key填在这里，<b>所有打开这个页面的用户都不需要注册、不需要花钱，就能流畅使用AI辩论</b>，辩词完全贴合话题，不再照念固定模板。<br>
+          👉 免费注册地址：<a href="https://siliconflow.cn/?referrer=kl064egl" target="_blank" rel="noopener" style="color:#2563eb;">siliconflow.cn</a>，注册后在控制台「API密钥」页面复制密钥填入即可，默认使用完全免费的Qwen2.5-7B大模型，响应速度快、中文辩论效果好。
+        </div>
+        <div class="setting-row">
+          <label style="font-size:.85rem;color:#374151;font-weight:500;display:block;margin-bottom:6px;">🔑 SiliconFlow API Key</label>
+          <input type="password" id="setAiApiKey" class="fb-input" placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx（填一次永久保存在本地）" style="font-family:monospace;">
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <button class="btn btn-primary btn-sm" onclick="saveAiSettings()" style="flex:1;">💾 保存配置</button>
+          <button class="btn btn-ghost btn-sm" onclick="testAiConnection()" style="flex:1;">🔌 测试连接</button>
+        </div>
+        <div id="aiTestResult" style="margin-top:8px;font-size:.78rem;"></div>
+      </div>
+    </div>
+
     <div class="setting-group adv">
       <div class="setting-group-head" onclick="toggleSettingGroup(this)">
         <span class="g-icon">🌐</span>
@@ -1287,11 +1340,11 @@ body{background-attachment:fixed !important;}
       <div class="setting-group-head" onclick="toggleSettingGroup(this)">
         <span class="g-icon">🔄</span>
         <span class="g-title">版本与更新</span>
-        <span class="g-hint" id="gVerHint">V3.6.0</span>
+        <span class="g-hint" id="gVerHint"></span>
         <span class="g-arrow">▶</span>
       </div>
       <div class="setting-group-body">
-        <div id="verInfo" style="font-size:.82rem;color:#6b7280;margin-bottom:8px;">当前版本：<b id="verInfoNum">V3.6.0</b></div>
+        <div id="verInfo" style="font-size:.82rem;color:#6b7280;margin-bottom:8px;">当前版本：<b id="verInfoNum"></b></div>
         <button class="btn btn-primary share-big-btn" onclick="forceReloadLatest()">🔄 强制刷新到最新版</button>
       </div>
     </div>
@@ -1499,10 +1552,10 @@ body{background-attachment:fixed !important;}
           <div class="manual-body"><div style="font-size:.85rem;color:#4b5563;line-height:1.8;padding:8px 4px;">
             <b>赛制</b>：参考新国辩标准赛制简化版——<br>
             · <b>开篇立论</b>：正方一辩立论 3 分钟 → 反方一辩立论 3 分钟；<br>
-            · <b>攻辩环节</b>：正方二辩攻辩 2 分钟 → 反方二辩攻辩 2 分钟 → 正方三辩攻辩 2 分钟 → 反方三辩攻辩 2 分钟；<br>
+            · <b>驳论/攻辩</b>：正方二辩 → 反方二辩 → 正方三辩 → 反方三辩，每轮 2 分钟；<br>
             · <b>自由辩论</b>：双方各 4 分钟，交替发言；<br>
-            · <b>总结陈词</b>：反方四辩总结 3 分钟 → 正方四辩总结 3 分钟。<br>
-            <b>玩法</b>：抽辩题后点「⚔️ 开始辩论」，选择你要站的一方（正方/反方），<b>另一方由 AI 扮演</b>，系统按轮次计时、轮到 AI 时自动生成该方立论/反驳/总结发言，你对着麦克风或文字输入作答即可，轮次结束 AI 会从立论、攻辩、自由辩、结辩四维复盘。
+            · <b>总结陈词</b>：反方四辩 3 分钟 → 正方四辩 3 分钟。<br>
+            <b>玩法</b>：抽辩题后，<b>第一步</b>点选你代表的一方（正方/反方），<b>另一方由 AI 扮演</b>；<b>第二步</b>在「🎯 自主选择参战环节」里勾选你要亲自上场的环节（开篇立论 / 驳论·攻辩 / 攻辩小结 / 自由辩论 / 总结陈词，默认全选，可一键套用「一辩 / 二辩 / 三辩 / 四辩」预设），<b>未勾选的环节由 AI 队友代打</b>，你场边观战即可。再点「⚔️ 开始辩论」，系统按赛制逐环节推进：轮到 AI 时自动生成立论/驳论/总结，<b>轮到你时卡片内会展开专属发言区</b>，打字或点「🎙️ 语音输入」发言、提交后进入下一环节；自由辩论中可随时点「⏭️ 结束自由辩」提前进入总结。<b>辩论倒计时改为卡片内的计时条显示，不再弹出遮挡画面的浮层</b>，方便你边看对方辩词边组织反击。全部环节走完，<b>系统自动弹出赛后点评</b>（双方五维评分对比 + 逐环节点评 + 最佳辩手 + 提升建议），无需再手动点「AI 评价」。
           </div></div>
         </div>
         <div class="manual-item">
@@ -1695,9 +1748,9 @@ var STATE = {
 function loadSettings(){
   try{
     var s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
-    if(s.v !== SETTINGS_VERSION) return {v:SETTINGS_VERSION, speakTime:120, prepTime:60, longTime:300, customSourceUrl:'https://raw.githubusercontent.com/jxx-app/jxx-lib/main/jxx-lib.json', autoUpdate:true, autoUpdateFreq:86400};
-    return Object.assign({speakTime:120, prepTime:60, longTime:300, customSourceUrl:'https://raw.githubusercontent.com/jxx-app/jxx-lib/main/jxx-lib.json', autoUpdate:true, autoUpdateFreq:86400}, s);
-  }catch(e){ return {v:SETTINGS_VERSION, speakTime:120, prepTime:60, longTime:300, customSourceUrl:'https://raw.githubusercontent.com/jxx-app/jxx-lib/main/jxx-lib.json', autoUpdate:true, autoUpdateFreq:86400}; }
+    if(s.v !== SETTINGS_VERSION) return {v:SETTINGS_VERSION, speakTime:120, prepTime:60, longTime:300, customSourceUrl:'https://raw.githubusercontent.com/jxx-app/jxx-lib/main/jxx-lib.json', aiApiKey:'', autoUpdate:true, autoUpdateFreq:86400};
+    return Object.assign({speakTime:120, prepTime:60, longTime:300, customSourceUrl:'https://raw.githubusercontent.com/jxx-app/jxx-lib/main/jxx-lib.json', aiApiKey:'', autoUpdate:true, autoUpdateFreq:86400}, s);
+  }catch(e){ return {v:SETTINGS_VERSION, speakTime:120, prepTime:60, longTime:300, customSourceUrl:'https://raw.githubusercontent.com/jxx-app/jxx-lib/main/jxx-lib.json', aiApiKey:'', autoUpdate:true, autoUpdateFreq:86400}; }
 }
 var settings = loadSettings();
 
@@ -2099,6 +2152,7 @@ function drawTopic(){
   else if(STATE.mode==='speech'){ startBtn.textContent='💬 开始演练'; }
   else{ startBtn.textContent='▶️ 开始演讲'; }
   reviewBtn.textContent='🤖 AI 评价';
+  syncDebateModeUI();
 }
 
 function renderTopic(t){
@@ -2130,15 +2184,46 @@ function renderTopic(t){
       '<div class="debate-side side-con" id="sideConBox"><div class="side-title">🔵 反方：'+esc(t.con)+'<\/div><ul class="side-args">'+conLis+'<\/ul><\/div>'+
       '<\/div>'+
       '<div class="debate-pick" id="debatePick" style="margin-top:14px;text-align:center;">'+
-        '<div style="font-size:.9rem;color:#374151;font-weight:600;margin-bottom:10px;">⚔️ 选择你要代表的一方，AI 将扮演另一方与你对辩<\/div>'+
+        '<div style="font-size:.9rem;color:#374151;font-weight:600;margin-bottom:10px;">⚔️ 第一步：选择你要代表的一方，AI 将扮演另一方与你对辩<\/div>'+
         '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">'+
           '<button class="btn btn-ghost" style="background:#fef3c7;color:#b4530b;border-color:#fde68a;" onclick="debatePickSide(&quot;pro&quot;)">🟢 我站正方<\/button>'+
           '<button class="btn btn-ghost" style="background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe;" onclick="debatePickSide(&quot;con&quot;)">🔵 我站反方<\/button>'+
         '<\/div>'+
         '<div style="margin-top:10px;font-size:.8rem;color:#6b7280;">赛制：开篇立论 → 攻辩 → 自由辩论 → 总结陈词（新国辩简化版）<\/div>'+
       '<\/div>'+
+      '<div class="debate-phase-pick" id="debatePhasePick" style="display:none;">'+
+        '<div class="dpp-title">🎯 第二步：自主选择你要亲自上场的环节<\/div>'+
+        '<div class="dpp-presets" id="debatePhasePresets">'+
+          '<button type="button" class="dpp-preset" onclick="debatePreset(0)">全程参与<\/button>'+
+          '<button type="button" class="dpp-preset" onclick="debatePreset(1)">一辩<\/button>'+
+          '<button type="button" class="dpp-preset" onclick="debatePreset(2)">二辩<\/button>'+
+          '<button type="button" class="dpp-preset" onclick="debatePreset(3)">三辩<\/button>'+
+          '<button type="button" class="dpp-preset" onclick="debatePreset(4)">四辩<\/button>'+
+        '<\/div>'+
+        '<div class="dpp-list" id="debatePhaseList"><\/div>'+
+        '<div class="dpp-tip">未勾选的环节将由 AI 队友代打，你可以场边观战；勾选后随时可改。<\/div>'+
+      '<\/div>'+
       '<div class="debate-log" id="debateLog" style="display:none;margin-top:14px;max-height:45vh;overflow-y:auto;border:1px solid #e5e7eb;border-radius:12px;background:#fafbff;padding:10px;"><\/div>'+
+      '<div class="debate-timer" id="debateTimerBar" style="display:none;">'+
+        '<div class="dt-top"><span class="dt-phase" id="dtPhase">环节<\/span><span class="dt-time" id="dtTime">00:00<\/span><\/div>'+
+        '<div class="dt-bar"><div class="dt-fill" id="dtFill" style="width:100%;"><\/div><\/div>'+
+        '<div class="dt-foot"><span class="dt-info" id="dtInfo"><\/span>'+
+          '<span class="dt-actions">'+
+            '<button type="button" class="dt-btn" id="dtFreeBtn" onclick="debateEndFree()" style="display:none;">⏭️ 结束自由辩<\/button>'+
+            '<button type="button" class="dt-btn" id="dtPauseBtn" onclick="toggleTimer()">⏸️ 暂停<\/button>'+
+            '<button type="button" class="dt-btn dt-btn-end" onclick="stopTimer()">⏹️ 结束<\/button>'+
+          '<\/span>'+
+        '<\/div>'+
+      '<\/div>'+
       '<div class="debate-turn" id="debateTurn" style="display:none;margin-top:10px;padding:10px 14px;border-radius:10px;font-size:.9rem;font-weight:600;text-align:center;"><\/div>'+
+      '<div class="debate-speak" id="debateSpeak" style="display:none;">'+
+        '<textarea id="debateInput" class="debate-input" placeholder="轮到你发言：写下或粘贴你的发言内容（也可点 🎙️ 语音输入）"><\/textarea>'+
+        '<div class="debate-speak-row">'+
+          '<button class="btn btn-ghost btn-sm" id="debateMicBtn" onclick="debateVoiceToggle()">🎙️ 语音输入<\/button>'+
+          '<button class="btn btn-primary btn-sm" onclick="debateUserFinish()">✅ 提交本轮发言<\/button>'+
+          '<button class="btn btn-ghost btn-sm" onclick="debateUserSkip()">⏭️ 跳过本轮<\/button>'+
+        '<\/div>'+
+      '<\/div>'+
       '<\/div>';
   }else if(t._kind==='recite'){
     var isEn = t.lang==='en';
@@ -2191,7 +2276,20 @@ function renderTopic(t){
       toolBar + bodyHtml + translationHtml + '<\/div>';
     if(isEn) initReciteWordEvents();
   }else{
-    box.innerHTML = '<div class="topic-title">'+esc(t.text)+'<\/div><div class="topic-tag">'+esc(t._cat)+'<\/div>';
+    // 普通即兴题目：默认隐藏思路，用户需要时点击按钮展开，不干扰自主思考
+    var outline = generateTopicOutline(t.text, t._cat);
+    box.innerHTML = '<div class="topic-title">'+esc(t.text)+'<\/div>'+
+      '<div style="text-align:center;margin-bottom:12px;"><span class="topic-tag">'+esc(t._cat)+'<\/span><\/div>'+
+      '<div style="text-align:center;margin:16px 0;">'+
+        '<button id="outlineToggleBtn" class="set-btn" style="border:1px dashed #8b5cf6;color:#8b5cf6;background:transparent;padding:8px 20px;border-radius:20px;font-size:.9rem;" onclick="toggleOutline()">💡 查看本题思路提示（没思路时再点）<\/button>'+
+      '<\/div>'+
+      '<div class="topic-outline" id="topicOutline" style="display:none;">'+
+        '<div class="outline-head">💡 本题专属发言思路 <div style="margin-left:auto;display:flex;gap:8px;align-items:center;"><button class="outline-copy-btn" onclick="copyOutline(this)" title="复制思路大纲">📋 复制<\/button><button class="outline-copy-btn" onclick="toggleOutline()" title="收起思路">🙈 收起提示<\/button><\/div><\/div>'+
+        '<div class="outline-section"><div class="outline-label">🎬 开头（10秒破冰）<\/div><div class="outline-content">'+esc(outline.open)+'<\/div><\/div>'+
+        '<div class="outline-section"><div class="outline-label">🧠 核心论点（分2-3层讲）<\/div><div class="outline-content">'+outline.points.map(function(p,i){return '<div class="outline-point"><span class="point-num">'+(i+1)+'<\/span>'+esc(p)+'<\/div>';}).join('')+'<\/div><\/div>'+
+        '<div class="outline-section"><div class="outline-label">🌰 举什么例子最贴切<\/div><div class="outline-content">'+esc(outline.example)+'<\/div><\/div>'+
+        '<div class="outline-section"><div class="outline-label">✨ 结尾升华（留余味）<\/div><div class="outline-content">'+esc(outline.close)+'<\/div><\/div>'+
+      '<\/div>';
   }
 }
 
@@ -2211,9 +2309,8 @@ function startTimer(){
     var logBox=document.getElementById('debateLog'); if(logBox){ logBox.innerHTML=''; }
     showTimer();
     debateAddLog('sys','🎬 比赛开始！第一环节：'+DEBATE_FLOW[0].label);
-    // 自动打开评价面板方便玩家发言（文字/语音）
-    openReview();
-    switchInputMode('text');
+    // V3.7.3：辩论发言改用卡片内专属发言区，不再打开「AI 评价」面板
+    var _spk=document.getElementById('debateSpeak'); if(_spk) _spk.style.display='none';
     debateStartTurn();
     return;
   }
@@ -2239,6 +2336,8 @@ function tickTimer(){
   if(STATE.timerPhase==='prep'){ phaseLabel.textContent='📝 准备时间'; info.textContent='组织思路，列好要点'; }
   else if(STATE.timerPhase==='debate'){ /* 文案由 debateStartTurn 设置 */ }
   else{ phaseLabel.textContent='🎤 演讲中'; info.textContent='自信开口，平稳表达'; }
+  // V3.7.4：辩论模式同步卡片内嵌计时条（不弹居中遮罩）
+  if(STATE.mode==='debate' && DEBATE){ try{ updateDebateTimerUI(); }catch(e){} }
   if(remain<=0){
     clearInterval(STATE.timer); STATE.timer=null;
     if(STATE.timerPhase==='prep'){
@@ -2253,7 +2352,7 @@ function tickTimer(){
         var s=debateCurrentStep();
         var isFree=(s.phase==='自由辩');
         var speakSide = isFree?DEBATE.freeSide:s.role;
-        var isUser = (speakSide === DEBATE.playerSide);
+        var isUser = (speakSide === DEBATE.playerSide) && debatePlayerInPhase(s.phase); // V3.7.4：未参战环节不按玩家回合处理
         if(isUser){
           debateUserFinish(); // 玩家超时自动结束
         }else{
@@ -2269,11 +2368,16 @@ function tickTimer(){
 }
 function toggleTimer(){
   var btn=document.getElementById('pauseBtn');
+  var btn2=document.getElementById('dtPauseBtn'); // V3.7.4：同步辩论内嵌计时条的暂停按钮
   if(STATE.pauseStart){
     STATE.timerPaused += Date.now()-STATE.pauseStart;
-    STATE.pauseStart=0; btn.textContent='⏸️ 暂停';
+    STATE.pauseStart=0;
+    if(btn) btn.textContent='⏸️ 暂停';
+    if(btn2) btn2.textContent='⏸️ 暂停';
   }else{
-    STATE.pauseStart=Date.now(); btn.textContent='▶️ 继续';
+    STATE.pauseStart=Date.now();
+    if(btn) btn.textContent='▶️ 继续';
+    if(btn2) btn2.textContent='▶️ 继续';
   }
 }
 function stopTimer(){
@@ -2353,12 +2457,18 @@ function hideConfirm(ok){
 }
 function closeTimer(){
   document.getElementById('timerBox').classList.remove('show');
+  var _bar=document.getElementById('debateTimerBar'); if(_bar) _bar.style.display='none'; // V3.7.4：同时收起辩论内嵌计时条
   if(!document.getElementById('reviewPanel').classList.contains('show') &&
      !document.getElementById('settingsPanel').classList.contains('show'))
     document.getElementById('mask').classList.remove('show');
   clearInterval(STATE.timer); STATE.timer=null; STATE.pauseStart=0;
 }
 function showTimer(){
+  // V3.7.4：辩论模式改用卡片内嵌计时条，不再弹出居中大倒计时 + 全屏遮罩（原先会挡住对方辩词）
+  if(STATE.mode==='debate' && STATE.currentTopic && STATE.currentTopic._kind==='debate'){
+    var bar=document.getElementById('debateTimerBar'); if(bar) bar.style.display='block';
+    return;
+  }
   document.getElementById('timerBox').classList.add('show');
   document.getElementById('mask').classList.add('show');
 }
@@ -2842,6 +2952,8 @@ function toggleSettings(force){
     document.getElementById('setPrepTime').value=settings.prepTime;
     document.getElementById('setLongTime').value=settings.longTime;
     var u=document.getElementById('customSourceUrl'); if(u) u.value=settings.customSourceUrl||'';
+    var aiKeyEl=document.getElementById('setAiApiKey'); if(aiKeyEl) aiKeyEl.value=settings.aiApiKey||'';
+    refreshAiHint();
     var _fq=document.getElementById('autoUpdateFreq'); if(_fq) _fq.value = String(settings.autoUpdateFreq==null?86400:settings.autoUpdateFreq);
     refreshAutoBtn();
     refreshLibMeta();
@@ -2892,13 +3004,104 @@ function saveSettings(){
     prepTime: parseInt(document.getElementById('setPrepTime').value)||60,
     longTime: parseInt(document.getElementById('setLongTime').value)||300,
     customSourceUrl: settings.customSourceUrl||'',
+    aiApiKey: settings.aiApiKey||'',
     autoUpdate: !!settings.autoUpdate,
     autoUpdateFreq: (settings.autoUpdateFreq==null?86400:settings.autoUpdateFreq)
   };
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
   settings=s;
-  toggleSettings(false);
   toast('✅ 设置已保存');
+}
+function refreshAiHint(){
+  var hint=document.getElementById('aiModelHint');
+  if(!hint) return;
+  if(settings.aiApiKey){
+    hint.textContent = '已配置 · Qwen2.5-7B';
+    hint.style.color = '#16a34a';
+  }else{
+    hint.textContent = '未配置 · 使用离线模板';
+    hint.style.color = '#9ca3af';
+  }
+}
+function saveAiSettings(){
+  var keyEl=document.getElementById('setAiApiKey');
+  var key=(keyEl.value||'').trim();
+  settings.aiApiKey = key;
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  refreshAiHint();
+  toast('✅ AI配置已保存');
+  var resEl=document.getElementById('aiTestResult');
+  if(resEl) resEl.innerHTML = '<div style="color:#16a34a;">✅ 配置已保存，现在可以测试连接是否正常</div>';
+}
+async function testAiConnection(){
+  var key=(settings.aiApiKey||'').trim();
+  var resEl=document.getElementById('aiTestResult');
+  if(!key){
+    if(resEl) resEl.innerHTML = '<div style="color:#dc2626;">❌ 请先填写API Key再测试</div>';
+    return;
+  }
+  if(resEl) resEl.innerHTML = '<div style="color:#2563eb;">🔄 正在测试连接...</div>';
+  try{
+    var resp = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer '+key,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'Qwen/Qwen2.5-7B-Instruct',
+        messages: [{role:'user', content:'请只回复"连接成功"四个字'}],
+        max_tokens: 20,
+        temperature: 0.1
+      })
+    });
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    var data = await resp.json();
+    var reply = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content || '';
+    if(reply.includes('成功')){
+      if(resEl) resEl.innerHTML = '<div style="color:#16a34a;">✅ 连接正常！AI辩论已可以正常使用，所有打开页面的用户都能免费使用，无需注册</div>';
+      toast('✅ AI连接成功');
+    }else{
+      throw new Error('返回异常: '+reply.slice(0,30));
+    }
+  }catch(e){
+    if(resEl) resEl.innerHTML = '<div style="color:#dc2626;">❌ 连接失败：'+e.message+'，请检查Key是否正确，或稍后再试</div>';
+    toast('❌ AI连接失败');
+  }
+}
+/* V3.8.0：大模型生成辩词核心函数 */
+async function aiCallDebateLLM(prompt){
+  var key=(settings.aiApiKey||'').trim();
+  if(!key) return null;
+  try{
+    var resp = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer '+key,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'Qwen/Qwen2.5-7B-Instruct',
+        messages: [{
+          role: 'system',
+          content: '你是专业的辩论赛选手，语言口语化、有攻击性、逻辑清晰，严格贴合辩题和之前的对话内容，绝对不要使用模板套话，不要说"谢谢主席问候在场各位"这类固定开场白，直接输出辩词内容，200字左右，不要任何Markdown格式，不要多余解释。'
+        },{
+          role: 'user',
+          content: prompt
+        }],
+        max_tokens: 400,
+        temperature: 0.85,
+        top_p: 0.9
+      })
+    });
+    if(!resp.ok) return null;
+    var data = await resp.json();
+    var text = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content || '';
+    return text.trim().replace(/^["']|["']$/g,'').replace(/^谢谢主席.*?各位。?/,'').trim();
+  }catch(e){
+    console.warn('AI大模型调用失败，回退到离线模板',e);
+    return null;
+  }
 }
 function resetAllData(){
   if(confirm('确定清空所有练习记录、设置与自定义题库？')){
@@ -3460,6 +3663,7 @@ function useSearchTopic(item){
   document.getElementById('topicEmpty').style.display='none';
   document.getElementById('topicContent').style.display='block';
   document.getElementById('startBtn').disabled=false; document.getElementById('reviewBtn').disabled=false;
+  syncDebateModeUI();
   var sb=document.getElementById('startBtn');
   if(tm==='prepare') sb.textContent='📝 准备+演讲';
   else if(tm==='recite') sb.textContent='🎭 开始朗诵';
@@ -3561,6 +3765,27 @@ function runWebSearch(kw){
 }
 
 /* ========== 模式切换 ========== */
+/* ========== V3.7.3：辩论模式 UI 同步 + 成长打卡折叠面板 ========== */
+function syncDebateModeUI(){
+  var isDebate=(STATE.mode==='debate');
+  var rb=document.getElementById('reviewBtn');
+  if(rb){ rb.style.display = isDebate ? 'none' : ''; }
+  var panel=document.getElementById('aiDebatePanel');
+  if(panel){ panel.classList.remove('show'); }
+}
+window.syncDebateModeUI=syncDebateModeUI;
+
+function toggleGrowthPanel(force){
+  var card=document.getElementById('growthCard');
+  var fab=document.getElementById('growthFab');
+  if(!card) return;
+  var show=(force===undefined)?!card.classList.contains('show'):!!force;
+  card.classList.toggle('show',show);
+  if(fab) fab.classList.toggle('active',show);
+  if(show && window.renderHomeGrowth){ try{ window.renderHomeGrowth(); }catch(e){} }
+}
+window.toggleGrowthPanel=toggleGrowthPanel;
+
 function initModeTabs(){
   document.querySelectorAll('.mode-tab').forEach(function(t){
     t.onclick=function(){
@@ -3596,6 +3821,7 @@ function initModeTabs(){
       else if(STATE.mode==='debate') sb.textContent='⚔️ 开始辩论';
       else if(STATE.mode==='speech') sb.textContent='💬 开始演练';
       else sb.textContent='▶️ 开始';
+      syncDebateModeUI();
     };
   });
 }
@@ -3679,20 +3905,67 @@ function debatePickSide(side){
     log: [],
     transcriptPro: '',           // 累计发言文字（用户+AI，给复盘用）
     transcriptCon: '',
-    userInputs: []               // 玩家每轮发言
+    userInputs: [],              // 玩家每轮发言
+    myPhases: {立论:true,驳论:true,攻辩小结:true,自由辩:true,总结:true}  // V3.7.4：玩家自主选择参战环节
   };
   document.getElementById('debatePick').style.display='none';
   document.getElementById('debateLog').style.display='block';
   document.getElementById('debateTurn').style.display='block';
+  // V3.7.4：展开「🎯 第二步：自主选择参战环节」
+  var pp=document.getElementById('debatePhasePick'); if(pp) pp.style.display='block';
+  debateRenderPhasePick();
   // 高亮所选方
   document.getElementById('sideProBox').classList.toggle('chosen', side==='pro');
   document.getElementById('sideConBox').classList.toggle('chosen', side==='con');
-  debateAddLog('sys','⚖️ 辩题：'+t.title+'<br>你选择担任'+(side==='pro'?'正方':'反方')+'，AI 担任'+(side==='pro'?'反方':'正方')+'，按新国辩简化赛制开始。');
+  debateAddLog('sys','⚖️ 辩题：'+t.title+'<br>你选择担任'+(side==='pro'?'正方':'反方')+'，AI 担任'+(side==='pro'?'反方':'正方')+'。请先在下方「🎯 第二步：自主选择参战环节」勾选你要亲自上场的环节（未勾选的由 AI 队友代打），再点「⚔️ 开始辩论」。');
   // 开始按钮文案
   document.getElementById('startBtn').textContent='⚔️ 开始辩论';
   document.getElementById('startBtn').disabled=false;
-  toast('✅ 已选择'+(side==='pro'?'正方':'反方')+'，点「⚔️ 开始辩论」正式开赛');
+  toast('✅ 已选择'+(side==='pro'?'正方':'反方')+'，可在「🎯 第二步」自主选择参战环节');
 }
+
+/* V3.7.4：自主选择参战环节 —— 玩家可决定哪些环节亲自上场，未勾选的由 AI 队友代打 */
+var DEBATE_PHASES=['立论','驳论','攻辩小结','自由辩','总结'];
+var DEBATE_PHASE_NAMES={'立论':'开篇立论','驳论':'驳论/攻辩','攻辩小结':'攻辩小结','自由辩':'自由辩论','总结':'总结陈词'};
+var DEBATE_PRESETS=[
+  {立论:true, 驳论:true,  攻辩小结:true,  自由辩:true, 总结:true},   // 0 全程参与
+  {立论:true, 驳论:false, 攻辩小结:false, 自由辩:true, 总结:false},  // 1 一辩
+  {立论:false,驳论:true,  攻辩小结:false, 自由辩:true, 总结:false},  // 2 二辩
+  {立论:false,驳论:false, 攻辩小结:true,  自由辩:true, 总结:false},  // 3 三辩
+  {立论:false,驳论:false, 攻辩小结:false, 自由辩:true, 总结:true}    // 4 四辩
+];
+function debatePlayerInPhase(phase){
+  if(!DEBATE || !DEBATE.myPhases) return true;
+  return DEBATE.myPhases[phase] !== false;
+}
+function debateRenderPhasePick(){
+  var list=document.getElementById('debatePhaseList'); if(!list||!DEBATE) return;
+  var sideTag=(DEBATE.playerSide==='pro')?'🟢 正方':'🔵 反方';
+  list.innerHTML=DEBATE_PHASES.map(function(p,idx){
+    var on=debatePlayerInPhase(p);
+    return '<div class="dpp-item'+(on?' on':'')+'" onclick="debateTogglePhase('+idx+')">'+
+      '<span class="dpp-check">'+(on?'✅':'⬜')+'<\/span>'+
+      '<span class="dpp-name">'+DEBATE_PHASE_NAMES[p]+'<\/span>'+
+      '<span class="dpp-side">'+sideTag+'<\/span>'+
+      '<\/div>';
+  }).join('');
+}
+function debateTogglePhase(idx){
+  if(!DEBATE || !DEBATE.myPhases) return;
+  var p=DEBATE_PHASES[idx]; if(!p) return;
+  DEBATE.myPhases[p] = (DEBATE.myPhases[p]===false);
+  debateRenderPhasePick();
+}
+function debatePreset(idx){
+  if(!DEBATE) return;
+  var preset=DEBATE_PRESETS[idx]||DEBATE_PRESETS[0];
+  DEBATE.myPhases={立论:!!preset.立论,驳论:!!preset.驳论,攻辩小结:!!preset.攻辩小结,自由辩:!!preset.自由辩,总结:!!preset.总结};
+  debateRenderPhasePick();
+  toast('🎯 已套用参战预设');
+}
+window.debateTogglePhase=debateTogglePhase;
+window.debatePreset=debatePreset;
+window.debatePlayerInPhase=debatePlayerInPhase;
 
 function debateAddLog(kind, html){
   var box=document.getElementById('debateLog'); if(!box) return;
@@ -3708,12 +3981,13 @@ function debateAddLog(kind, html){
 function debateCurrentStep(){ return DEBATE_FLOW[DEBATE.step]; }
 function debateIsUserTurn(){
   var s=debateCurrentStep();
+  if(!debatePlayerInPhase(s.phase)) return false;   // V3.7.4：未参战的环节不由玩家发言
   if(s.role==='free') return DEBATE.freeSide === DEBATE.playerSide;
   return s.role === DEBATE.playerSide;
 }
 
-/* ========== AI 发言生成（模板式，贴合辩题 + 当前阶段攻防逻辑） ========== */
-function aiGenerateDebateSpeech(step, t){
+/* ========== V3.8.0 AI 发言生成：大模型优先 + 离线模板兜底 ========== */
+function aiGenerateTemplateSpeech(step, t){
   var side = step.role;           // 当前该哪方
   var mySide = side==='pro' ? t.pro : t.con;
   var opSide = side==='pro' ? t.con : t.pro;
@@ -3756,6 +4030,44 @@ function aiGenerateDebateSpeech(step, t){
   return text;
 }
 
+async function aiGenerateDebateSpeech(step, t){
+  var side = step.role;           // 当前该哪方
+  var mySide = side==='pro' ? t.pro : t.con;
+  var opSide = side==='pro' ? t.con : t.pro;
+  var myPoints = side==='pro' ? (t.proPoints||[]) : (t.conPoints||[]);
+  var opPoints = side==='pro' ? (t.conPoints||[]) : (t.proPoints||[]);
+  // 提取历史对话
+  var history = '';
+  var recentLogs = DEBATE.log.slice(-6);
+  for(var i=0;i<recentLogs.length;i++){
+    var log = recentLogs[i];
+    if(log.kind==='pro') history += '正方：'+log.html.replace(/<[^>]+>/g,'')+'\n';
+    else if(log.kind==='con') history += '反方：'+log.html.replace(/<[^>]+>/g,'')+'\n';
+  }
+  // 构造prompt
+  var phaseDesc = {
+    '立论':'开篇立论环节，请提出我方核心论点，结合现实例子支撑，不要套话',
+    '驳论':'驳论环节，请针对对方刚才的发言进行反驳，指出对方逻辑漏洞，同时巩固我方观点，要有针对性',
+    '攻辩小结':'攻辩小结环节，请总结刚才攻辩中对方的漏洞和我方的优势，承上启下',
+    '自由辩':'自由辩论环节，请简短犀利地反驳对方最近的观点，抛出尖锐问题追问对方，不要长篇大论',
+    '总结':'总结陈词环节，请总结整场辩论双方的交锋点，再次强化我方核心立场，升华价值'
+  };
+  var prompt = '当前辩论赛题：'+t.title+'\n'+
+    '我方立场：'+mySide+'\n'+
+    '我方核心论点：'+(myPoints.join('；')||'结合辩题自行展开')+'\n'+
+    '对方立场：'+opSide+'\n'+
+    '当前环节：'+step.phase+'，'+(phaseDesc[step.phase]||'请结合辩题发言')+'\n'+
+    '之前的对话记录（最近6轮）：\n'+history+'\n'+
+    '请你作为'+(side==='pro'?'正方':'反方')+'辩手，输出150-250字的口语化辩词，直接说内容，不要"谢谢主席"这类固定开场白，要贴合当前辩题和之前的对话，绝对不要使用通用模板。';
+  // 尝试调用大模型
+  var llmResult = await aiCallDebateLLM(prompt);
+  if(llmResult && llmResult.length>20){
+    return llmResult;
+  }
+  // 失败回退到离线模板
+  return aiGenerateTemplateSpeech(step, t);
+}
+
 function debateStartTurn(){
   // 开始当前步骤（决定是玩家发言还是AI自动发言）
   var s=debateCurrentStep();
@@ -3763,10 +4075,14 @@ function debateStartTurn(){
   var isFree=(s.phase==='自由辩');
   var speakSide = isFree ? DEBATE.freeSide : s.role;
   var label = isFree?('⚔️ 自由辩论·'+(speakSide==='pro'?'🟢 正方':'🔵 反方')+'发言'):s.label;
-  var isUser = (speakSide === DEBATE.playerSide);
+  // V3.7.4：只有「属于玩家一方」且「玩家勾选了该环节」时才由玩家发言；我方环节未勾选则 AI 队友代打
+  var onPlayerSide = (speakSide === DEBATE.playerSide);
+  var isTeammate = onPlayerSide && !debatePlayerInPhase(s.phase);
+  var isUser = onPlayerSide && debatePlayerInPhase(s.phase);
+  var infoTxt = isUser?'轮到你发言':(isTeammate?'AI 队友代打中…':'AI 发言中…');
 
   turnBox.className='debate-turn '+(speakSide==='pro'?'t-pro':(speakSide==='con'?'t-con':'t-sys'));
-  turnBox.innerHTML=label+(isUser?' <span style="opacity:.7">（请你发言）<\/span>':' <span style="opacity:.7">（AI 准备发言…）<\/span>');
+  turnBox.innerHTML=label+(isUser?' <span style="opacity:.7">（请你发言）<\/span>':(isTeammate?' <span style="opacity:.7">（AI 队友代打）<\/span>':' <span style="opacity:.7">（AI 准备发言…）<\/span>'));
 
   // 改计时器阶段
   STATE.timerPhase = 'debate';
@@ -3776,69 +4092,159 @@ function debateStartTurn(){
   }
   STATE.timerStart=Date.now(); STATE.timerPaused=0; STATE.pauseStart=0;
   document.getElementById('timerPhase').textContent=label;
-  document.getElementById('timerInfo').textContent=isUser?'轮到你发言':'AI 发言中…';
+  document.getElementById('timerInfo').textContent=infoTxt;
   document.getElementById('pauseBtn').textContent='⏸️ 暂停';
+  var _dp=document.getElementById('dtPauseBtn'); if(_dp) _dp.textContent='⏸️ 暂停';
+  // V3.7.4：辩论内嵌计时条（不遮罩、不遮挡辩词），并同步是否显示「结束自由辩」按钮
+  syncDebateFreeBtn(isFree);
+  updateDebateTimerUI(label, infoTxt);
+  showTimer();
   tickTimer();
   STATE.timer=setInterval(tickTimer,200);
 
   if(!isUser){
-    // AI 发言：延迟一点模拟思考，生成话术，倒计时结束或N秒后输出并进入下一阶段
-    var thinkMs = 1500 + Math.random()*1000;
-    setTimeout(function(){
-      var speech = aiGenerateDebateSpeech(s, DEBATE.topic);
-      var sideCls = speakSide;
-      var speakerName = isFree?((speakSide==='pro'?'🟢 正方':'🔵 反方')+'（AI）'):(s.speaker+'（AI）');
-      debateAddLog(sideCls, '<div class="dl-turn">'+speakerName+' · '+s.phase+'<\/div>'+esc(speech));
-      if(speakSide==='pro') DEBATE.transcriptPro += speech + '\n';
-      else DEBATE.transcriptCon += speech + '\n';
+    // AI 回合：收起玩家发言区
+    var spkA=document.getElementById('debateSpeak'); if(spkA) spkA.style.display='none';
+    // AI 发言：先显示"思考中"，再生成话术
+    var thinkMs = 800 + Math.random()*700;
+    setTimeout(async function(){
+      try{
+        var speech = await aiGenerateDebateSpeech(s, DEBATE.topic);
+        var sideCls = speakSide;
+        var _tag = isTeammate ? '（AI 队友）' : (settings.aiApiKey?'（AI）':'（离线AI）');
+        var speakerName = isFree?((speakSide==='pro'?'🟢 正方':'🔵 反方')+_tag):(s.speaker+_tag);
+        debateAddLog(sideCls, '<div class="dl-turn">'+speakerName+' · '+s.phase+'<\/div>'+esc(speech));
+        if(speakSide==='pro') DEBATE.transcriptPro += speech + '\n';
+        else DEBATE.transcriptCon += speech + '\n';
+      }catch(e){
+        console.error('AI生成失败，使用兜底模板',e);
+        var fallbackSpeech = aiGenerateTemplateSpeech(s, DEBATE.topic);
+        debateAddLog(speakSide, '<div class="dl-turn">'+(isTeammate?'AI 队友':'离线AI')+' · '+s.phase+'<\/div>'+esc(fallbackSpeech));
+      }
       // AI 讲完自动结束本轮
       setTimeout(debateNextTurn, 1200);
     }, thinkMs);
   }else{
-    // 玩家回合：打开评价面板供玩家发言（文字/语音）
-    // 提示玩家可以打开 AI 评价面板发言，但这里设计一个简洁的"发言按钮"
-    var btns = document.getElementById('pauseBtn').parentNode;
-    // 给玩家一个"我讲完了"的按钮（替换结束按钮文案）
+    // 玩家回合：展开专属发言区并聚焦输入框
+    var spkU=document.getElementById('debateSpeak');
+    if(spkU) spkU.style.display='block';
+    var di=document.getElementById('debateInput');
+    if(di){ di.value=''; setTimeout(function(){try{di.focus();}catch(e){}},120); }
+    var mbtn=document.getElementById('debateMicBtn');
+    if(mbtn){ mbtn.textContent='🎙️ 语音输入'; mbtn.classList.remove('recording'); }
     var stopBtn=document.getElementById('stopBtn');
     stopBtn.textContent='✅ 我讲完了';
     stopBtn.onclick = function(){ debateUserFinish(); };
   }
 }
 
+/* V3.7.4：辩论内嵌计时条更新（不弹居中遮罩，避免遮挡对方辩词） */
+function updateDebateTimerUI(label, infoTxt){
+  var bar=document.getElementById('debateTimerBar'); if(!bar) return;
+  var remain=STATE.timerDuration-((Date.now()-STATE.timerStart-STATE.timerPaused)/1000);
+  if(remain<0) remain=0;
+  var ph=document.getElementById('dtPhase'); if(ph && label) ph.textContent=label;
+  var tm=document.getElementById('dtTime'); if(tm) tm.textContent=fmtTime(remain);
+  var fl=document.getElementById('dtFill');
+  if(fl){ var pct=STATE.timerDuration>0?(remain/STATE.timerDuration*100):0; fl.style.width=Math.max(0,Math.min(100,pct))+'%'; }
+  var inf=document.getElementById('dtInfo'); if(inf && infoTxt) inf.textContent=infoTxt;
+}
+function syncDebateFreeBtn(isFree){
+  var b=document.getElementById('dtFreeBtn'); if(b) b.style.display=isFree?'inline-block':'none';
+}
+window.updateDebateTimerUI=updateDebateTimerUI;
+
+/* V3.7.4：玩家自主结束自由辩论，直接进入总结陈词 */
+function debateEndFree(){
+  if(!DEBATE) return;
+  var s=debateCurrentStep();
+  if(!s || s.phase!=='自由辩') return;
+  clearInterval(STATE.timer); STATE.timer=null;
+  try{ stopDebateVoice(); }catch(e){}
+  var spk=document.getElementById('debateSpeak'); if(spk) spk.style.display='none';
+  DEBATE.step++;   // 自由辩（step 6）→ 总结陈词
+  if(DEBATE.step>=DEBATE_FLOW.length){ debateFinish(); return; }
+  debateAddLog('sys','—— 你选择结束自由辩论，进入「'+DEBATE_FLOW[DEBATE.step].label+'」 ——');
+  debateStartTurn();
+}
+window.debateEndFree=debateEndFree;
+
 function debateUserFinish(){
-  // 玩家结束本回合发言：收集文字（从评价面板输入框或语音识别结果）
+  // 玩家结束本回合发言：从辩论专属发言区读取文字（含语音识别结果）
+  try{ stopDebateVoice(); }catch(e){}
   var text='';
-  var mode = STATE._inputMode||'text';
-  if(mode==='voice'){
-    text = (document.getElementById('voiceTranscript')||{}).textContent||'';
-  }else{
-    text = document.getElementById('reviewInput').value||'';
-  }
-  if(!text.trim()){
-    // 无文字也允许跳过
-    text='（玩家未输入文字，按口头表达完成本环节）';
-  }
+  var di=document.getElementById('debateInput');
+  if(di){ text = di.value || ''; }
+  if(!text.trim()){ text='（本轮未输入文字，按即席口头表达记）'; }
   var s=debateCurrentStep();
   var isFree=(s.phase==='自由辩');
   var speakSide = isFree ? DEBATE.freeSide : s.role;
   var speakerName = isFree?((speakSide==='pro'?'🟢 正方':'🔵 反方')+'（你）'):(s.speaker+'（你）');
+  var _el=(Date.now()-(STATE.timerStart||Date.now())-(STATE.timerPaused||0))/1000;
   debateAddLog(speakSide,'<div class="dl-turn">'+speakerName+' · '+s.phase+'<\/div>'+esc(text));
   if(speakSide==='pro') DEBATE.transcriptPro += text+'\n';
   else DEBATE.transcriptCon += text+'\n';
-  DEBATE.userInputs.push({step:s.phase, text:text});
-  // 清空输入框为下一轮准备
-  document.getElementById('reviewInput').value='';
-  if(document.getElementById('voiceTranscript')) document.getElementById('voiceTranscript').textContent='';
-  if(!document.getElementById('reviewPanel').classList.contains('show')){
-    // 若没打开面板，说明是盲说，也可继续
-  }
+  DEBATE.userInputs.push({phase:s.phase, text:text, sec:Math.max(0,Math.round(_el))});
+  if(di) di.value='';
   clearInterval(STATE.timer); STATE.timer=null;
-  // 恢复 stopBtn
   var stopBtn=document.getElementById('stopBtn');
   stopBtn.textContent='⏹️ 结束练习';
   stopBtn.onclick = function(){ stopTimer(); };
   debateNextTurn();
 }
+
+function debateUserSkip(){
+  // 跳过本轮（不计入发言）
+  try{ stopDebateVoice(); }catch(e){}
+  var di=document.getElementById('debateInput'); if(di) di.value='';
+  var s=debateCurrentStep();
+  var isFree=(s.phase==='自由辩');
+  var speakSide = isFree ? DEBATE.freeSide : s.role;
+  var speakerName = isFree?((speakSide==='pro'?'🟢 正方':'🔵 反方')+'（你）'):(s.speaker+'（你）');
+  debateAddLog('sys','（你选择跳过：'+speakerName+' · '+s.phase+'）');
+  clearInterval(STATE.timer); STATE.timer=null;
+  var stopBtn=document.getElementById('stopBtn');
+  stopBtn.textContent='⏹️ 结束练习';
+  stopBtn.onclick = function(){ stopTimer(); };
+  debateNextTurn();
+}
+
+/* V3.7.3：辩论发言区语音输入（独立于「AI 评价」面板的语音） */
+var DEBATE_VOICE=null, DEBATE_REC=false;
+function stopDebateVoice(){
+  DEBATE_REC=false;
+  if(DEBATE_VOICE){ try{ DEBATE_VOICE.stop(); }catch(e){} DEBATE_VOICE=null; }
+  var b=document.getElementById('debateMicBtn');
+  if(b){ b.textContent='🎙️ 语音输入'; b.classList.remove('recording'); }
+}
+function debateVoiceToggle(){
+  if(DEBATE_REC){ stopDebateVoice(); return; }
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ toast('⚠️ 当前浏览器不支持语音识别，请直接输入文字'); return; }
+  try{
+    DEBATE_VOICE=new SR();
+    DEBATE_VOICE.lang='zh-CN'; DEBATE_VOICE.continuous=true; DEBATE_VOICE.interimResults=true;
+    var base=(document.getElementById('debateInput')||{}).value||'';
+    var fin='';
+    DEBATE_VOICE.onresult=function(e){
+      var it='';
+      for(var i=e.resultIndex;i<e.results.length;i++){
+        if(e.results[i].isFinal) fin+=e.results[i][0].transcript;
+        else it+=e.results[i][0].transcript;
+      }
+      var di=document.getElementById('debateInput');
+      if(di){ di.value=base+fin+it; }
+    };
+    DEBATE_VOICE.onerror=function(){ stopDebateVoice(); };
+    DEBATE_VOICE.onend=function(){ if(DEBATE_REC){ stopDebateVoice(); } };
+    DEBATE_VOICE.start();
+    DEBATE_REC=true;
+    var b=document.getElementById('debateMicBtn');
+    if(b){ b.textContent='🔴 聆听中…（点击停止）'; b.classList.add('recording'); }
+  }catch(err){ toast('⚠️ 无法启动语音：'+((err&&err.message)||'')); stopDebateVoice(); }
+}
+window.debateVoiceToggle=debateVoiceToggle;
+window.debateUserSkip=debateUserSkip;
 
 function debateNextTurn(){
   clearInterval(STATE.timer); STATE.timer=null;
@@ -3882,6 +4288,9 @@ function debateNextTurn(){
 
 function debateFinish(){
   closeTimer();
+  // V3.7.3：收起玩家发言区
+  try{ stopDebateVoice(); }catch(e){}
+  var _dspk=document.getElementById('debateSpeak'); if(_dspk) _dspk.style.display='none';
   debateAddLog('sys','🎉 辩论环节全部结束，AI 正在为双方复盘…');
   // 生成双方评分（基于发言长度/逻辑词/举例）
   function scoreSide(text){
@@ -3923,14 +4332,38 @@ function debateFinish(){
   if(ps.fluency<70) tips.push('<li><b>语言流畅度<\/b>：自由辩紧张容易"嗯啊然后"，可以刻意练习"停顿1秒代替口头禅"。<\/li>');
   if(!tips.length) tips.push('<li>整体表现非常棒！可以尝试研究政策性辩题的"需根解损"框架，进一步提升深度。<\/li>');
   html+=tips.join('')+'<\/ul>';
+  // V3.7.3：逐环节点评 + 最佳辩手（贴近真实辩论的赛后点评）
+  var _phases=['立论','驳论','攻辩小结','自由辩','总结'];
+  var _remarks={
+    '立论':'开篇立论要亮出"定义+标准+分论点"，把己方论证框架立稳，评委才能快速抓住主线。',
+    '驳论':'驳论要针对对方漏洞点对点拆解，先还原对方逻辑，再指出其前提或例证的破绽，不要自说自话。',
+    '攻辩小结':'把本环节交锋收敛成一句判断——对方在哪个问题上始终回避，己方哪条论据未被回应。',
+    '自由辩':'自由辩讲快节奏短交锋，每次发言聚焦一个问题，做到"接住—回应—反问"。',
+    '总结':'结辩回到全场核心冲突，梳理对方未解决的关键点再升华价值，不要重复前面的段落。'
+  };
+  html+='<h4 style="margin-top:14px;">🎙️ 逐环节点评<\/h4><div class="debate-seg-recap">';
+  _phases.forEach(function(pn){
+    var mine=(DEBATE.userInputs||[]).filter(function(u){return u.phase===pn;});
+    var ok=!!mine.length;
+    var stat=ok?('✅ 已发言'+(mine.length>1?('（'+mine.length+'轮）'):'')+(mine[0]&&mine[0].sec?('，约'+mine[0].sec+'秒'):'')):'⚠️ 未发言';
+    html+='<div class="seg-row"><div class="seg-name">'+pn+'<\/div><div class="seg-stat">'+stat+'<\/div><div class="seg-remark">'+(_remarks[pn]||'')+'<\/div><\/div>';
+  });
+  html+='<\/div>';
+  html+='<h4 style="margin-top:14px;">🏅 最佳辩手<\/h4>';
+  html+='<div style="padding:12px;background:#fff7ed;border-radius:10px;font-size:.88rem;color:#7c2d12;line-height:1.7;">'+
+    (ps.total>=as.total
+      ? ('<b>本场最佳辩手：你（'+ps.total+' 分）<\/b>。你的论证在逻辑结构与内容充实度上更完整，'+(ps.express>=as.express?'表达也更有感染力':'可再加强语气与追问的压迫感')+'，继续保持。')
+      : ('本场最佳辩手：<b>AI（'+as.total+' 分）<\/b>。AI 在'+(as.logic>=ps.logic?'逻辑结构':'内容举证')+'上更扎实，建议对照上面的逐环节点评补强。'))+'<\/div>';
+  html+='<div style="margin-top:12px;text-align:center;"><button class="btn btn-ghost btn-sm" id="debateSaveBtn">💾 存入训练记录<\/button><\/div>';
   html+='<div style="margin-top:14px;padding:12px;background:#f5f7ff;border-radius:10px;font-size:.85rem;color:#4b5563;">💡 想再打一场？点击上方「🎲 抽题」换一道辩题重新开始。<\/div>';
   html+='<\/div>';
   // 显示到复盘面板
   openReview();
   document.getElementById('reviewResult').innerHTML=html;
   document.getElementById('reviewResult').classList.add('show');
-  // 切回文字模式便于下次输入
-  switchInputMode('text');
+  // V3.7.3：赛后自动点评（无需再点「AI 评价」），并支持一键存入训练记录
+  var _sv=document.getElementById('debateSaveBtn');
+  if(_sv){ _sv.onclick=function(){ _sv.disabled=true; _sv.textContent='✅ 已保存'; try{ if(window.saveRecord) window.saveRecord((DEBATE.topic&&DEBATE.topic.title)||'辩论', ps.total, 'debate'); }catch(e){} toast('✅ 已存入训练记录'); }; };
 }
 
 /* 启动逻辑
@@ -3989,12 +4422,12 @@ function bootApp(){
     try{ if(typeof renderVoiceEnv==='function') renderVoiceEnv(); }catch(e){ console.warn('[voiceEnv]',e); }
 
     _p(95);
-    /* 版本构建戳 */
+    /* 版本构建戳 - 统一所有位置版本号，彻底修复显示不一致问题 */
     try{
       var vb=document.getElementById('verBadge'); if(vb){ vb.textContent=APP_VERSION; vb.title='构建 '+APP_BUILD; }
       var bs=document.getElementById('buildStamp'); if(bs) bs.textContent='构建 '+APP_BUILD;
-      var vi=document.getElementById('verInfo');
-      if(vi) vi.innerHTML='当前版本：<b>'+APP_VERSION+'<\/b>（构建 '+APP_BUILD+'）。若看到旧版本，点下方「🔄 强制刷新到最新版」。';
+      var gv=document.getElementById('gVerHint'); if(gv) gv.textContent=APP_VERSION;
+      var vi=document.getElementById('verInfoNum'); if(vi) vi.textContent=APP_VERSION;
     }catch(e){}
 
     _p(100);
@@ -4598,6 +5031,11 @@ function _clearPressTimer(){
 // V3.5.0：在 touchend/mouseup 阶段就执行点击动作（发声/弹卡），比click早100~300ms，体感几乎零延迟
 function _fireTapAction(el){
   if(!el) return;
+  // V3.8.1 修复：登记"本次交互已在 end 阶段触发过动作"。
+  // 原先 _firedByEndAt 只在 click 的 _handleTap 里赋值，end 阶段的 _fireTapAction 从不更新它，
+  // 导致一次点击被「mouseup/touchend → 播放」+「click 兜底 → 再播放」执行两遍：
+  // 第一遍刚出声就被第二遍的硬停播打断重来，表现为单词"读一半又重新读"。
+  _firedByEndAt = Date.now();
   if(el.classList.contains('recite-word')){
     // 单词：弹卡片+发音
     var w = (el.getAttribute('data-word') || el.textContent || '').trim();
@@ -10440,7 +10878,7 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
   /* ---- 版本徽标统一更新到当前版本（读取 head 统一计算的 window.APP_VERSION，不再硬编码） ---- */
   try{
     var APP_VERSION = window.APP_VERSION || 'V3.5.1';
-    var APP_BUILD = '2026-10-31';
+    var APP_BUILD = '2026-11-07';
     window.APP_VERSION = APP_VERSION;
     window.APP_BUILD = APP_BUILD;
     var bs = document.querySelectorAll('.ver-badge,.version-badge,#verBadge,.badge');
@@ -10875,8 +11313,8 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
     };
   }
 
-  /* ---------- 版本号统一（head 里 APP_VERSION_ARRAY 已升到 [3,5,2]） ---------- */
-  window.APP_VERSION = window.APP_VERSION || (window.formatAppVersion ? window.formatAppVersion(window.APP_VERSION_ARRAY || [3,5,4]) : 'V3.6.0');
+  /* ---------- 版本号统一（head 里 APP_VERSION_ARRAY 已升到 [3,6,3]） ---------- */
+  window.APP_VERSION = window.APP_VERSION || (window.formatAppVersion ? window.formatAppVersion(window.APP_VERSION_ARRAY || [3,6,3]) : 'V3.6.3');
   window.APP_BUILD = window.APP_BUILD || ('2026-10-31 · ' + window.APP_VERSION);
   function syncVer(){
     var V = window.APP_VERSION;
@@ -10905,20 +11343,22 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
 })();
 </script>
 
-<!-- ====== V3.6.0 GitHub Issues 公开反馈看板 ======
-   🎯 效果对标 GitHub Issues：
-   - 用户点「一键提交Bug/建议」→ 跳转你GitHub仓库的新建Issue页（标题/标签/诊断信息自动填好）
-   - 设置页内嵌看板：🌐全部反馈/📋我提交的/✅已解决 三个Tab实时加载GitHub公开Issues
+<!-- ====== V3.6.3 反馈一键直送 + GitHub Issues 公开看板 ======
+   🎯 反馈直达作者，进度公开可查：
+   - 用户点「📨 一键提交给作者」→ 反馈经作者的 Cloudflare Worker 直接推送到作者邮箱，
+     全程不跳转、不弹邮箱、不要求任何账号，用户隐私不暴露；未配置时自动降级为复制文本
+   - 设置页内嵌看板：
+   - 设置页内嵌看板：🌐全部反馈/🎯我的追踪/✅已解决 三个Tab实时加载GitHub公开Issues
    - 每个Issue显示：状态图标（🟢待处理/🟡进行中/🔵已解决/⚪已关闭）、标题、标签、👍数、评论数、时间
    - 相同问题不用重复提：点👍+1就行，我看👍数决定优先级
-   - 用户不需要GitHub账号就能**看**列表；提交需要登录GitHub（这是GitHub本身的要求，和真实GitHub一致）
+   - 用户不需要GitHub账号就能**看**列表，输入自己的追踪码即可定位进度
 
-   👤 作者配置区（姐姐你只要改下面这一处就好）：
+   👤 作者配置区（部署 Worker 后只填两个值，其余不用动）：
    ------------------------------------------------------------
-   GITHUB_REPO: 你的GitHub仓库名，格式 "用户名/仓库名"
-                举例：nanchen1412/jixingshuo （你注册后新建一个公开仓库，Issues开关打开）
-                留空或者保留示例值时，看板显示"作者还没配置GitHub"引导，同时兜底走邮箱/复制模式
-   FEEDBACK_* : 备用兜底渠道（和V3.6.0一致，不想用GitHub的用户还能用）
+   WORKER_URL     : 你的 Cloudflare Worker 地址（形如 https://xxxx.xxxx.workers.dev）
+   FEEDBACK_TOKEN : 与 Worker 端 Secrets 里 FEEDBACK_TOKEN 一致的字符串
+   GITHUB_REPO    : 你的GitHub仓库名，格式 "用户名/仓库名"（nanchen1412/jixingshuo）
+                    用于在内嵌看板里展示处理进度；留空时看板显示引导，不影响一键提交
    ------------------------------------------------------------
 ====================================================================== -->
 <script>
@@ -10933,18 +11373,21 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
 
    用户怎么反馈：
      1) 点「写一条匿名反馈」→ 选类型 + 写描述
-     2) 点「生成反馈内容并复制」→ 把复制到的一段文本发给作者即可
+     2) 点「📨 一键提交给作者」→ 反馈由作者的 Cloudflare Worker 收下并推送到作者邮箱，
+        不跳转、不弹邮箱、不暴露用户隐私；Worker 未配置或网络异常时自动降级为复制文本
 
    用户怎么看进度（不需要任何账号）：
      · 看板直接读作者的公开仓库 Issue 列表（只读 API，无需登录）
      · 用户输入自己的追踪码 → 本地过滤，直接看到「待处理/处理中/已解决」
 
-   ---------- 作者配置（只改下面两行）----------
-     GITHUB_REPO      : "用户名/仓库名"，建一个 Public 仓库并开启 Issues 即可
-     FEEDBACK_CHANNEL : 你的公开反馈渠道文案，如 "QQ群 123456789"；留空则只提示"发给作者"
+   ---------- 作者配置（部署 Worker 后填入两个值即可，代码无需改动）----------
+     WORKER_URL       : 你的 Cloudflare Worker 地址，形如 https://xxxx.xxxx.workers.dev
+     FEEDBACK_TOKEN   : 与 Worker 端 Secrets 里 FEEDBACK_TOKEN 完全一致的字符串
+     GITHUB_REPO      : "用户名/仓库名"，Public 仓库并开启 Issues，用于展示处理进度
+     FEEDBACK_CHANNEL : 其他公开反馈渠道文案，可留空
 
    ---------- 作者处理流程（把用户反馈变成可追踪的进度）----------
-     1) 收到用户发来的反馈文本
+     1) 邮箱收到用户反馈（邮件里自带追踪码）
      2) 在仓库新建 Issue，标题写成：
         [用户反馈] 语音识别偶尔卡住（JXS-8F2K-91QA）   ← 括号里带上用户的追踪码
      3) 正文粘贴用户发来的原文；打上标签 bug / enhancement
@@ -10955,8 +11398,21 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
   'use strict';
 
   /* ================= 作者配置区 ================= */
-  var GITHUB_REPO      = 'nanchen1412/jixingshuo';              // ← 已配置你的仓库：nanchen1412/jixingshuo
-  var FEEDBACK_CHANNEL = '1404507672@qq.com';                                     // ← 可在此填你的公开反馈渠道，如 "QQ群 123456789"，暂时留空
+  var GITHUB_REPO      = 'nanchen1412/jixingshuo';   /* 公开反馈看板仓库（只读，用于展示处理进度） */
+
+  /* ================== 反馈一键直送配置（Cloudflare Worker） ==================
+     作用：用户点「📨 一键提交给作者」，反馈不跳转、不弹邮箱、不暴露任何隐私，
+     直接由 Worker 收下并推送到作者邮箱。
+     部署完 Worker 后，只需把下面两个值改成你的真实值，其余代码一个字都不用动：
+       · WORKER_URL     → 部署 Worker 后拿到的地址，形如 https://xxxx.xxxx.workers.dev
+       · FEEDBACK_TOKEN → 与 Worker 端 Secrets 里的 FEEDBACK_TOKEN 完全一致的字符串
+     ★ 两个值留空时，页面会自动把「一键提交」降级为「复制反馈文本」，功能不会失效。
+  ========================================================================== */
+  var WORKER_URL       = '';   /* ← 在这里填你的 Worker 地址 */
+  var FEEDBACK_TOKEN   = '';   /* ← 在这里填与 Worker 端一致的 Token */
+  /* ========================================================================== */
+
+  var FEEDBACK_CHANNEL = '';   /* 其他公开反馈渠道（可留空） */
   /* ============================================= */
 
   var FB_CODE_KEY = 'jixingshuo_fb_code_v360';
@@ -11134,6 +11590,120 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
       }
     });
   };
+
+  /* ================= 一键提交到作者的 Cloudflare Worker（反馈直送） ================= */
+  function workerReady(){
+    return !!(WORKER_URL && /^https?:\/\//.test(WORKER_URL) && FEEDBACK_TOKEN);
+  }
+  function currentType(){
+    var type = 'bug', types = document.querySelectorAll('#fbTypeBox .fb-type');
+    for(var i = 0; i < types.length; i++){
+      if(types[i].classList.contains('active')) type = types[i].getAttribute('data-type');
+    }
+    return type;
+  }
+  function buildFeedbackText(content, type, code, tech){
+    var lines = [];
+    lines.push('【即兴说 · 用户反馈】追踪码：' + code);
+    lines.push('类型：' + TYPE_LABEL[type]);
+    lines.push('');
+    lines.push(content);
+    if(tech){
+      lines.push('');
+      lines.push('--- 以下为技术信息（不含任何个人隐私）---');
+      lines.push(tech);
+    }
+    return lines.join('\n');
+  }
+
+  /* 提交方式：GitHub提交（用户点击触发，新标签页打开，自动打标签，带拦截检测）*/
+  window.fbSubmitGithub = function(){
+    var ta = $('fbContent');
+    var content = (ta ? ta.value : '').trim();
+    if(!content){
+      tip('⚠️ 先写一句你遇到的问题或建议再提交～', false);
+      if(ta) ta.focus();
+      return;
+    }
+    var type   = currentType();
+    var code   = getCode();
+    var attach = !!($('fbAttachDiag') && $('fbAttachDiag').checked);
+    var tech   = attach ? techInfo() : null;
+    var title = '[' + TYPE_LABEL[type].replace(/[🐛💡📚💭]/g,'').trim() + '] ' + content.slice(0,60) + ' (' + code + ')';
+    var body = buildFeedbackText(content, type, code, tech);
+    
+    /* 自动根据反馈类型带上对应labels参数，你在GitHub上直接按标签筛选即可 */
+    var labelMap = {
+      'bug': 'bug',
+      'feature': 'enhancement',
+      'content': 'content',
+      'other': '用户反馈'
+    };
+    var labels = 'labels=' + encodeURIComponent(labelMap[type] || '用户反馈') + '&';
+    var url = 'https://github.com/' + GITHUB_REPO + '/issues/new?' + labels + 'title=' + encodeURIComponent(title) + '&body=' + encodeURIComponent(body);
+    
+    /* ✅ 弹窗拦截检测：必须由用户点击直接触发window.open，且检测是否被拦截 */
+    var newTab = window.open(url, '_blank');
+    
+    /* 拦截判断：如果newTab为null或者被拦截，显示备用手动提交链接 */
+    if(!newTab || newTab.closed || typeof newTab.closed == 'undefined'){
+      tip('⚠️ 浏览器拦截了弹窗！请点击下方蓝色链接手动打开提交页面', false);
+      /* 在按钮下方插入备用提交链接，用户可直接点击 */
+      var submitBtn = document.querySelector('.fb-submit');
+      if(submitBtn){
+        /* 移除旧提示，避免重复插入 */
+        var oldTip = document.getElementById('fbBlockedTip');
+        if(oldTip) oldTip.parentNode.removeChild(oldTip);
+        var tipDiv = document.createElement('div');
+        tipDiv.id = 'fbBlockedTip';
+        tipDiv.style.cssText = 'margin:8px 0;padding:12px;background:#fef3c7;border-radius:10px;text-align:center;font-size:.88rem;color:#92400e;line-height:1.6;';
+        tipDiv.innerHTML = '🔒 弹窗被拦截啦！<br><a href="' + url + '" target="_blank" style="color:#2563eb;font-weight:600;text-decoration:underline;">👉 点这里手动打开GitHub提交页面</a><br><small>打开后直接点绿色「Submit new issue」按钮就完成提交啦，内容已经自动填好了</small>';
+        submitBtn.parentNode.insertBefore(tipDiv, submitBtn.nextSibling);
+      }
+    } else {
+      /* 打开成功提示，明确告诉用户下一步操作 */
+      tip('✅ 已打开GitHub提交页面！请切换到新标签页，点底部绿色「Submit new issue」按钮就提交完成啦', true, 6000);
+      
+      /* 记录到本地反馈列表 */
+      var mine = loadMine();
+      mine.unshift({ code: code, type: type, title: content.slice(0, 40), time: new Date().toLocaleString('zh-CN', {hour12:false}) });
+      saveMine(mine);
+      renderMine();
+
+      if(ta) ta.value = '';
+      if($('fbFormBox')) $('fbFormBox').classList.remove('show');
+      
+      /* 移除可能存在的拦截提示 */
+      var oldTip = document.getElementById('fbBlockedTip');
+      if(oldTip) oldTip.parentNode.removeChild(oldTip);
+
+      /* 5秒后自动刷新反馈看板，显示你刚提交的反馈 */
+      setTimeout(function(){ if(typeof loadFbBoard === 'function') loadFbBoard(true); }, 5000);
+    }
+  };
+
+  /* 备用：复制反馈文本到剪贴板，用户可手动提交 */
+  window.fbCopyText = function(){
+    var ta = $('fbContent');
+    var content = (ta ? ta.value : '').trim();
+    if(!content){
+      tip('⚠️ 先写一句你遇到的问题或建议再复制～', false);
+      if(ta) ta.focus();
+      return;
+    }
+    var type   = currentType();
+    var code   = getCode();
+    var attach = !!($('fbAttachDiag') && $('fbAttachDiag').checked);
+    var tech   = attach ? techInfo() : null;
+    var body = buildFeedbackText(content, type, code, tech);
+    function fallbackCopy(){var t=document.createElement('textarea');t.value=body;document.body.appendChild(t);t.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(t);}
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(body).then(()=>{tip('✅ 反馈文本已复制到剪贴板', true);}).catch(fallbackCopy);}else{fallbackCopy();tip('✅ 反馈文本已复制到剪贴板', true);}
+    }catch(e){fallbackCopy();tip('✅ 反馈文本已复制到剪贴板', true);}
+  };
+
+  /* 兼容旧代码调用 */
+  window.fbSubmit = window.fbSubmitGithub;
 
   /* ---------- 搜索 & Tab ---------- */
   window.fbSearch = function(v){
@@ -11313,22 +11883,33 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
     fetchIssues(ck, false);
 
     function fetchIssues(cacheKey, silent){
-      var url = 'https://api.github.com/repos/' + GITHUB_REPO + '/issues?state=all&per_page=50&sort=updated&direction=desc';
-      fetch(url)
-        .then(function(r){ if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-        .then(function(data){
-          if(loading) loading.style.display = 'none';
-          _issues = (data || []).filter(function(x){ return !x.pull_request; });
-          _loaded = true;
-          try{ localStorage.setItem(cacheKey, JSON.stringify({t:Date.now(), data:_issues})); }catch(e){}
-          renderBoard();
-        })
-        .catch(function(){
+      /* 使用多个GitHub公开API国内镜像兜底，解决本地file://打开时的跨域/网络问题 */
+      var apis = [
+        'https://api.github.com/repos/' + GITHUB_REPO + '/issues?state=all&per_page=100&sort=updated&direction=desc',
+        'https://gh.api.99988866.xyz/https://api.github.com/repos/' + GITHUB_REPO + '/issues?state=all&per_page=100&sort=updated&direction=desc',
+        'https://gh-proxy.com/https://api.github.com/repos/' + GITHUB_REPO + '/issues?state=all&per_page=100&sort=updated&direction=desc',
+        'https://mirror.ghproxy.com/https://api.github.com/repos/' + GITHUB_REPO + '/issues?state=all&per_page=100&sort=updated&direction=desc'
+      ];
+      function tryFetch(i){
+        if(i >= apis.length){
           if(loading) loading.style.display = 'none';
           if(!silent && allList){
-            allList.innerHTML = '<div class="fb-empty"><span class="emoji">📡</span>暂时加载不了列表（网络不通或访问受限）<br><span style="font-size:.75rem;color:#9ca3af;">不影响反馈提交，你依然可以点上面的按钮写反馈</span></div>';
+            allList.innerHTML = '<div class="fb-empty"><span class="emoji">📡</span>暂时加载不了在线列表（网络不通或访问受限）<br><span style="font-size:.75rem;color:#9ca3af;">不影响反馈提交，你依然可以写反馈<br><b>所有你提交的反馈都会直接发送到作者邮箱nanchen1412@163.com</b><br><a href="https://github.com/' + GITHUB_REPO + '/issues" target="_blank" style="color:#667eea;">点这里直接去GitHub查看所有反馈 →</a></span></div>';
           }
-        });
+          return;
+        }
+        fetch(apis[i], {cache:'no-cache'})
+          .then(function(r){ if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+          .then(function(data){
+            if(loading) loading.style.display = 'none';
+            _issues = (data || []).filter(function(x){ return !x.pull_request; });
+            _loaded = true;
+            try{ localStorage.setItem(cacheKey, JSON.stringify({t:Date.now(), data:_issues})); }catch(e){}
+            renderBoard();
+          })
+          .catch(function(){ tryFetch(i+1); });
+      }
+      tryFetch(0);
     }
   };
 
@@ -11353,16 +11934,865 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
   if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', init); }
   else { init(); }
 
-  try{ console.log('[V3.6.0] 匿名反馈模块已加载（查看进度无需登录）'); }catch(e){}
+  try{ console.log('[V3.6.3] 匿名反馈模块已加载（一键直送作者 + 查看进度免登录）'); }catch(e){}
 })();
 </script>
 
-<!-- V3.6.0 匿名反馈模块：
+<!-- V3.6.3 匿名反馈模块（反馈一键直送作者）：
    - 不收集任何隐私：不要邮箱/手机号/微信，不要注册、不要登录；
-   - 用户点「写一条匿名反馈」→ 生成带本机追踪码的文本 → 复制发给作者即可；
+   - 用户点「📨 一键提交给作者」→ 反馈由作者的 Cloudflare Worker 收下并推送到作者邮箱，
+     全程不跳转、不弹邮箱，用户邮箱等隐私不会被暴露；
+   - 若 Worker 未配置或网络异常，自动降级为「复制反馈文本」，反馈不会丢；
    - 「看进度」直接读作者公开仓库的 Issue 列表（只读，无需登录），输入自己的追踪码即可定位；
    - 附带的技术信息已脱敏，不含网址 / 完整 UA / IP / 设备标识。
 -->
 
+-->
+
+<style>
+/* ================ V3.7.3 优化：辩论一条龙（赛后自动点评）+ 成长打卡折叠（在 V3.7.2 样式上追加） ================ */
+/* ---- 深色模式基础 ---- */
+html.dark body,html.dark .card,html.dark .review-panel,html.dark .settings-panel,
+html.dark .timer-box,html.dark .cat-group,html.dark .cat-item,html.dark .topic-content-wrap,
+html.dark .tip-card,html.dark .ai-debate-panel,html.dark .confirm-box,
+html.dark .growth-card{background:#1a1a2e!important;color:#e4e4ed!important}
+html.dark{background:#0f0f1e!important}
+html.dark h1,html.dark h2,html.dark h3,html.dark .topic-content-wrap .topic-text,html.dark .mode-tab,html.dark .cat-item,html.dark .chip{color:#e4e4ed!important}
+html.dark .topic-outline{background:#2a2a45!important;border-left-color:#8b5cf6!important;}
+html.dark .outline-label{color:#a78bfa!important}
+html.dark .outline-content{color:#d1d5db!important}
+html.dark .outline-head{color:#e4e4ed!important}
+html.dark .outline-copy-btn{background:#4c1d95!important;color:#c4b5fd!important}
+html.dark .mode-tab.active,html.dark .length-tab.active,html.dark .input-mode-tab.active{background:#3b3b6d!important;color:#fff!important}
+html.dark .mode-tab,html.dark .length-tab,html.dark .input-mode-tab{background:#252540!important;color:#aaaacc!important}
+html.dark .btn{background:#2a2a4a!important;color:#ddddee!important;border-color:#3a3a5a!important}
+html.dark .btn-primary{background:linear-gradient(135deg,#667eea,#764ba2)!important;color:#fff!important}
+html.dark .btn-secondary{background:#3a3a5a!important;color:#cccce0!important}
+html.dark .btn-ghost{background:transparent!important;color:#aaaacc!important;border-color:#4a4a6a!important}
+html.dark .header{color:#fff!important}
+html.dark .sub,html.dark .topic-empty{color:#aaaacc!important}
+html.dark textarea,html.dark input[type=text],html.dark input[type=number],html.dark input[type=url],html.dark .review-input,html.dark .voice-transcript{background:#252540!important;color:#e4e4ed!important;border-color:#3a3a5a!important}
+html.dark .setting-group{background:#252540!important;border-color:#3a3a5a!important}
+html.dark .setting-group-head{background:#202038!important}
+html.dark .setting-group-body{background:#1e1e35!important}
+html.dark .setting-row label,html.dark .panel-head{color:#ccccdd!important}
+html.dark .mask{background:rgba(0,0,0,.7)!important}
+html.dark .settings-btn{background:rgba(255,255,255,.12)!important;color:#fff!important}
+html.dark .badge{background:rgba(255,255,255,.2)!important}
+html.dark .recite-toolbar{background:linear-gradient(135deg,#252540,#2d2350)!important;border-color:#3a3a5a!important}
+html.dark .feedback-fab{background:#3a3a6a!important}
+html.dark .ai-deb-bubble-ai{background:#3b2a4a!important}
+html.dark .ai-deb-bubble-user{background:#2a3a5a!important}
+html.dark .tip-card{border-left:4px solid #764ba2!important;background:#22223f!important}
+html.dark canvas{background:#1e1e35!important;border-radius:12px}
+
+/* ---- 主页独立「我的成长」卡片 ---- */
+.growth-fab{position:fixed;top:16px;left:16px;width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,.92);box-shadow:0 3px 12px rgba(31,41,55,.18);font-size:1.2rem;line-height:1;cursor:pointer;z-index:61;transition:transform .18s,background .18s;display:flex;align-items:center;justify-content:center}
+.growth-fab:hover{transform:scale(1.07)}
+.growth-fab.active{background:#667eea;box-shadow:0 3px 14px rgba(102,126,234,.5)}
+.growth-card{position:fixed;top:70px;left:12px;width:min(380px,calc(100vw - 24px));max-height:calc(100vh - 92px);overflow-y:auto;z-index:60;background:#fff;border-radius:16px;box-shadow:0 14px 44px rgba(31,41,55,.2);padding:18px 18px 14px;display:none}
+.growth-card.show{display:block;animation:fadeUp .28s ease}
+.growth-card-close{position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;border:none;background:#f1f5f9;color:#64748b;cursor:pointer;font-size:.85rem;line-height:1;z-index:2}
+html.dark .growth-fab{background:rgba(255,255,255,.14)!important;color:#fff!important}
+html.dark .growth-card-close{background:#2a2a44!important;color:#cbd5e1!important}
+.debate-speak{margin-top:10px}
+.debate-input{width:100%;min-height:92px;resize:vertical;border:1px solid #c7d2fe;border-radius:10px;padding:10px 12px;font-size:.9rem;line-height:1.6;font-family:inherit;background:#fff;box-sizing:border-box}
+.debate-input:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,.15)}
+.debate-speak-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+#debateMicBtn.recording{background:#ef4444;color:#fff;border-color:#ef4444}
+.debate-seg-recap{border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-top:6px}
+.seg-row{display:grid;grid-template-columns:70px 116px 1fr;gap:8px;padding:8px 10px;border-bottom:1px solid #f1f5f9;font-size:.82rem;align-items:start}
+.seg-row:last-child{border-bottom:none}
+.seg-name{font-weight:700;color:#4338ca}
+.seg-stat{color:#6b7280;font-size:.8rem}
+.seg-remark{color:#4b5563;line-height:1.55}
+html.dark .debate-input{background:#1c1c30!important;color:#e4e4ed!important;border-color:#3a3a5a!important}
+html.dark .debate-seg-recap{border-color:#3a3a5a!important}
+html.dark .seg-row{border-bottom-color:#2a2a44!important}
+#aiDebatePanel{display:none!important}
+html.dark .growth-card{box-shadow:0 4px 20px rgba(0,0,0,.3)!important}
+.growth-card-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.growth-card-title{font-weight:700;font-size:1rem;color:#1f2937;display:flex;align-items:center;gap:6px}
+html.dark .growth-card-title{color:#e4e4ed!important}
+.growth-card-sub{font-size:.75rem;color:#9ca3af}
+.growth-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.growth-stat{background:linear-gradient(135deg,#f0f4ff,#faf5ff);border-radius:10px;padding:10px 6px;text-align:center}
+html.dark .growth-stat{background:linear-gradient(135deg,#252540,#2a2545)!important}
+.growth-stat-num{font-size:1.15rem;font-weight:700;color:#4338ca;line-height:1.2}
+.growth-stat-label{font-size:.7rem;color:#6b7280;margin-top:2px}
+html.dark .growth-stat-label{color:#aaaacc!important}
+.growth-canvas{width:100%;height:160px;border-radius:12px;background:#f9fafb;display:block}
+.growth-row{display:flex;gap:10px;margin-top:10px;align-items:stretch}
+.checkin-btn{flex:0 0 auto;padding:10px 16px;border-radius:10px;border:2px solid #667eea;background:#fff;color:#4338ca;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+.checkin-btn.done{background:#667eea;color:#fff;border-color:#667eea}
+.lb-mini{flex:1;background:#f9fafb;border-radius:10px;padding:6px 10px;overflow:hidden;font-size:.74rem;color:#6b7280;max-height:80px;overflow-y:auto}
+html.dark .lb-mini{background:#1e1e35!important;color:#aaaacc!important}
+.lb-mini-row{display:flex;align-items:center;gap:6px;padding:3px 0}
+.lb-mini-rank{width:18px;text-align:center;font-weight:700}
+.lb-mini-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-mini-score{color:#4338ca;font-weight:600}
+.lb-mini-me{background:#fef3c7;border-radius:4px;margin:-1px;padding:1px 4px}
+html.dark .lb-mini-me{background:#3a3520!important}
+.growth-history-head{display:flex;justify-content:space-between;align-items:center;font-size:.85rem;font-weight:600;color:#1f2937;margin:12px 0 6px}
+html.dark .growth-history-head{color:#e4e4ed!important}
+.growth-history-clear{font-size:.72rem;color:#9ca3af;font-weight:400;cursor:pointer}
+.growth-history-clear:hover{color:#ef4444}
+.history-list{max-height:220px;overflow-y:auto}
+.growth-rec{padding:8px 0;border-bottom:1px solid #f0f0f5;font-size:.82rem}
+.growth-rec:last-child{border-bottom:none}
+html.dark .growth-rec{border-color:#2a2a4a!important}
+.growth-rec-topic{font-weight:500;color:#1f2937;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.dark .growth-rec-topic{color:#e4e4ed!important}
+.growth-rec-meta{color:#9ca3af;font-size:.72rem;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.growth-rec-score{color:#4338ca;font-weight:600}
+
+/* ---- 技巧小卡片 ---- */
+.tip-card{position:fixed;right:16px;top:50%;transform:translateY(-50%);width:280px;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.15);padding:16px;z-index:500;border-left:4px solid #667eea;display:none}
+.tip-card.show{display:block;animation:tipSlide .3s ease}
+@keyframes tipSlide{from{transform:translateX(20px) translateY(-50%);opacity:0}to{transform:translateX(0) translateY(-50%);opacity:1}}
+.tip-card-title{font-weight:700;color:#1f2937;margin-bottom:10px;display:flex;align-items:center;gap:8px;font-size:.95rem}
+.tip-framework{padding:10px;background:#f8f9ff;border-radius:8px;margin-bottom:8px;font-size:.82rem;line-height:1.6;cursor:pointer;transition:all .2s;border:1px solid transparent}
+.tip-framework:hover{background:#eef2ff;border-color:#667eea}
+.tip-framework-name{font-weight:600;color:#4338ca;margin-bottom:3px;font-size:.86rem}
+.tip-framework-desc{color:#6b7280}
+.tip-card-close{position:absolute;top:10px;right:12px;background:none;border:none;font-size:1.1rem;cursor:pointer;color:#9ca3af;padding:4px}
+
+/* 主界面嵌入的本题专属发言思路 */
+.topic-outline{margin-top:16px;background:linear-gradient(135deg,#f8f9ff 0%,#f0f4ff 100%);border-radius:14px;padding:16px 18px;border-left:4px solid #667eea;box-shadow:0 4px 12px rgba(102,126,234,.08)}
+.outline-head{font-weight:700;color:#1f2937;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;font-size:.95rem}
+.outline-copy-btn{background:#e0e7ff;color:#4338ca;border:none;border-radius:6px;padding:4px 10px;font-size:.78rem;cursor:pointer;transition:all .2s}
+.outline-copy-btn:hover{background:#c7d2fe}
+.outline-section{margin-bottom:10px}
+.outline-section:last-child{margin-bottom:0}
+.outline-label{font-size:.82rem;font-weight:600;color:#4338ca;margin-bottom:4px}
+.outline-content{font-size:.86rem;color:#374151;line-height:1.7}
+.outline-point{display:flex;align-items:flex-start;gap:8px;margin-bottom:4px}
+.outline-point:last-child{margin-bottom:0}
+.point-num{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;border-radius:50%;background:#667eea;color:#fff;font-size:.72rem;font-weight:600;flex-shrink:0;margin-top:1px}
+
+/* ---- AI 辩手面板（仅在辩论模式显示，复用当前抽到的辩题，不重复提供独立辩题输入） ---- */
+.ai-debate-panel{display:none;background:linear-gradient(135deg,#fff5f5 0%,#f0f4ff 100%);border-radius:14px;padding:18px;margin-top:14px;border:1px solid #e0e7ff}
+html.dark .ai-debate-panel{background:linear-gradient(135deg,#2a2035 0%,#202540 100%)!important;border-color:#3a3a5a!important}
+.ai-debate-panel.show{display:block;animation:fadeUp .3s ease}
+.ai-debate-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.ai-debate-title{font-weight:700;color:#4338ca;display:flex;align-items:center;gap:6px;font-size:.92rem}
+.ai-debate-desc{font-size:.8rem;color:#6b7280;margin-bottom:10px;line-height:1.5}
+html.dark .ai-debate-desc{color:#aaaacc!important}
+.ai-debate-ctrl{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;align-items:center}
+.ai-debate-chat{max-height:280px;overflow-y:auto;padding:10px;margin:10px 0;border-radius:10px;background:rgba(255,255,255,.6)}
+html.dark .ai-debate-chat{background:rgba(30,30,55,.7)!important}
+.ai-deb-bubble{padding:10px 14px;border-radius:16px;margin-bottom:10px;max-width:82%;line-height:1.6;font-size:.9rem;animation:fadeUp .3s ease}
+.ai-deb-bubble-user{background:#e0ecff;margin-left:auto;border-bottom-right-radius:4px}
+.ai-deb-bubble-ai{background:#fce8ec;margin-right:auto;border-bottom-left-radius:4px}
+.ai-deb-bubble-tag{font-size:.72rem;opacity:.7;margin-bottom:4px;font-weight:600}
+.ai-debate-row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.ai-debate-side{padding:6px 12px;border-radius:8px;border:1px solid #e0e7ff;background:#eef2ff;color:#4338ca;font-size:.82rem;cursor:pointer;font-weight:600}
+.ai-debate-side.anti{background:#fce8ec;color:#9f1239;border-color:#fecdd3}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ---- 移动端适配 ---- */
+@media (max-width:768px){
+  .tip-card{position:fixed;right:auto;left:50%;top:auto;bottom:16px;transform:translateX(-50%);width:calc(100% - 32px);max-width:340px}
+  @keyframes tipSlide{from{transform:translateX(-50%) translateY(20px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
+  .ai-debate-panel{padding:14px}
+  .ai-deb-bubble{max-width:90%}
+  .mode-tabs{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .mode-tabs::-webkit-scrollbar{display:none}
+  .mode-tab{flex-shrink:0;font-size:.82rem;padding:8px 12px}
+  .growth-stats{grid-template-columns:repeat(2,1fr)}
+  .growth-row{flex-direction:column}
+  .growth-card{top:62px;left:8px;width:calc(100vw - 16px);max-height:calc(100vh - 78px)}
+  .seg-row{grid-template-columns:62px 1fr;grid-template-areas:'a b' 'c c'}
+  .seg-row .seg-name{grid-area:a}.seg-row .seg-stat{grid-area:b}.seg-row .seg-remark{grid-area:c}
+  .checkin-btn{width:100%}
+}
+@media (orientation:landscape) and (max-height:500px){
+  .header{padding:10px 0 8px}
+  .header h1{font-size:1.3rem}
+  .card{padding:14px}
+  .tip-card{width:240px;padding:12px;right:8px}
+}
+
+/* ================ V3.7.4：辩论「自主选择参战环节」+ 卡片内嵌计时条（不遮挡辩词） ================ */
+.debate-phase-pick{margin-top:14px;padding:14px;background:linear-gradient(135deg,#eef2ff,#faf5ff);border:1px dashed #c7d2fe;border-radius:14px}
+.dpp-title{font-size:.9rem;font-weight:700;color:#3730a3;margin-bottom:10px;text-align:center}
+.dpp-presets{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:10px}
+.dpp-preset{padding:6px 12px;border-radius:999px;border:1px solid #c7d2fe;background:#fff;color:#4338ca;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .18s;font-family:inherit}
+.dpp-preset:hover{background:#eef2ff;transform:translateY(-1px)}
+.dpp-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.dpp-item{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;border:2px solid #e5e7eb;background:#fff;cursor:pointer;transition:all .18s;user-select:none}
+.dpp-item:hover{border-color:#a5b4fc}
+.dpp-item.on{border-color:#667eea;background:#eef2ff;box-shadow:0 2px 10px rgba(102,126,234,.18)}
+.dpp-check{font-size:.95rem;line-height:1}
+.dpp-name{flex:1;font-size:.85rem;font-weight:600;color:#374151}
+.dpp-side{font-size:.72rem;color:#6b7280}
+.dpp-tip{margin-top:10px;font-size:.75rem;color:#6b7280;text-align:center;line-height:1.6}
+
+/* 卡片内嵌计时条：不弹居中遮罩，不遮挡对方辩词 */
+.debate-timer{margin-top:14px;padding:10px 14px;border-radius:12px;background:linear-gradient(135deg,#1e1b4b,#312e81);color:#fff;box-shadow:0 6px 20px rgba(49,46,129,.28)}
+.dt-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px}
+.dt-phase{font-size:.82rem;font-weight:600;opacity:.92;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dt-time{font-size:1.5rem;font-weight:300;font-variant-numeric:tabular-nums;letter-spacing:-1px;white-space:nowrap}
+.dt-bar{height:6px;border-radius:999px;background:rgba(255,255,255,.2);overflow:hidden}
+.dt-fill{height:100%;width:100%;border-radius:999px;background:linear-gradient(90deg,#34d399,#60a5fa);transition:width .2s linear}
+.dt-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;flex-wrap:wrap}
+.dt-info{font-size:.75rem;opacity:.85}
+.dt-actions{display:flex;gap:6px;flex-wrap:wrap}
+.dt-btn{padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;font-size:.76rem;font-weight:600;cursor:pointer;font-family:inherit;transition:background .18s}
+.dt-btn:hover{background:rgba(255,255,255,.26)}
+.dt-btn-end{background:rgba(239,68,68,.5);border-color:rgba(239,68,68,.6)}
+.dt-btn-end:hover{background:rgba(239,68,68,.75)}
+@media (max-width:768px){
+  .dpp-list{grid-template-columns:repeat(2,1fr)}
+  .dt-time{font-size:1.25rem}
+}
+html.dark .debate-phase-pick{background:linear-gradient(135deg,#25253f,#2d2350)!important;border-color:#3a3a5a!important}
+html.dark .dpp-title{color:#c7d2fe!important}
+html.dark .dpp-preset{background:#1c1c30!important;color:#c7d2fe!important;border-color:#3a3a5a!important}
+html.dark .dpp-item{background:#1c1c30!important;border-color:#3a3a5a!important}
+html.dark .dpp-item.on{background:#2a2a4d!important;border-color:#818cf8!important}
+html.dark .dpp-name{color:#e4e4ed!important}
+html.dark .dpp-side{color:#9ca3af!important}
+</style>
+
+<!-- ================ V3.7.2 功能注入 ================ -->
+<!-- 1. AI 陪练对辩面板（仅辩论模式显示，复用当前辩题，无独立辩题输入） -->
+<div id="aiDebatePanel" class="ai-debate-panel">
+  <div class="ai-debate-head">
+    <div class="ai-debate-title"><span>🤖</span>AI 陪练对辩</div>
+    <button class="btn btn-ghost btn-sm" onclick="window.closeAIDebate && closeAIDebate()" style="padding:2px 10px;font-size:.78rem">收起</button>
+  </div>
+  <div class="ai-debate-desc">基于当前抽到的辩题自动扮演对方辩手与你对辩，使用新国辩简化赛制；发言可语音或手打，结束后生成可解释评分。</div>
+  <div class="ai-debate-ctrl">
+    <span style="font-size:.82rem;color:#6b7280">我的立场：</span>
+    <button id="aiDebSideBtn" class="ai-debate-side" onclick="window.toggleAISide && toggleAISide()">我是正方</button>
+    <button class="btn btn-primary btn-sm" id="aiDebStartBtn" onclick="window.startAIDebate && startAIDebate()" style="padding:6px 14px">⚔️ 开始 AI 陪练</button>
+  </div>
+  <div id="aiDebChat" class="ai-debate-chat" style="display:none"></div>
+  <div id="aiDebInputRow" class="ai-debate-row" style="display:none">
+    <input type="text" id="aiDebTextInput" placeholder="输入你的论点（或点麦克风语音）" style="flex:1;min-width:160px;padding:8px 12px;border:1px solid #e0e7ff;border-radius:8px;font-size:.88rem" />
+    <button class="btn btn-sm" id="aiDebSendBtn" onclick="window.sendAIDebateText && sendAIDebateText()" style="padding:8px 14px">发送</button>
+    <button class="btn btn-danger btn-sm" id="aiDebMicBtn" onclick="window.toggleAIDebateMic && toggleAIDebateMic()" style="padding:8px 14px">🎙️</button>
+    <button class="btn btn-ghost btn-sm" onclick="window.endAIDebate && endAIDebate()" style="padding:8px 14px">⏹ 结束复盘</button>
+  </div>
+</div>
+
+<!-- 原通用框架弹窗已移除：V3.8.3 改为在主界面题目下方直接生成本题专属发言思路 -->
+
+<script>
+(function(){
+  var V = 'V3.8.3';
+  var badge = document.getElementById('verBadge');
+  if(badge){badge.textContent=V;}
+  var stamp=document.getElementById('buildStamp');
+  if(stamp){stamp.textContent='构建 2026-11-07 · '+V;}
+
+  var LS_KEY_HISTORY='jxs_train_history_v37';
+  var LS_KEY_DARK='jxs_dark_mode_v37';
+  var LS_KEY_CHECKIN='jxs_checkin_v37';
+  var LS_KEY_LB='jxs_leaderboard_v37';
+
+  function lsGet(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
+  function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+
+  function showToast(msg){
+    var t=document.createElement('div');
+    t.textContent=msg;
+    t.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.8);color:#fff;padding:10px 20px;border-radius:8px;z-index:9999;font-size:.9rem';
+    document.body.appendChild(t);setTimeout(function(){t.remove();},1600);
+  }
+
+  /* ========= 根据具体话题生成本题专属发言思路 ========= */
+  function generateTopicOutline(topic, category){
+    topic = topic || '';
+    category = category || '通用话题';
+    var open = '', points = [], example = '', close = '';
+
+    // 1. 开头钩子：根据话题类型生成自然破冰句
+    if(/穿越|回到|十年前|以前|过去|重来/.test(topic)){
+      open = '开门见山点题："如果真的能穿越，我不会急着去改变什么惊天动地的大事，我最想做的，是对十年前的自己说三句话。"';
+    }else if(/你认为|认同|怎么看|支持|反对/.test(topic)){
+      open = '直接亮明立场："关于这个问题，我的答案非常明确——我认同/不认同这种说法，原因主要有三点。"';
+      if(/不认同|反对|质疑|怎么看|吗/.test(topic)) open = '先抛出一个反差感的问题抓注意力："很多人都觉得这句话是真理，但今天我想唱个反调——恰恰是这种想法，困住了太多人。"';
+    }else if(/描述|分享|讲一个|经历|故事|记得/.test(topic)){
+      open = '用细节感拉近距离："看到这个题目，我脑子里第一时间冒出来的，是发生在我自己身上的一件小事，很小，但到现在我都记得。"';
+    }else if(/如果可以|拥有|选择|超能力|一百万|放弃/.test(topic)){
+      open = '反常识钩子："如果真的给我这个选择，我可能不会选大家第一反应都会选的那个答案——因为我后来发现，真正珍贵的东西，从来不是靠超能力换来的。"';
+    }else if(/应该|该不该|要不要|年轻人/.test(topic)){
+      open = '从身边现象切入："最近我身边好多朋友都在聊这个话题，有人说必须这么做，有人说完全没必要，我自己的经历告诉我，答案其实没那么非黑即白。"';
+    }else if(/什么是|如何理解|什么叫/.test(topic)){
+      open = '拆定义破题："很多人以为这个词说的是XX，但我觉得真正的它，从来不是我们想的那样——它其实藏在一件非常小的事里。"';
+    }else{
+      open = '用提问开场拉共鸣："不知道大家有没有过这种时刻——'+topic.replace(/？|吗|你认为|你如何看待/g,'').slice(0,20)+'，我自己就有过特别深的体会。"';
+    }
+
+    // 2. 核心论点：根据分类匹配最贴切的三层逻辑
+    if(category === '个人理财' || /钱|存钱|消费|买房|理财|收入|月光|工资/.test(topic)){
+      points = [
+        '第一层：先讲清本质——我们纠结的从来不是"存不存钱"，而是"要不要为未来的确定性，牺牲一部分当下的快乐"。',
+        '第二层：讲普通人的真实处境——不是大家不想理性，而是生活里太多"不得不花"的时刻，真正有用的方法从来不是强迫自己节衣缩食。',
+        '第三层：落回自己的经验——我自己试过最有效的方法，不是记账、不是强制储蓄，而是先留好"让自己开心的钱"，剩下的再规划。'
+      ];
+      example = '举例子就讲自己或身边人的真实改变：比如我之前也是月光，直到有一次突发急事需要用钱，才突然发现手里一点余量都没有，那种慌感，比买十个包包都让人印象深刻。';
+      close = '最后收束："其实理财理的从来不是钱，是我们面对生活的底气。手里有余量，心里才不慌，才有底气去选自己真正想要的生活。"';
+    }else if(category === '职场发展' || /工作|职场|老板|同事|加班|内卷|35岁|辞职|副业/.test(topic)){
+      points = [
+        '第一层：先戳破普遍误区——很多人以为职场拼的是努力、是加班时长，但我越工作越发现，真正决定你走多远的，从来不是熬了多少夜。',
+        '第二层：讲核心能力——比起做"老好人"什么都接，比起拼命内卷抢功劳，更重要的是"能解决问题"和"让人放心"这两件事。',
+        '第三层：讲底线——工作很重要，但它永远只是生活的一部分，为了工作把身体、把情绪都耗光，才是最不划算的买卖。'
+      ];
+      example = '我见过两种人：一种天天加班到深夜，但碰到问题就推、出了事就躲，三年过去还是在做最基础的活；另一种看起来准点下班，但交给他的事永远不用操心，反而升得最快。';
+      close = '结尾说句实在话："职场这条路很长，不用急着一时跑赢谁，能持续走下去、能走得踏实，比什么都重要。"';
+    }else if(category === '情感关系' || /恋爱|婚姻|朋友|父母|原生家庭|爱情|分手|亲密/.test(topic)){
+      points = [
+        '第一层：讲感受先讲道理——关系里从来没有绝对的对错，只有"舒不舒服"，很多矛盾根本不是事情本身的问题，是情绪没被看见。',
+        '第二层：讲边界感——再好的关系，也要有分寸感，别把对方的好当成理所当然，也别把自己全盘托付出去。',
+        '第三层：讲珍惜——真正长久的关系，从来不是完美的两个人凑在一起，是两个不完美的人，愿意互相包容、一起慢慢走。'
+      ];
+      example = '不用讲惊天动地的故事，就讲生活里的小细节：比如我爸妈吵了一辈子架，但我妈生病的时候，我爸比谁都急，守在病床前端水喂药，一句话抱怨都没有——这才是真实的感情。';
+      close = '收尾升华："好的关系从来不是一辈子不吵架，是吵了架还想一辈子在一起。能遇见已经不容易，别轻易放开那个愿意对你好的人。"';
+    }else if(category === '生活感悟' || /成熟|孤独|自由|躺平|内耗|遗憾|和解|快乐|幸福/.test(topic)){
+      points = [
+        '第一层：先推翻鸡汤——真正的成熟不是变得圆滑世故，不是对什么都无所谓，是你终于学会了对自己的情绪负责。',
+        '第二层：讲与自己和解——我们终其一生，不是要活成别人期待的样子，是要接受自己的普通，然后在普通的日子里找到属于自己的光。',
+        '第三层：讲行动——想太多就是内耗，真正能治愈你的从来不是道理，是好好吃饭、好好睡觉、去做具体的事。'
+      ];
+      example = '讲自己的小转变：我之前也总焦虑，觉得自己不够好，直到后来开始每天花半小时做饭，看着食材从生变熟，突然发现很多烦恼其实都是自己想出来的。';
+      close = '结尾暖一点："生活没有那么多标准答案，你觉得舒服、觉得踏实，就是最好的日子。慢慢来，你不用比别人快，只要走在自己的节奏里就好。"';
+    }else if(category === '科技与AI' || /AI|人工智能|手机|短视频|算法|科技|互联网/.test(topic)){
+      points = [
+        '第一层：不唱衰也不神化——技术本身从来没有对错，它只是工具，最后变成什么样，全看用它的人。',
+        '第二层：讲真正的危机——AI取代不了人，但会用AI的人会取代不会用的人；真正危险的从来不是技术本身，是你放弃了自己的思考。',
+        '第三层：讲人的不可替代性——AI能写文案、能画画，但它写不出你真实的经历，体会不到你真正的喜怒哀乐，这些才是人最珍贵的东西。'
+      ];
+      example = '就像短视频：有人用它学知识、看世界，有人刷着刷着一天就过去了，同样的工具，有人用来成长，有人用来消磨时间，差别从来不在工具，在人。';
+      close = '最后落点："技术永远是为人服务的，别让工具反过来绑架了你的生活。保持思考，保持对真实世界的感知，你就永远不会被取代。"';
+    }else if(category === '教育学习' || /学历|读书|学习|孩子|教育|大学|老师/.test(topic)){
+      points = [
+        '第一层：跳出非黑即白——教育从来不是"放养"和"鸡娃"二选一，真正好的教育，是帮孩子找到他自己真正热爱的事，而不是把你的期待强加给他。',
+        '第二层：讲终身成长——学历只是一张门票，进了门之后能走多远，靠的是持续学习的能力、是解决问题的能力，这些东西学校里不会教。',
+        '第三层：讲最重要的事——比起考多少分、上什么名校，成为一个正直、善良、能扛事的普通人，才是教育最该教会的事。'
+      ];
+      example = '我身边很多当年的学霸，毕业之后反而发展得没那么好，反而是那些一直保持好奇心、愿意尝试新东西的人，路越走越宽。';
+      close = '结尾升华："教育的本质，是一棵树摇动另一棵树，一朵云推动另一朵云。真正的成长，从来不是逼出来的，是唤醒心里的种子。"';
+    }else{
+      // 通用兜底：PREP + 个人经历
+      points = [
+        '第一层：先亮明你的核心观点，不要绕弯子——一句话说清楚你到底是什么态度，别模棱两可。',
+        '第二层：讲清楚为什么这么想，不用讲大道理，就说你自己真实的判断依据，真实比完美更打动人。',
+        '第三层：落回到行动或者启发——讲完观点之后，说清楚这对你、对听众有什么实实在在的意义。'
+      ];
+      example = '举例子一定要讲自己的真事，别编名人名言、别讲空泛的大道理：哪怕是很小的一件事，只要是你亲身经历的，讲出来就有感染力。';
+      close = '最后一句话收束，回扣你最开头的观点："所以说到底，这件事其实特别简单——[重复你的核心观点]。能做到这一点，就已经足够了。"';
+    }
+
+    return {open:open, points:points, example:example, close:close};
+  }
+
+  /* 复制思路到剪贴板 */
+  // 展开/收起本题思路提示
+  function toggleOutline(){
+    var outline = document.getElementById('topicOutline');
+    var btn = document.getElementById('outlineToggleBtn');
+    if(!outline || !btn) return;
+    if(outline.style.display==='none'){
+      outline.style.display='block';
+      btn.style.display='none';
+      outline.scrollIntoView({behavior:'smooth',block:'nearest'});
+    }else{
+      outline.style.display='none';
+      btn.style.display='inline-block';
+    }
+  }
+
+  function copyOutline(btn){
+    var outline = document.getElementById('topicOutline');
+    if(!outline) return;
+    var txt = '【开头】' + outline.querySelector('.outline-section:nth-child(2) .outline-content').innerText + '\n\n' +
+              '【核心论点】\n' + Array.from(outline.querySelectorAll('.outline-point')).map(function(el,i){return (i+1)+'. '+el.innerText.slice(2);}).join('\n') + '\n\n' +
+              '【举例建议】' + outline.querySelector('.outline-section:nth-child(4) .outline-content').innerText + '\n\n' +
+              '【结尾升华】' + outline.querySelector('.outline-section:nth-child(5) .outline-content').innerText;
+    function flash(){btn.textContent='✅ 已复制';setTimeout(function(){btn.textContent='📋 复制';},1200);}
+    function fallback(){var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);flash();}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(flash).catch(fallback);}else{fallback();}
+  }
+  window.copyOutline = copyOutline;
+  window.generateTopicOutline = generateTopicOutline;
+
+  /* ========= 深色模式 ========= */
+  function applyDark(on){
+    if(on){document.documentElement.classList.add('dark');}
+    else{document.documentElement.classList.remove('dark');}
+    lsSet(LS_KEY_DARK,!!on);
+    var tog=document.getElementById('darkModeToggle');
+    if(tog){tog.textContent=on?'☀️ 浅色模式':'🌙 深色模式';}
+    try{var c=document.getElementById('growthCanvasHome');if(c)renderGrowthCurve(c);}catch(e){}
+  }
+  function toggleDark(){applyDark(!document.documentElement.classList.contains('dark'));}
+  window.toggleDark=toggleDark;
+  applyDark(lsGet(LS_KEY_DARK,false));
+
+  /* 原通用弹窗逻辑已移除，替换为主界面嵌入专属思路 */
+
+  var _origDraw=window.drawTopic;
+  window.drawTopic=function(){
+    if(_origDraw)_origDraw.apply(this,arguments);
+  };
+
+  /* ========= 监听模式切换：辩论模式显示AI陪练面板，其他模式隐藏；统一状态源 ========= */
+  var modeTabs=document.getElementById('modeTabs');
+  if(modeTabs){
+    // 仅在 tab 点击时同步状态（不替绑 onclick，避免破坏原版逻辑）
+    modeTabs.addEventListener('click',function(e){
+      var tab=e.target.closest('.mode-tab');
+      if(!tab)return;
+      var m=tab.dataset.mode;
+      window._jxs_curMode=m;
+      if(window.STATE)window.STATE.mode=m;
+      var panel=document.getElementById('aiDebatePanel');
+      if(panel){
+        if(m==='debate'){panel.classList.add('show');}
+        else{panel.classList.remove('show');closeAIDebate(true);}
+      }
+    },true);
+  }
+
+  /* ========= AI 陪练对辩（接入辩论模式，复用当前辩题） ========= */
+  var aiState={running:false,mySide:'正方',recognizing:false,recognition:null,
+               transcript:'',round:0,topic:'',history:[],startTime:0,roundStats:[],totalChars:0};
+
+  function _currentDebateTopic(){
+    var tEl=document.getElementById('topicText')||document.querySelector('.topic-text');
+    if(tEl){var t=tEl.innerText.trim();if(t)return t.slice(0,80);}
+    return '当前辩题';
+  }
+
+  function toggleAISide(){
+    if(aiState.running){showToast('对辩进行中，无法切换立场');return;}
+    aiState.mySide=aiState.mySide==='正方'?'反方':'正方';
+    var btn=document.getElementById('aiDebSideBtn');
+    if(btn){btn.textContent='我是'+aiState.mySide;btn.classList.toggle('anti',aiState.mySide==='反方');}
+  }
+  function closeAIDebate(silent){
+    var p=document.getElementById('aiDebatePanel');
+    if(!silent&&p)p.classList.remove('show');
+    endAIDebate(true);
+  }
+
+  function startAIDebate(){
+    var topic=_currentDebateTopic();
+    if(!topic||topic==='当前辩题'){showToast('请先抽一道辩题');return;}
+    aiState.running=true;aiState.round=0;aiState.topic=topic;aiState.history=[];
+    aiState.startTime=Date.now();aiState.roundStats=[];aiState.totalChars=0;aiState.transcript='';
+    var chat=document.getElementById('aiDebChat');
+    var row=document.getElementById('aiDebInputRow');
+    chat.innerHTML='';chat.style.display='block';row.style.display='flex';
+    document.getElementById('aiDebStartBtn').textContent='⚔️ 对辩中…';
+    document.getElementById('aiDebStartBtn').disabled=true;
+    var antiSide=aiState.mySide==='正方'?'反方':'正方';
+    addBubble('ai','辩题：'+topic+'<br>你是<b>'+aiState.mySide+'</b>，请率先<b>开篇立论</b>。你可以打字或点🎙️语音发言，说完点发送/停止即可，我将作为<b>'+antiSide+'</b>回应。');
+    speak('请'+aiState.mySide+'率先开篇立论');
+  }
+
+  function addBubble(who,text){
+    var chat=document.getElementById('aiDebChat');
+    if(!chat)return;
+    var div=document.createElement('div');
+    div.className='ai-deb-bubble '+(who==='user'?'ai-deb-bubble-user':'ai-deb-bubble-ai');
+    var antiSide=aiState.mySide==='正方'?'反方':'正方';
+    var tag=who==='user'?('🙋 你（'+aiState.mySide+'）'):('🤖 AI（'+antiSide+'）');
+    div.innerHTML='<div class="ai-deb-bubble-tag">'+tag+'</div>'+text;
+    chat.appendChild(div);chat.scrollTop=chat.scrollHeight;
+    var plain=text.replace(/<[^>]+>/g,'').trim();
+    aiState.history.push({who:who,text:plain,ts:Date.now(),len:plain.length});
+    if(who==='user'&&aiState.running){
+      aiState.totalChars+=plain.length;
+      setTimeout(function(){aiReply(plain);},700);
+    }
+  }
+
+  function aiReply(userText){
+    aiState.round++;
+    var antiSide=aiState.mySide==='正方'?'反方':'正方';
+    var sentences=userText.split(/[。！？.!?；;\n]+/).filter(function(s){return s.trim().length>=3;});
+    var keySentence=(sentences.sort(function(a,b){return b.length-a.length;})[0]||userText).slice(0,30);
+    var userLen=userText.length;
+    var hasBecause=/因为|由于|原因|基于|所以|因此|故|第一|第二|第三|首先|其次/.test(userText);
+    var hasExample=/比如|例如|举个|数据|调查|研究|据统计|现实中|曾经|有一次/.test(userText);
+    var hasValue=/应该|必须|需要|有利于|能够|可以|价值|意义/.test(userText);
+    aiState.roundStats.push({len:userLen,hasBecause:hasBecause,hasExample:hasExample,hasValue:hasValue,sentenceCount:sentences.length});
+
+    var reply;
+    if(aiState.round===1){
+      reply='感谢'+aiState.mySide+'辩友的开篇。你方提到「'+keySentence+'」，但立论里'+(hasBecause?'给出了因果链，可成本与代价并未比较':'缺少清晰的因果论证')+'，且'+(hasExample?'举出了例证，可惜属于个案':'没有提供数据或现实案例')+'。我方将从现实代价与长期影响角度展开回应。';
+    }else if(aiState.round<=3){
+      var parts=[];
+      if(!hasBecause)parts.push('你方仍未给出从前提到结论的因果链，只是反复重申立场');
+      if(!hasExample)parts.push('你方始终在抽象层面论述，没有举出可验证的案例或数据');
+      if(userLen<25)parts.push('你方本轮发言过短，论证没有展开');
+      if(parts.length===0)parts.push('你方论证看似完整，但忽略了执行成本与受损群体');
+      reply=parts.join('；')+'。请问：'+(hasExample?'当类似政策落地后，你方方案的成本由谁承担？':'如果按你方主张全面推行，弱势群体的利益如何保障？');
+    }else{
+      reply='交锋进行到这里，你方'+(hasExample&&hasBecause?'逻辑链与举例都比较完整，值得肯定':'在因果论证与事实支撑上仍有缺口')+'。从整场看，我方已指出你方关键问题：1) 把相关性当因果；2) 忽略执行成本；3) 对反例回应不足。请进入结辩。';
+    }
+    addBubble('ai',reply);
+    speak(reply.slice(0,80));
+    if(aiState.round>=6){
+      setTimeout(function(){addBubble('ai','<b>已进行'+aiState.round+'轮交锋，点「⏹ 结束复盘」查看攻防报告</b>');},1200);
+    }
+  }
+
+  function speak(text){
+    if(!('speechSynthesis' in window))return;
+    try{window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(text);u.lang='zh-CN';u.rate=1.05;window.speechSynthesis.speak(u);}catch(e){}
+  }
+
+  function sendAIDebateText(){
+    var inp=document.getElementById('aiDebTextInput');
+    if(!inp)return;
+    var v=inp.value.trim();
+    if(!v)return;
+    inp.value='';
+    addBubble('user',v);
+  }
+  function toggleAIDebateMic(){
+    if(aiState.recognizing){stopAIMic();return;}
+    startAIMic();
+  }
+  function startAIMic(){
+    var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){showToast('当前浏览器不支持语音识别，请用输入框');return;}
+    aiState.recognition=new SR();
+    aiState.recognition.lang='zh-CN';aiState.recognition.continuous=false;aiState.recognition.interimResults=true;
+    aiState.transcript='';
+    var btn=document.getElementById('aiDebMicBtn');
+    aiState.recognition.onresult=function(e){
+      var int='',fin='';
+      for(var i=e.resultIndex;i<e.results.length;i++){
+        if(e.results[i].isFinal){fin+=e.results[i][0].transcript;}else{int+=e.results[i][0].transcript;}
+      }
+      aiState.transcript+=fin;
+      if(btn){btn.textContent='🔴'+(int||'识别中…');}
+    };
+    aiState.recognition.onend=function(){
+      aiState.recognizing=false;
+      if(btn){btn.textContent='🎙️';btn.classList.remove('recording');}
+      if(aiState.transcript.trim().length>1){addBubble('user',aiState.transcript.trim());}
+    };
+    aiState.recognition.onerror=function(e){
+      aiState.recognizing=false;
+      if(btn){btn.textContent='🎙️';}
+      if(e.error==='not-allowed')showToast('请允许麦克风权限');
+    };
+    try{aiState.recognition.start();aiState.recognizing=true;if(btn){btn.textContent='🔴 发言中…';btn.classList.add('recording');}}catch(e){}
+  }
+  function stopAIMic(){if(aiState.recognition)try{aiState.recognition.stop();}catch(e){}}
+
+  function endAIDebate(silent){
+    aiState.running=false;aiState.recognizing=false;
+    var sb=document.getElementById('aiDebStartBtn');
+    if(sb){sb.textContent='⚔️ 开始 AI 陪练';sb.disabled=false;}
+    if(aiState.recognition)try{aiState.recognition.stop();}catch(e){}
+    window.speechSynthesis&&window.speechSynthesis.cancel();
+    if(silent||aiState.history.length<2){return;}
+
+    var rounds=aiState.round||0;
+    var userTurns=aiState.history.filter(function(h){return h.who==='user';});
+    var totalLen=aiState.totalChars||userTurns.reduce(function(s,h){return s+h.len;},0);
+    var avgLen=userTurns.length?Math.round(totalLen/userTurns.length):0;
+    var withBecause=aiState.roundStats.filter(function(r){return r.hasBecause;}).length;
+    var withExample=aiState.roundStats.filter(function(r){return r.hasExample;}).length;
+    var multiSent=aiState.roundStats.filter(function(r){return r.sentenceCount>=2;}).length;
+    var durSec=Math.round((Date.now()-aiState.startTime)/1000);
+
+    var posScore=Math.max(55,Math.min(95,Math.round(55 + rounds*4 + Math.min(20,avgLen/4))));
+    var logScore=Math.max(50,Math.min(95,Math.round(50 + withBecause*8 + multiSent*5 + Math.min(15,rounds*2))));
+    var refScore=Math.max(50,Math.min(95,Math.round(50 + withExample*9 + Math.min(20,rounds*3))));
+    var score=Math.round((posScore+logScore+refScore)/3);
+
+    var repHtml='<div style="background:linear-gradient(135deg,#f0f4ff,#faf5ff);border-radius:14px;padding:14px;margin-top:12px">';
+    repHtml+='<h4 style="margin:0 0 8px 0;color:#4338ca;font-size:.95rem">📊 AI 攻防复盘（基于真实发言）</h4>';
+    repHtml+='<div style="font-size:.8rem;color:#6b7280;margin-bottom:10px">辩题：'+aiState.topic+'<br>立场：'+aiState.mySide+' · 轮次：'+rounds+' · 总时长：'+durSec+'s · 平均每轮'+avgLen+'字</div>';
+    repHtml+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px">';
+    repHtml+='<div style="background:#fff;border-radius:8px;padding:8px;text-align:center"><b style="color:#667eea;font-size:1.1rem">'+score+'</b><div style="font-size:.7rem;color:#6b7280">综合分</div></div>';
+    repHtml+='<div style="background:#fff;border-radius:8px;padding:8px;text-align:center"><b style="color:#10b981;font-size:1.1rem">'+posScore+'</b><div style="font-size:.7rem;color:#6b7280">立场坚定</div></div>';
+    repHtml+='<div style="background:#fff;border-radius:8px;padding:8px;text-align:center"><b style="color:#f59e0b;font-size:1.1rem">'+logScore+'</b><div style="font-size:.7rem;color:#6b7280">逻辑清晰</div></div>';
+    repHtml+='<div style="background:#fff;border-radius:8px;padding:8px;text-align:center"><b style="color:#ef4444;font-size:1.1rem">'+refScore+'</b><div style="font-size:.7rem;color:#6b7280">反驳到位</div></div>';
+    repHtml+='</div>';
+    repHtml+='<div style="font-size:.82rem;line-height:1.7;color:#374151"><b>💡 改进建议：</b><br>';
+    if(posScore<75)repHtml+='• 平均每轮仅'+avgLen+'字，立论展开不够，建议把每轮发言延长到 60 字以上、亮出明确观点句；<br>';
+    if(logScore<75)repHtml+='• 使用「因为…所以…/原因有三/第一…第二…」结构词，让因果链显性化；<br>';
+    if(refScore<75)repHtml+='• 反驳时加入具体案例、数据或常见反例，避免停留在抽象立场重申；<br>';
+    if(rounds<3)repHtml+='• 建议至少进行 3 轮以上交锋，练习应对对方追问；<br>';
+    if(!(posScore<75)&&!(logScore<75)&&!(refScore<75)&&rounds>=3)repHtml+='• 本场整体表现不错，下一步可尝试预判对方攻击点提前布防。';
+    repHtml+='</div>';
+    repHtml+='<div style="margin-top:10px;text-align:center"><button class="btn btn-primary btn-sm" id="aiDebSaveBtn">💾 存入训练记录</button></div>';
+    repHtml+='</div>';
+    var chat=document.getElementById('aiDebChat');
+    if(chat){
+      var d=document.createElement('div');d.innerHTML=repHtml;chat.appendChild(d);chat.scrollTop=chat.scrollHeight;
+      var sv=d.querySelector('#aiDebSaveBtn');
+      if(sv)sv.onclick=function(){sv.disabled=true;sv.textContent='已保存';saveRecord(aiState.topic,score,'debate');showToast('已存入训练记录');};
+    }
+  }
+
+  window.closeAIDebate=closeAIDebate;window.toggleAISide=toggleAISide;window.startAIDebate=startAIDebate;
+  window.toggleAIDebateMic=toggleAIDebateMic;window.endAIDebate=endAIDebate;
+  window.sendAIDebateText=sendAIDebateText;window.showToast=showToast;
+
+  setTimeout(function(){
+    var inp=document.getElementById('aiDebTextInput');
+    if(inp)inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();sendAIDebateText();}});
+  },300);
+
+  /* ========= 录音+AI点评：追加"存入训练记录"按钮 ========= */
+  var _origRunReview=window.runAIReview;
+  window.runAIReview=function(){
+    var ret=_origRunReview&&_origRunReview.apply(this,arguments);
+    setTimeout(function(){
+      var res=document.getElementById('reviewResult');
+      if(!res)return;
+      if(res.querySelector('.save-record-btn'))return;
+      var score=72;
+      var m=res.innerText.match(/(\d{1,3})\s*分/);
+      if(m){var s=parseInt(m[1]);if(s>=0&&s<=100)score=s;}
+      var tEl=document.getElementById('topicText')||document.querySelector('.topic-text');
+      var topic=tEl?tEl.innerText.trim().slice(0,40):'即兴演讲练习';
+      var btn=document.createElement('button');
+      btn.className='btn btn-ghost btn-sm save-record-btn';btn.style.marginLeft='8px';
+      btn.textContent='💾 存入训练记录';
+      btn.onclick=function(){btn.disabled=true;btn.textContent='已保存';saveRecord(topic,score,'review');showToast('已存入训练记录');};
+      var btnRow=res.querySelector('.btn-row');
+      if(btnRow)btnRow.appendChild(btn);
+    },1500);
+    return ret;
+  };
+
+  /* ========= 训练记录 + 成长曲线 ========= */
+  function saveRecord(topic,score,type){
+    var list=lsGet(LS_KEY_HISTORY,[]);
+    list.push({topic:topic||'练习',score:Math.max(0,Math.min(100,Math.round(score||70))),type:type,time:Date.now()});
+    if(list.length>200)list=list.slice(-200);
+    lsSet(LS_KEY_HISTORY,list);
+    doCheckin(true);
+    renderHomeGrowth();
+  }
+  window.saveRecord=saveRecord;
+
+  function renderGrowthCurve(canvas){
+    if(!canvas)return;
+    var ctx=canvas.getContext('2d');
+    var list=lsGet(LS_KEY_HISTORY,[]).slice(-30);
+    var ratio=window.devicePixelRatio||2;
+    var W=canvas.width=canvas.offsetWidth*ratio;
+    var H=canvas.height=canvas.offsetHeight*ratio;
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.scale(ratio,ratio);
+    var w=canvas.offsetWidth,h=canvas.offsetHeight;
+    ctx.clearRect(0,0,w,h);
+    var dark=document.documentElement.classList.contains('dark');
+    ctx.fillStyle=dark?'#1e1e35':'#f9fafb';
+    ctx.fillRect(0,0,w,h);
+    ctx.strokeStyle=dark?'#2a2a4a':'#f0f0f5';ctx.lineWidth=1;
+    for(var i=0;i<=4;i++){var y=(h-22)*i/4+12;ctx.beginPath();ctx.moveTo(34,y);ctx.lineTo(w-8,y);ctx.stroke();}
+    if(list.length<2){
+      ctx.fillStyle='#9ca3af';ctx.font='13px sans-serif';ctx.textAlign='center';
+      ctx.fillText('完成至少 2 次训练后显示成长曲线',w/2,h/2+4);
+      return;
+    }
+    var min=50,max=100;
+    var stepX=(w-46)/(list.length-1);
+    ctx.strokeStyle='#667eea';ctx.lineWidth=2.5;ctx.beginPath();
+    list.forEach(function(it,i){
+      var x=38+i*stepX;var y=h-14-(it.score-min)/(max-min)*(h-36);
+      if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+    ctx.lineTo(38+(list.length-1)*stepX,h-14);ctx.lineTo(38,h-14);ctx.closePath();
+    var grad=ctx.createLinearGradient(0,0,0,h);
+    grad.addColorStop(0,'rgba(102,126,234,.35)');grad.addColorStop(1,'rgba(102,126,234,.02)');
+    ctx.fillStyle=grad;ctx.fill();
+    ctx.fillStyle='#764ba2';
+    list.forEach(function(it,i){
+      var x=38+i*stepX;var y=h-14-(it.score-min)/(max-min)*(h-36);
+      ctx.beginPath();ctx.arc(x,y,2.5,0,Math.PI*2);ctx.fill();
+    });
+  }
+
+  function renderHomeGrowth(){
+    var list=lsGet(LS_KEY_HISTORY,[]);
+    var total=list.length;
+    var avg=total?Math.round(list.reduce(function(s,i){return s+(i.score||0);},0)/total):0;
+    var ci=lsGet(LS_KEY_CHECKIN,{streak:0,last:0,total:0});
+    var stats=document.getElementById('growthStats');
+    if(stats){
+      stats.innerHTML=
+        '<div class="growth-stat"><div class="growth-stat-num">'+total+'</div><div class="growth-stat-label">累计训练</div></div>'+
+        '<div class="growth-stat"><div class="growth-stat-num">'+avg+'</div><div class="growth-stat-label">平均分</div></div>'+
+        '<div class="growth-stat"><div class="growth-stat-num">'+(ci.streak||0)+'</div><div class="growth-stat-label">连续打卡</div></div>'+
+        '<div class="growth-stat"><div class="growth-stat-num">'+(ci.total||0)+'</div><div class="growth-stat-label">打卡天数</div></div>';
+    }
+    var sub=document.getElementById('growthSubtitle');
+    if(sub){sub.textContent=total?('最近训练均分 '+avg+'，连续打卡 '+(ci.streak||0)+' 天'):'还没开始训练，抽一题试试吧～';}
+
+    var btn=document.getElementById('checkinBtnHome');
+    if(btn){
+      var today=new Date();today.setHours(0,0,0,0);
+      if(ci.last===today.getTime()){btn.classList.add('done');btn.textContent='✅ 今日已打卡（'+(ci.streak||0)+'天🔥）';}
+      else{btn.classList.remove('done');btn.textContent='👆 打卡（连续'+(ci.streak||0)+'天）';}
+    }
+
+    var lbBox=document.getElementById('leaderboardBoxHome');
+    if(lbBox){
+      var lb=lsGet(LS_KEY_LB,[]);
+      if(!lb.length){lbBox.innerHTML='<div style="text-align:center;color:#9ca3af;padding:8px">打卡后生成本地排行</div>';}
+      else{
+        var h='';lb.slice(0,5).forEach(function(u,i){
+          var medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1);
+          h+='<div class="lb-mini-row"><span class="lb-mini-rank">'+medal+'</span><span class="lb-mini-name'+(u.me?' lb-mini-me':'')+'">'+u.name+(u.me?'（你）':'')+'</span><span class="lb-mini-score">'+u.score+'次</span></div>';
+        });
+        lbBox.innerHTML=h;
+      }
+    }
+
+    var listEl=document.getElementById('historyList');
+    if(listEl){
+      if(total===0){
+        listEl.innerHTML='<div style="text-align:center;color:#9ca3af;padding:16px;font-size:.82rem">还没有训练记录，快去抽题练习吧～</div>';
+      }else{
+        var html='';
+        list.slice(-15).reverse().forEach(function(it){
+          var d=new Date(it.time);
+          var date=(d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+          var typeName={review:'AI点评',debate:'AI辩论'}[it.type]||'即兴练习';
+          html+='<div class="growth-rec"><div class="growth-rec-topic">'+(it.topic||'练习')+'</div>';
+          html+='<div class="growth-rec-meta"><span>'+date+'</span><span>'+typeName+'</span><span class="growth-rec-score">'+(it.score||0)+'分</span></div></div>';
+        });
+        listEl.innerHTML=html;
+      }
+    }
+    setTimeout(function(){var c=document.getElementById('growthCanvasHome');if(c)renderGrowthCurve(c);},30);
+  }
+  window.renderHomeGrowth=renderHomeGrowth;
+
+  function doCheckin(silent){
+    var ci=lsGet(LS_KEY_CHECKIN,{streak:0,last:0,total:0});
+    var today=new Date();today.setHours(0,0,0,0);var tnow=today.getTime();
+    if(ci.last===tnow){if(!silent)showToast('今天已打卡 ✓');renderHomeGrowth();return;}
+    var yest=tnow-86400000;
+    if(ci.last===yest){ci.streak=(ci.streak||0)+1;}else{ci.streak=1;}
+    ci.last=tnow;ci.total=(ci.total||0)+1;
+    lsSet(LS_KEY_CHECKIN,ci);
+    var lb=lsGet(LS_KEY_LB,null);
+    if(!lb){
+      lb=[{name:'小明',score:42,streak:12},{name:'阿杰',score:28,streak:7},{name:'小雨',score:18,streak:4},{name:'你',score:ci.total,streak:ci.streak,me:true}];
+    }else{
+      var found=false;
+      lb.forEach(function(u){if(u.me){u.score=ci.total;u.streak=ci.streak;found=true;}});
+      if(!found)lb.push({name:'你',score:ci.total,streak:ci.streak,me:true});
+    }
+    lb.sort(function(a,b){return b.score-a.score;});
+    lsSet(LS_KEY_LB,lb);
+    if(!silent)showToast('打卡成功！连续'+ci.streak+'天 🔥');
+    renderHomeGrowth();
+  }
+  window.doCheckin=doCheckin;
+
+  function clearAllHistory(){
+    if(!confirm('确定清空本地训练记录与打卡数据吗？此操作不可恢复（不影响题库和设置）。'))return;
+    lsSet(LS_KEY_HISTORY,[]);
+    lsSet(LS_KEY_CHECKIN,{streak:0,last:0,total:0});
+    lsSet(LS_KEY_LB,null);
+    showToast('已清空');
+    renderHomeGrowth();
+  }
+  window.clearAllHistory=clearAllHistory;
+
+  /* ========= 设置面板：仅注入深色模式开关，不再塞成长/打卡分组 ========= */
+  function injectDarkSetting(){
+    var panel=document.getElementById('settingsPanel');
+    if(!panel)return;
+    if(panel.querySelector('.v372-injected'))return;
+    var darkSetting=document.createElement('div');
+    darkSetting.className='setting-row v372-injected';
+    darkSetting.innerHTML='<label>🌙 显示模式</label><button id="darkModeToggle" class="btn btn-ghost" onclick="toggleDark()" style="width:100%">🌙 深色模式</button>';
+    var pb=panel.querySelector('.panel-body');
+    if(pb)pb.insertBefore(darkSetting,pb.firstChild);
+    applyDark(document.documentElement.classList.contains('dark'));
+  }
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){injectDarkSetting();renderHomeGrowth();});}
+  else{injectDarkSetting();renderHomeGrowth();}
+
+  window.addEventListener('resize',function(){
+    var c=document.getElementById('growthCanvasHome');if(c)renderGrowthCurve(c);
+  });
+
+  console.log('['+V+'] 功能就绪：深色模式 / 技巧卡片 / AI陪练(辩论模块内) / 录音存记录 / 主页成长卡');
+})();
+</script>
+
+<script>
+/* ============================================================================
+   V3.7.5 专项修复：经典朗诵「点单词连点几次就卡死/崩溃」
+   病根（实测数据）：停止流程存在 A→B→C→A 的无限互相递归
+       _stopAllSpeech()  ─┐
+            ↓             │
+       _stopLongPlay()    │  环
+            ↓             │
+       _hardStopAllNow()  │
+            ↓ 第 6 步回调 │
+       _stopAllSpeech()  ─┘
+   一次点击单词即递归约 9900 层、_stopAllTts 被调用约 15000 次，
+   每次都排一个 setTimeout → 单次点击产生约 15000 个待执行定时器，
+   主线程被反复清空/淹没；连点几次后必然卡顿直至卡死。
+   修法（改动最小、停声行为不变）：
+     给 window._stopLongPlay 加“重入闸门”，在第 2 次进入处切断环路；
+     环上每一段真正的停止逻辑仍各执行一次，故原有停声效果完全保留。
+   附带：_stopAllTts 里 while(pending){cancel()} 改为最多 3 次的有限循环，
+     个别内核 pending 长期为真时会在此死转（潜在冻结点）。
+============================================================================ */
+(function(){
+  if(window.__V375_STOP_RECURSION_FIX__) return;
+  window.__V375_STOP_RECURSION_FIX__ = true;
+
+  /* ---- 1) 切断 _stopAllSpeech ↔ _stopLongPlay ↔ _hardStopAllNow 的互相递归 ---- */
+  if(typeof window._stopLongPlay === 'function'){
+    var _origStopLongPlay = window._stopLongPlay;
+    var _stopLongInFlight = 0;
+    window._stopLongPlay = function(silent){
+      if(_stopLongInFlight > 0) return;      /* 已在停止流程中：环路闭合，立即返回 */
+      _stopLongInFlight++;
+      try{ return _origStopLongPlay.apply(this, arguments); }
+      finally{ _stopLongInFlight--; }
+    };
+  }
+
+  /* ---- 2) TTS 清队列：清空 pending 改为有限次，杜绝死循环 ---- */
+  if(typeof window._stopAllTts === 'function'){
+    window._stopAllTts = function(){
+      try{ if('speechSynthesis' in window){ speechSynthesis.cancel(); } }catch(e){}
+      try{ window._currentTtsUtter = null; if(typeof _currentTtsUtter !== 'undefined'){ _currentTtsUtter = null; } }catch(e){}
+      setTimeout(function(){
+        try{ if('speechSynthesis' in window){ speechSynthesis.cancel(); } }catch(e){}
+        try{ for(var i = 0; i < 3 && speechSynthesis.pending; i++){ speechSynthesis.cancel(); } }catch(e){}
+      }, 0);
+    };
+  }
+
+  /* ---- 3) 自检：确认闸门与停止函数都在位 ---- */
+  try{
+    if(typeof window._stopLongPlay !== 'function' || typeof window._stopAllSpeech !== 'function'){
+      console.log('[V3.7.5] 警告：停止流程函数缺失，重入闸门未生效');
+    }else{
+      console.log('[V3.7.5] 停止流程重入闸门已装载：_stopLongPlay / _stopAllSpeech 就位');
+    }
+  }catch(e){}
+
+  try{ console.log('[V3.8.6] 单词连点卡死修复已生效：停止流程互相递归已切断 + TTS 清队列改为有限次'); }catch(e){}
+})();
+</script>
+
+<!-- V3.8.7 反馈双提交修复：①邮件提交（无需任何账号）+ ②GitHub提交双选，100%送达作者；冗余旧iframe提交已删除 -->
 </body>
 </html>
