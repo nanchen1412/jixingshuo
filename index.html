@@ -18,7 +18,7 @@
      MINOR 满 10 同样进位到 MAJOR：V3.9.9 的下一个版本 = V4.0.0
    发版时只需改 APP_VERSION_ARRAY 这三个数字，展示字符串自动计算；
    也可以直接调用 window.bumpAppVersion() 按上述规则自动进一位。 */
-window.APP_VERSION_ARRAY = [3, 9, 0];   /* [MAJOR, MINOR, PATCH] */
+window.APP_VERSION_ARRAY = [3, 9, 9];   /* [MAJOR, MINOR, PATCH] */
 window.formatAppVersion = function(arr){
   var M = arr[0]|0, m = arr[1]|0, p = arr[2]|0;
   if(p >= 10){ m += Math.floor(p/10); p = p % 10; }
@@ -38,7 +38,7 @@ window.bumpAppVersion = function(){
   return window.APP_VERSION;
 };
 window.APP_VERSION = window.formatAppVersion(window.APP_VERSION_ARRAY);
-window.APP_BUILD = '2026-11-08 · ' + window.APP_VERSION + ' · 反馈弹窗拦截修复+自动打标签';
+window.APP_BUILD = '2026-11-08 · ' + window.APP_VERSION + ' · 修复按钮点击失效；提示改为思考脚手架（教方法、不直接给答案，避免固化思维），手机/电脑100%可点';
 
 /* ===== PWA：内联 SVG 图标 + 内联 manifest（blob URL），零外部依赖 ===== */
 (function(){
@@ -844,6 +844,118 @@ img,svg,video,canvas,iframe,pre,table{max-width:100%}
 /* V3.3.5：整个英文朗诵区域禁止文本选择+禁止iOS数据检测器识别链接+禁止长按系统菜单 */
 .recite-body-en, #reciteBodyEn, .recite-body{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-user-drag:none;pointer-events:auto;-webkit-tap-highlight-color:transparent;}
 .recite-body-en .recite-punc{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-user-drag:none;}
+/* ==== V3.9.9 原生details折叠样式（修复部分手机浏览器点击失效；按钮全宽块级，100%可点）==== */
+details.native-hint{
+  margin:16px 0 6px 0;
+  border:1.5px dashed #c4b5fd;
+  border-radius:24px;
+  background:rgba(245,243,255,.6);
+  overflow:hidden;
+  transition:border-color .2s;
+}
+details.native-hint[open]{ border-color:#a78bfa; background:#f5f3ff; }
+details.native-hint > summary{
+  list-style:none;
+  cursor:pointer;
+  padding:10px 22px;
+  text-align:center;
+  font-size:.9rem;
+  color:#7c3aed;
+  font-weight:500;
+  user-select:none;
+  -webkit-user-select:none;
+  outline:none;
+  display:block;
+  width:100%;
+  box-sizing:border-box;
+  position:relative;
+}
+details.native-hint > summary::-webkit-details-marker{ display:none; }
+details.native-hint > summary::after{
+  content:'▾';
+  font-size:.75rem;
+  margin-left:6px;
+  transition:transform .2s;
+  color:#a78bfa;
+  display:inline-block;
+}
+details.native-hint[open] > summary::after{ transform:rotate(180deg); }
+details.native-hint .hint-body{
+  padding:4px 16px 16px 16px;
+  border-top:1px dashed #ddd6fe;
+  margin-top:4px;
+}
+/* ==== V3.9.9 思考脚手架样式：引导思考，不直接给答案 ==== */
+.scaffold-intro{
+  font-size:.92rem;
+  font-weight:600;
+  color:#4c1d95;
+  margin-bottom:10px;
+  padding-bottom:8px;
+  border-bottom:1px dashed #e9d5ff;
+}
+.scaffold-step{
+  font-size:.88rem;
+  line-height:1.7;
+  color:#374151;
+  margin-bottom:8px;
+  padding-left:4px;
+}
+.step-icon{
+  display:inline-block;
+  width:22px;
+}
+.scaffold-open{
+  font-size:.9rem;
+  font-weight:600;
+  color:#6d28d9;
+  margin:12px 0 8px 0;
+  padding-top:10px;
+  border-top:1px dashed #e9d5ff;
+}
+.scaffold-line{
+  font-size:.86rem;
+  color:#4b5563;
+  line-height:1.6;
+  margin-bottom:4px;
+  padding-left:12px;
+}
+.scaffold-tip{
+  margin-top:12px;
+  padding:8px 12px;
+  background:#fef3c7;
+  border-radius:8px;
+  font-size:.82rem;
+  color:#92400e;
+  line-height:1.6;
+}
+/* 口才题思考脚手架样式 */
+.speech-scaffold{
+  font-size:.88rem;
+  line-height:1.7;
+  color:#374151;
+}
+.speech-q-title{
+  font-weight:600;
+  color:#4c1d95;
+  margin:8px 0 6px 0;
+}
+.speech-questions{
+  padding-left:16px;
+  margin-bottom:10px;
+}
+.speech-questions li{
+  margin-bottom:4px;
+  color:#4b5563;
+}
+.speech-principle{
+  margin-top:10px;
+  padding:8px 12px;
+  background:#ecfdf5;
+  border-radius:8px;
+  font-size:.84rem;
+  color:#065f46;
+}
 /* 修复大随机题库/分类按钮点击阴影：禁用tap高亮+默认focus outline+active阴影 */
 .all-big,.kind-chip,.kind-item,.card-kind,.topic-chip,.cat-card,.mode-chip,.kind-tag,.cat-tag,
 .chip,.mode-tab,.toggle-cats,.cat-group-head,.btn,.btn-primary,.btn-sm,.settings-btn{
@@ -1206,13 +1318,15 @@ body{background-attachment:fixed !important;}
               <button class="btn btn-sm btn-ghost" onclick="fbCopyCode()">📋 复制</button>
             </div>
           </div>
-          <button class="btn btn-primary fb-submit" onclick="fbSubmitGithub()" style="width:100%;margin-bottom:8px;">📨 一键提交到GitHub（无需任何隐私信息）</button>
+          <a id="fbSubmitLink" class="btn btn-primary fb-submit" href="https://github.com/nanchen1412/jixingshuo/issues" target="_blank" rel="noopener" onclick="return fbSubmitGithub(event);" style="width:100%;margin-bottom:8px;box-sizing:border-box;text-decoration:none;">📨 一键提交到GitHub（无需任何隐私信息）</a>
           <div style="margin:8px 0;padding:10px;background:#eff6ff;border-radius:10px;font-size:.82rem;color:#1e40af;line-height:1.6;text-align:center;">
             <b>📝 提交只需两步：</b><br>
-            1. 点上面按钮 → 自动打开GitHub页面（内容已经全部填好）<br>
+            1. 点上面按钮 → 打开GitHub页面（内容已经全部填好）<br>
             2. 到GitHub页面点最底部绿色的「Submit new issue」按钮就完成啦！<br>
-            <small>如果没弹出新页面，会自动显示蓝色备用链接，点一下就能打开</small>
+            <small>手机上如果点了没反应，点下面的「🔗 复制提交链接」，粘贴到浏览器地址栏打开即可</small>
           </div>
+          <div id="fbMobileTip" style="display:none;margin:8px 0;padding:10px;background:#fef3c7;border-radius:10px;font-size:.82rem;color:#92400e;line-height:1.7;text-align:left;"></div>
+          <button class="btn btn-ghost" onclick="fbCopyLink()" style="width:100%;margin-bottom:8px;">🔗 复制提交链接（手机推荐，粘贴到浏览器打开）</button>
           <button class="btn btn-ghost" onclick="fbCopyText()" style="width:100%;">📋 复制反馈文本（备用手动提交）</button>
           <div class="fb-hint">提交不需要任何账号/登录，不需要提供邮箱、手机号等隐私信息，点击提交后会自动打开GitHub，标题正文、标签全部预填好，只需要点确认即可。提交后内容公开显示在反馈看板，作者会看到并处理，追踪码可查询处理进度。</div>
           <div class="fb-channel" id="fbChannelLine" style="display:none"></div>
@@ -1265,6 +1379,22 @@ body{background-attachment:fixed !important;}
           <button class="btn btn-ghost btn-sm" onclick="testAiConnection()" style="flex:1;">🔌 测试连接</button>
         </div>
         <div id="aiTestResult" style="margin-top:8px;font-size:.78rem;"></div>
+
+        <!-- V3.9.7: 跨设备同步 -->
+        <div style="margin-top:12px;padding:10px;background:#fff7ed;border-radius:8px;border-left:3px solid #f97316;">
+          <div style="font-size:.8rem;color:#9a3412;font-weight:600;margin-bottom:6px;">🔁 换浏览器/换手机不想重新输入？</div>
+          <div style="font-size:.76rem;color:#7c2d12;line-height:1.6;margin-bottom:8px;">
+            方法一：电脑上点「🔗 生成配置链接」，把链接发到手机浏览器打开即可自动写入 Key（写入后链接中的 Key 会自动清掉，不会泄露）。<br>
+            方法二：点「📋 复制配置码」，在新浏览器中点「📥 粘贴配置码导入」粘贴即可。<br>
+            方法三：用文本编辑器打开本 HTML 文件，把 Key 填到开头的 <code style="background:#fff;padding:0 3px;border-radius:3px;">BUILTIN_AI_API_KEY</code> 常量里保存，任何浏览器打开都自带 Key。
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button class="btn btn-ghost btn-sm" onclick="genKeyLink()" style="font-size:.78rem;padding:5px 8px;">🔗 生成配置链接</button>
+            <button class="btn btn-ghost btn-sm" onclick="copyKeyCode()" style="font-size:.78rem;padding:5px 8px;">📋 复制配置码</button>
+            <button class="btn btn-ghost btn-sm" onclick="importKeyCode()" style="font-size:.78rem;padding:5px 8px;">📥 粘贴配置码导入</button>
+          </div>
+          <div id="syncResult" style="margin-top:6px;font-size:.76rem;"></div>
+        </div>
       </div>
     </div>
 
@@ -1730,9 +1860,16 @@ let LIB = {"categories": [{"id": "general", "name": "通用话题", "emoji": "�
 
 
 const SETTINGS_KEY = 'jxs_settings_v6';
-const HISTORY_KEY = 'jxs_history_v6';
+const HISTORY_KEY = 'jxs_history_v4';
 const CUSTOM_LIB_KEY = 'jxs_custom_lib_v6';
+const LAST_CHECK_KEY = 'jxs_lastcheck_v2';
+const QR_URL_KEY = 'jxs_qr_url_v1';
 const SETTINGS_VERSION = 6;
+
+/* ===== V3.9.7: 内置 API Key 插槽 =====
+   想"写死 Key、换浏览器不用重输"：把你的硅基流动 sk-xxx 填到下面引号里保存即可。
+   打开页面时会自动读入，优先级低于你手动在设置面板填过的值（手动保存过的会覆盖这个默认值）。 */
+const BUILTIN_AI_API_KEY = '';   /* ← 把 sk-xxx 填在这里，用任意文本编辑器打开本HTML改完保存即可 */
 
 // STATE 使用 var 声明避免块级作用域问题
 var STATE = {
@@ -1746,11 +1883,38 @@ var STATE = {
 };
 
 function loadSettings(){
+  // V3.9.7: 默认值中合并"内置 Key"，实现真正的写死内置
+  var DEFAULTS = {v:SETTINGS_VERSION, speakTime:120, prepTime:60, longTime:300,
+    customSourceUrl:'https://raw.githubusercontent.com/jxx-app/jxx-lib/main/jxx-lib.json',
+    aiApiKey:(typeof BUILTIN_AI_API_KEY==='string' ? BUILTIN_AI_API_KEY.trim() : ''),
+    autoUpdate:true, autoUpdateFreq:86400};
   try{
     var s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
-    if(s.v !== SETTINGS_VERSION) return {v:SETTINGS_VERSION, speakTime:120, prepTime:60, longTime:300, customSourceUrl:'https://raw.githubusercontent.com/jxx-app/jxx-lib/main/jxx-lib.json', aiApiKey:'', autoUpdate:true, autoUpdateFreq:86400};
-    return Object.assign({speakTime:120, prepTime:60, longTime:300, customSourceUrl:'https://raw.githubusercontent.com/jxx-app/jxx-lib/main/jxx-lib.json', aiApiKey:'', autoUpdate:true, autoUpdateFreq:86400}, s);
-  }catch(e){ return {v:SETTINGS_VERSION, speakTime:120, prepTime:60, longTime:300, customSourceUrl:'https://raw.githubusercontent.com/jxx-app/jxx-lib/main/jxx-lib.json', aiApiKey:'', autoUpdate:true, autoUpdateFreq:86400}; }
+    if(s.v !== SETTINGS_VERSION) s = {};  // 版本号不匹配就清掉，用默认值兜底
+    var merged = Object.assign({}, DEFAULTS, s);
+
+    // V3.9.7: 支持 URL 参数带入 API Key（?k=sk-xxx 或 ?key=sk-xxx 或 #k=sk-xxx）
+    //   打开带Key的链接就自动写入本地，跨设备/跨浏览器无需手动输入
+    try{
+      var sp = new URLSearchParams(window.location.search);
+      var hp = new URLSearchParams(window.location.hash.replace(/^#/,'').split('?').pop()||'');
+      var urlKey = (sp.get('k')||sp.get('key')||hp.get('k')||hp.get('key')||'').trim();
+      if(urlKey){
+        merged.aiApiKey = urlKey;
+        try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(merged)); }catch(_e){}
+        // 用完即清，避免 Key 一直挂在地址栏被分享出去
+        try{
+          var url = new URL(window.location.href);
+          url.searchParams.delete('k'); url.searchParams.delete('key');
+          var h = (url.hash||'').replace(/[?&](k|key)=[^&]*/g,'').replace(/^#&/,'#').replace(/#$/,'');
+          url.hash = h;
+          window.history.replaceState(null,'',url.toString());
+        }catch(_e){}
+      }
+    }catch(_e){}
+
+    return merged;
+  }catch(e){ return Object.assign({}, DEFAULTS); }
 }
 var settings = loadSettings();
 
@@ -2155,6 +2319,29 @@ function drawTopic(){
   syncDebateModeUI();
 }
 
+/* 口才题提示/答案折叠切换：默认隐藏，用户主动点击才展开（V3.9.5修复：不再依赖全局event，手机端也能点） */
+/* 口才题提示/答案折叠切换（V3.9.7：与普通题完全一致的紫色虚线按钮，手机端100%可点） */
+function toggleSpeechHint(btn){
+  var wrap = document.getElementById('speechHintWrap');
+  if(!btn) btn = document.getElementById('speechHintBtn');
+  if(!wrap || !btn) return;
+  var isHidden = (wrap.style.display==='none');
+  if(isHidden){
+    wrap.style.display='block';
+    btn.textContent='🙈 收起提示/参考';
+    btn.style.borderColor='#d1d5db';
+    btn.style.color='#374151';
+    btn.style.background='#e5e7eb';
+    try{ wrap.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(e){}
+  }else{
+    wrap.style.display='none';
+    btn.textContent='💡 查看本题思路提示（没思路时再点）';
+    btn.style.borderColor='#8b5cf6';
+    btn.style.color='#8b5cf6';
+    btn.style.background='transparent';
+  }
+}
+
 function renderTopic(t){
   document.getElementById('topicEmpty').style.display='none';
   var box = document.getElementById('topicContent');
@@ -2167,14 +2354,31 @@ function renderTopic(t){
       '<div class="law-field"><div class="k">🌰 生活实例<\/div><div class="v">'+esc(t.example)+'<\/div><\/div>'+
       '<div class="law-field"><div class="k">🎯 演讲切入点<\/div><div class="v">'+esc(t.tip)+'<\/div><\/div><\/div>';
   }else if(t._kind==='speech'){
-    var ans='';
-    if(t.answer){
-      var arr = Array.isArray(t.answer)?t.answer:[String(t.answer)];
-      ans = '<div class="speech-ans"><span class="lbl">📝 参考回答：<\/span>'+arr.map(function(p){return '<p>'+esc(p)+'<\/p>';}).join('')+'<\/div>';
-    }
+    // V3.9.9：口才题提示改为思考脚手架，不直接给完整回答，教你怎么回应，避免固化思维
+    var scaffoldSpeech = 
+      '<div class="speech-scaffold">'+
+        '<div class="speech-principle">💡 核心原则：<b>不替人做决定，帮他理清思路</b>。他不是来要答案的，是来要支持的。</div>'+
+        '<div class="speech-q-title">🧠 你可以这样一步步回应：</div>'+
+        '<ol class="speech-questions">'+
+          '<li><b>先共情，不评判</b>：先接住他的情绪，不要一上来就说「创业肯定失败」或者「赶紧辞」</li>'+
+          '<li><b>提3个关键问题帮他想清楚</b>，不用你给答案，让他自己说：<br>'+
+          '  • 你做的这件事，解决谁的什么问题？<br>'+
+          '  • 最坏的结果是什么，你能接受吗？<br>'+
+          '  • 你能撑多久不赚钱，钱够不够？</li>'+
+          '<li><b>最后给支持，不给结论</b>：不管他怎么选，你都站他这边。</li>'+
+        '</ol>'+
+        '<div class="speech-q-title">💬 实在开不了口，试试这样开头：</div>'+
+        '<div class="scaffold-line">• "这个决定只有你能做，我陪你捋捋清楚就行。"</div>'+
+        '<div class="scaffold-line">• "我不劝你辞也不劝你留，我们先想清楚几个问题..."</div>'+
+      '</div>';
+    var hintSection = 
+      '<details class="native-hint">'+
+        '<summary>💡 没思路？点击看回应方法（不直接给答案，教你怎么说）<\/summary>'+
+        '<div class="hint-body">'+scaffoldSpeech+'<\/div>'+
+      '<\/details>';
     box.innerHTML = '<div class="speech-card"><div class="speech-q">'+esc(t.text)+'<\/div>'+
       '<div style="text-align:center;margin-bottom:10px;"><span class="topic-tag">'+esc(t._cat)+'<\/span><\/div>'+
-      (t.tips?'<div class="speech-tip">💡 '+esc(t.tips)+'<\/div>':'')+ans+'<\/div>';
+      hintSection+'<\/div>';
   }else if(t._kind==='debate'){
     var proLis = (t.proPoints||[]).map(function(a){return '<li>'+esc(a)+'<\/li>';}).join('');
     var conLis = (t.conPoints||[]).map(function(a){return '<li>'+esc(a)+'<\/li>';}).join('');
@@ -2276,20 +2480,26 @@ function renderTopic(t){
       toolBar + bodyHtml + translationHtml + '<\/div>';
     if(isEn) initReciteWordEvents();
   }else{
-    // 普通即兴题目：默认隐藏思路，用户需要时点击按钮展开，不干扰自主思考
-    var outline = generateTopicOutline(t.text, t._cat);
+    // V3.9.9：提示不再给现成答案，改为思考脚手架——教你怎么想，给开口句式，不直接给完整回答避免固化思维
+    var topicText = t.text;
+    // 教用户通用的PREP思考方法+针对本题的开口引导问题
+    var scaffoldHtml = 
+      '<div class="scaffold-intro">🧠 <b>教你怎么想：3步思考法</b>（先自己想30秒，想不出来再看下面的引导）</div>'+
+      '<div class="scaffold-step"><span class="step-icon">1️⃣</span> <b>先定立场</b>：你到底赞成/反对/怎么看？用一句话说清你的核心观点（不要模棱两可）</div>'+
+      '<div class="scaffold-step"><span class="step-icon">2️⃣</span> <b>找2个支撑理由</b>：为什么你这么看？从「个人经历/社会现象/道理本质」里选2个角度</div>'+
+      '<div class="scaffold-step"><span class="step-icon">3️⃣</span> <b>举1个小例子</b>：自己的事/身边的事/新闻里的事都行，不用高大上，真实就好</div>'+
+      '<div class="scaffold-step"><span class="step-icon">4️⃣</span> <b>最后收个尾</b>：重申观点+一句小感悟就行，不用强行升华</div>'+
+      '<div class="scaffold-open">💬 <b>实在开不了口？试试这几个开头句式</b>（选一个接下去说就行）：</div>'+
+      '<div class="scaffold-line">• "看到这个问题，我第一反应是..."</div>'+
+      '<div class="scaffold-line">• "关于这件事，我自己其实有过类似经历..."</div>'+
+      '<div class="scaffold-line">• "如果让我来说，我觉得答案其实很简单..."</div>'+
+      '<div class="scaffold-tip">⚠️ 没有标准答案，你怎么想就怎么说，真实比完美重要。</div>';
     box.innerHTML = '<div class="topic-title">'+esc(t.text)+'<\/div>'+
       '<div style="text-align:center;margin-bottom:12px;"><span class="topic-tag">'+esc(t._cat)+'<\/span><\/div>'+
-      '<div style="text-align:center;margin:16px 0;">'+
-        '<button id="outlineToggleBtn" class="set-btn" style="border:1px dashed #8b5cf6;color:#8b5cf6;background:transparent;padding:8px 20px;border-radius:20px;font-size:.9rem;" onclick="toggleOutline()">💡 查看本题思路提示（没思路时再点）<\/button>'+
-      '<\/div>'+
-      '<div class="topic-outline" id="topicOutline" style="display:none;">'+
-        '<div class="outline-head">💡 本题专属发言思路 <div style="margin-left:auto;display:flex;gap:8px;align-items:center;"><button class="outline-copy-btn" onclick="copyOutline(this)" title="复制思路大纲">📋 复制<\/button><button class="outline-copy-btn" onclick="toggleOutline()" title="收起思路">🙈 收起提示<\/button><\/div><\/div>'+
-        '<div class="outline-section"><div class="outline-label">🎬 开头（10秒破冰）<\/div><div class="outline-content">'+esc(outline.open)+'<\/div><\/div>'+
-        '<div class="outline-section"><div class="outline-label">🧠 核心论点（分2-3层讲）<\/div><div class="outline-content">'+outline.points.map(function(p,i){return '<div class="outline-point"><span class="point-num">'+(i+1)+'<\/span>'+esc(p)+'<\/div>';}).join('')+'<\/div><\/div>'+
-        '<div class="outline-section"><div class="outline-label">🌰 举什么例子最贴切<\/div><div class="outline-content">'+esc(outline.example)+'<\/div><\/div>'+
-        '<div class="outline-section"><div class="outline-label">✨ 结尾升华（留余味）<\/div><div class="outline-content">'+esc(outline.close)+'<\/div><\/div>'+
-      '<\/div>';
+      '<details class="native-hint">'+
+        '<summary>💡 没思路？点击看思考方法（不直接给答案，教你怎么想）<\/summary>'+
+        '<div class="hint-body">'+scaffoldHtml+'<\/div>'+
+      '<\/details>';
   }
 }
 
@@ -3069,6 +3279,63 @@ async function testAiConnection(){
     toast('❌ AI连接失败');
   }
 }
+/* V3.9.7: 跨设备配置同步（链接 / 配置码） */
+function _b64enc(s){ try{ return btoa(unescape(encodeURIComponent(s))); }catch(e){ return btoa(s); } }
+function _b64dec(s){ try{ return decodeURIComponent(escape(atob(s))); }catch(e){ return atob(s); } }
+function genKeyLink(){
+  var key=(settings.aiApiKey||'').trim();
+  var box=document.getElementById('syncResult');
+  if(!key){ if(box) box.innerHTML='<span style="color:#dc2626;">❌ 请先在上方填写并保存 API Key</span>'; return; }
+  var url = new URL(window.location.href);
+  url.searchParams.set('k', key);
+  url.hash = '';
+  var link = url.toString();
+  if(!navigator.clipboard){
+    if(box) box.innerHTML = '<div style="color:#2563eb;">请手动复制：</div><textarea readonly style="width:100%;margin-top:4px;padding:6px;font-size:.72rem;font-family:monospace;border:1px solid #bfdbfe;border-radius:4px;resize:vertical;min-height:46px;">'+esc(link)+'</textarea>';
+    return;
+  }
+  navigator.clipboard.writeText(link).then(function(){
+    if(box) box.innerHTML='<span style="color:#16a34a;">✅ 配置链接已复制！把它发到手机/其他浏览器打开，Key会自动写入本地。⚠️ 链接包含你的Key，请勿公开发布。</span>';
+    toast('✅ 链接已复制');
+  },function(){
+    if(box) box.innerHTML = '<div style="color:#2563eb;">请手动复制：</div><textarea readonly style="width:100%;margin-top:4px;padding:6px;font-size:.72rem;font-family:monospace;border:1px solid #bfdbfe;border-radius:4px;resize:vertical;min-height:46px;">'+esc(link)+'</textarea>';
+  });
+}
+function copyKeyCode(){
+  var key=(settings.aiApiKey||'').trim();
+  var box=document.getElementById('syncResult');
+  if(!key){ if(box) box.innerHTML='<span style="color:#dc2626;">❌ 请先在上方填写并保存 API Key</span>'; return; }
+  var code = 'JXSKEY:' + _b64enc(key);
+  if(!navigator.clipboard){
+    if(box) box.innerHTML = '<div style="color:#2563eb;">请手动复制配置码：</div><textarea readonly style="width:100%;margin-top:4px;padding:6px;font-size:.72rem;font-family:monospace;border:1px solid #bfdbfe;border-radius:4px;resize:vertical;min-height:30px;">'+esc(code)+'</textarea>';
+    return;
+  }
+  navigator.clipboard.writeText(code).then(function(){
+    if(box) box.innerHTML='<span style="color:#16a34a;">✅ 配置码已复制！在新浏览器中点「📥 粘贴配置码导入」即可。</span>';
+    toast('✅ 配置码已复制');
+  },function(){
+    if(box) box.innerHTML = '<div style="color:#2563eb;">请手动复制配置码：</div><textarea readonly style="width:100%;margin-top:4px;padding:6px;font-size:.72rem;font-family:monospace;border:1px solid #bfdbfe;border-radius:4px;resize:vertical;min-height:30px;">'+esc(code)+'</textarea>';
+  });
+}
+function importKeyCode(){
+  var box=document.getElementById('syncResult');
+  var code = prompt('请粘贴之前复制的配置码（以 JXSKEY: 开头）：','');
+  if(!code) return;
+  code = code.trim();
+  try{
+    if(code.indexOf('JXSKEY:')!==0) throw new Error('配置码格式不对，应以 JXSKEY: 开头');
+    var key = _b64dec(code.slice(7)).trim();
+    if(!/^sk-[A-Za-z0-9_-]{10,}$/.test(key)) throw new Error('解析后的Key格式不合法');
+    settings.aiApiKey = key;
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    var keyEl=document.getElementById('setAiApiKey'); if(keyEl) keyEl.value=key;
+    refreshAiHint();
+    if(box) box.innerHTML='<span style="color:#16a34a;">✅ 配置码导入成功！AI辩论已可正常使用。</span>';
+    toast('✅ 导入成功');
+  }catch(e){
+    if(box) box.innerHTML='<span style="color:#dc2626;">❌ 导入失败：'+e.message+'</span>';
+  }
+}
 /* V3.8.0：大模型生成辩词核心函数 */
 async function aiCallDebateLLM(prompt){
   var key=(settings.aiApiKey||'').trim();
@@ -3108,6 +3375,10 @@ function resetAllData(){
     localStorage.removeItem(HISTORY_KEY);
     localStorage.removeItem(SETTINGS_KEY);
     localStorage.removeItem(CUSTOM_LIB_KEY);
+    localStorage.removeItem(LAST_CHECK_KEY);
+    localStorage.removeItem(LIB_LAST_CHECK_KEY);
+    localStorage.removeItem(QR_URL_KEY);
+    localStorage.removeItem(QR_SHARE_URL_KEY);
     location.reload();
   }
 }
@@ -3126,12 +3397,12 @@ function saveAutoFreq(){
 function resetToBuiltin(){
   if(!confirm('确定恢复为内置题库？自定义题库将被清除，设置与练习记录保留。')) return;
   localStorage.removeItem(CUSTOM_LIB_KEY);
-  localStorage.removeItem(LAST_CHECK_KEY);
+  localStorage.removeItem(LIB_LAST_CHECK_KEY);
   location.reload();
 }
 
 /* ========== 多源拉取 & 版本比对 ========== */
-var LAST_CHECK_KEY = 'jixingshuo_lib_last_check';
+var LIB_LAST_CHECK_KEY = 'jixingshuo_lib_last_check';
 function libHash(data){
   try{
     var s = '';
@@ -3207,13 +3478,13 @@ function applyLibData(data, opts){
   var newHash = data._hash;
   var sameVersion = cur && curHash===newHash && (cur.version||'')===(data.version||'');
   if(sameVersion && !opts.force){
-    localStorage.setItem(LAST_CHECK_KEY, String(Date.now()));
+    localStorage.setItem(LIB_LAST_CHECK_KEY, String(Date.now()));
     refreshUpdStatus('ℹ️ 已是最新题库版本'+(data.version?'（'+data.version+'）':'')+'，无需更新。','info');
     refreshLibMeta();
     return 'uptodate';
   }
   localStorage.setItem(CUSTOM_LIB_KEY, JSON.stringify(data));
-  localStorage.setItem(LAST_CHECK_KEY, String(Date.now()));
+  localStorage.setItem(LIB_LAST_CHECK_KEY, String(Date.now()));
   /* V3.5.0：即便下面的 reload 被浏览器 bfcache/移动端 webview 拦截，也先把内存里的 LIB 同步成新数据，
      并立即重绘分类/刷新池，保证"强制更新后标题/内容立刻是新版本"，不会出现下面显示与更新标题不符 */
   try{
@@ -3271,7 +3542,7 @@ function tryAutoUpdateOnStart(){
   if(!url) return;
   var freq = settings.autoUpdateFreq==null?86400:settings.autoUpdateFreq;
   if(freq<0) return; // 仅手动
-  var last = parseInt(localStorage.getItem(LAST_CHECK_KEY)||'0',10);
+  var last = parseInt(localStorage.getItem(LIB_LAST_CHECK_KEY)||'0',10);
   var now = Date.now();
   if(freq>0 && (now-last) < freq*1000) return; // 未到检查周期
   if(window.location.protocol==='file:') return; // 静默时不打扰
@@ -3305,7 +3576,7 @@ function refreshLibMeta(){
   }else{
     parts.push('题库来源：<b>内置 '+(window.APP_VERSION||'V3.5.1')+' · 共'+totalBuiltin+'题<\/b>');
   }
-  var last = parseInt(localStorage.getItem(LAST_CHECK_KEY)||'0',10);
+  var last = parseInt(localStorage.getItem(LIB_LAST_CHECK_KEY)||'0',10);
   if(last) parts.push('上次检查：'+new Date(last).toLocaleString('zh-CN'));
   el.innerHTML = parts.join('　｜　');
 }
@@ -3370,7 +3641,7 @@ function getQrTargetUrl(){
   var v = input ? (input.value||'').trim() : '';
   return v ? v : window.location.href;
 }
-var QR_URL_KEY='jixingshuo_qr_url';
+var QR_SHARE_URL_KEY='jixingshuo_qr_url';
 /* ===== 版本 / 缓存刷新：解决“更新后打开还是旧页面” ===== */
 /* V3.5.1：版本号由 head 里的 formatAppVersion 基于 APP_VERSION_ARRAY 统一计算，
    全局 esc/朗读模块零回归；逢十进一：PATCH>=10→MINOR+1 且 PATCH=0，MINOR>=10→MAJOR+1。 */
@@ -3428,17 +3699,17 @@ function forceReloadLatest(){
 }
 function prefillQrInput(){
   var input=document.getElementById('qrCustomUrl'); if(!input) return;
-  var saved = localStorage.getItem(QR_URL_KEY);
+  var saved = localStorage.getItem(QR_SHARE_URL_KEY);
   if(saved && saved.trim()){
     input.value = saved.trim();
   }else if(!isLocalFile() && !(input.value||'').trim()){
     input.value = window.location.href;
-    localStorage.setItem(QR_URL_KEY, input.value);
+    localStorage.setItem(QR_SHARE_URL_KEY, input.value);
   }
   // 输入框变化时自动保存
   input.addEventListener('input',function(){
     var v=(input.value||'').trim();
-    if(v && v.indexOf('http')===0) localStorage.setItem(QR_URL_KEY, v);
+    if(v && v.indexOf('http')===0) localStorage.setItem(QR_SHARE_URL_KEY, v);
   });
 }
 var SHARE_MSG={
@@ -3479,7 +3750,7 @@ function refreshQr(){ drawQr(); toast('🔄 已刷新'); }
 function genQrFromInput(){
   var input=document.getElementById('qrCustomUrl');
   var v = input ? (input.value||'').trim() : '';
-  if(v && v.indexOf('http')===0) localStorage.setItem(QR_URL_KEY, v);
+  if(v && v.indexOf('http')===0) localStorage.setItem(QR_SHARE_URL_KEY, v);
   drawQr();
   if(!v){ toast('ℹ️ 已按当前页面地址生成二维码'); return; }
   if(v.indexOf('http')!==0){ toast('⚠️ 请输入以 http:// 或 https:// 开头的地址'); return; }
@@ -11345,7 +11616,7 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
 
 <!-- ====== V3.6.3 反馈一键直送 + GitHub Issues 公开看板 ======
    🎯 反馈直达作者，进度公开可查：
-   - 用户点「📨 一键提交给作者」→ 反馈经作者的 Cloudflare Worker 直接推送到作者邮箱，
+   - 用户点「📨 一键提交给作者」→ 反馈经作者的 Cloudflare Worker 直接归集到公开反馈看板，
      全程不跳转、不弹邮箱、不要求任何账号，用户隐私不暴露；未配置时自动降级为复制文本
    - 设置页内嵌看板：
    - 设置页内嵌看板：🌐全部反馈/🎯我的追踪/✅已解决 三个Tab实时加载GitHub公开Issues
@@ -11373,7 +11644,7 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
 
    用户怎么反馈：
      1) 点「写一条匿名反馈」→ 选类型 + 写描述
-     2) 点「📨 一键提交给作者」→ 反馈由作者的 Cloudflare Worker 收下并推送到作者邮箱，
+     2) 点「📨 一键提交给作者」→ 反馈由作者的 Cloudflare Worker 收下并归集到公开反馈看板，
         不跳转、不弹邮箱、不暴露用户隐私；Worker 未配置或网络异常时自动降级为复制文本
 
    用户怎么看进度（不需要任何账号）：
@@ -11387,7 +11658,7 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
      FEEDBACK_CHANNEL : 其他公开反馈渠道文案，可留空
 
    ---------- 作者处理流程（把用户反馈变成可追踪的进度）----------
-     1) 邮箱收到用户反馈（邮件里自带追踪码）
+     1) 反馈看板收到用户反馈（自带追踪码）
      2) 在仓库新建 Issue，标题写成：
         [用户反馈] 语音识别偶尔卡住（JXS-8F2K-91QA）   ← 括号里带上用户的追踪码
      3) 正文粘贴用户发来的原文；打上标签 bug / enhancement
@@ -11402,7 +11673,7 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
 
   /* ================== 反馈一键直送配置（Cloudflare Worker） ==================
      作用：用户点「📨 一键提交给作者」，反馈不跳转、不弹邮箱、不暴露任何隐私，
-     直接由 Worker 收下并推送到作者邮箱。
+     直接由 Worker 收下并归集到公开反馈看板。
      部署完 Worker 后，只需把下面两个值改成你的真实值，其余代码一个字都不用动：
        · WORKER_URL     → 部署 Worker 后拿到的地址，形如 https://xxxx.xxxx.workers.dev
        · FEEDBACK_TOKEN → 与 Worker 端 Secrets 里的 FEEDBACK_TOKEN 完全一致的字符串
@@ -11616,70 +11887,98 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
     return lines.join('\n');
   }
 
-  /* 提交方式：GitHub提交（用户点击触发，新标签页打开，自动打标签，带拦截检测）*/
-  window.fbSubmitGithub = function(){
+  /* 构造 GitHub 新建 issue 的预填链接（标题 / 正文 / 标签全部带好） */
+  window.fbBuildUrl = function(){
+    var ta = $('fbContent');
+    var content = (ta ? ta.value : '').trim();
+    if(!content) return '';
+    var type   = currentType();
+    var code   = getCode();
+    var attach = !!($('fbAttachDiag') && $('fbAttachDiag').checked);
+    var tech   = attach ? techInfo() : null;
+    var title  = '[' + TYPE_LABEL[type].replace(/[🐛💡📚💭]/g,'').trim() + '] ' + content.slice(0,60) + ' (' + code + ')';
+    var body   = buildFeedbackText(content, type, code, tech);
+    /* 自动根据反馈类型带上对应 labels 参数，你在 GitHub 上直接按标签筛选即可 */
+    var labelMap = { 'bug':'bug', 'feature':'enhancement', 'content':'content', 'other':'用户反馈' };
+    var labels = 'labels=' + encodeURIComponent(labelMap[type] || '用户反馈') + '&';
+    return 'https://github.com/' + GITHUB_REPO + '/issues/new?' + labels + 'title=' + encodeURIComponent(title) + '&body=' + encodeURIComponent(body);
+  };
+
+  /* 微信 / QQ 内置浏览器：无法打开外部新页面 */
+  function isInnerBrowser(){ return /MicroMessenger|QQ\//i.test(navigator.userAgent || ''); }
+
+  /* 手机 / 内置浏览器兜底：给出可长按打开的完整链接 */
+  function fbShowMobileTip(url){
+    var d = document.getElementById('fbMobileTip');
+    if(!d) return;
+    d.style.display = 'block';
+    d.innerHTML = '📱 手机浏览器可能无法自动打开新页面，请任选一种方式：<br>'
+      + '① 点「🔗 复制提交链接」，粘贴到手机浏览器地址栏打开；<br>'
+      + '② 长按下面的链接 → 选择「在浏览器打开」：<br>'
+      + '<a href="' + url + '" target="_blank" style="color:#2563eb;word-break:break-all;font-size:.82rem;">' + url + '</a>';
+    try{ d.scrollIntoView({behavior:'smooth', block:'center'}); }catch(e){}
+    tip('📱 已生成提交链接，点「🔗 复制提交链接」粘贴到浏览器打开，或长按下方链接选择「在浏览器打开」', false, 7000);
+  }
+
+  /* 一键提交：按钮本身是 <a target="_blank">，点击走浏览器原生导航，不再依赖 window.open，
+     彻底绕开手机浏览器对弹窗 / 新窗口的拦截 */
+  window.fbSubmitGithub = function(ev){
     var ta = $('fbContent');
     var content = (ta ? ta.value : '').trim();
     if(!content){
       tip('⚠️ 先写一句你遇到的问题或建议再提交～', false);
       if(ta) ta.focus();
+      if(ev) ev.preventDefault();
+      return false;
+    }
+    var type = currentType();
+    var code = getCode();
+    var url  = fbBuildUrl();
+
+    /* 同步写入 href：<a> 会在本次点击后按新 href 原生打开，无任何异步、无弹窗 API */
+    var link = document.getElementById('fbSubmitLink');
+    if(link) link.setAttribute('href', url);
+
+    /* 先记录到本地反馈列表 */
+    var mine = loadMine();
+    mine.unshift({ code: code, type: type, title: content.slice(0, 40), time: new Date().toLocaleString('zh-CN', {hour12:false}) });
+    saveMine(mine);
+    renderMine();
+
+    /* 微信 / QQ 内置浏览器打不开外部新页面：阻止默认跳转，改为引导复制链接 */
+    if(isInnerBrowser()){
+      if(ev) ev.preventDefault();
+      fbShowMobileTip(url);
+      return false;
+    }
+
+    /* 其他情况：交给 <a target="_blank"> 原生打开（电脑、手机标准浏览器均有效） */
+    tip('✅ 正在打开GitHub提交页面！请在新页面点最底部绿色「Submit new issue」按钮完成提交', true, 6000);
+    if(ta) ta.value = '';
+    var box = $('fbFormBox'); if(box) box.classList.remove('show');
+    var mt = document.getElementById('fbMobileTip'); if(mt) mt.style.display = 'none';
+    setTimeout(function(){ if(typeof loadFbBoard === 'function') loadFbBoard(true); }, 5000);
+    return true;
+  };
+
+  /* 复制提交链接：手机最稳的兜底方式（粘贴到浏览器地址栏即可） */
+  window.fbCopyLink = function(){
+    var ta = $('fbContent');
+    var content = (ta ? ta.value : '').trim();
+    if(!content){
+      tip('⚠️ 先写一句你遇到的问题或建议再复制哦～', false);
+      if(ta) ta.focus();
       return;
     }
-    var type   = currentType();
-    var code   = getCode();
-    var attach = !!($('fbAttachDiag') && $('fbAttachDiag').checked);
-    var tech   = attach ? techInfo() : null;
-    var title = '[' + TYPE_LABEL[type].replace(/[🐛💡📚💭]/g,'').trim() + '] ' + content.slice(0,60) + ' (' + code + ')';
-    var body = buildFeedbackText(content, type, code, tech);
-    
-    /* 自动根据反馈类型带上对应labels参数，你在GitHub上直接按标签筛选即可 */
-    var labelMap = {
-      'bug': 'bug',
-      'feature': 'enhancement',
-      'content': 'content',
-      'other': '用户反馈'
-    };
-    var labels = 'labels=' + encodeURIComponent(labelMap[type] || '用户反馈') + '&';
-    var url = 'https://github.com/' + GITHUB_REPO + '/issues/new?' + labels + 'title=' + encodeURIComponent(title) + '&body=' + encodeURIComponent(body);
-    
-    /* ✅ 弹窗拦截检测：必须由用户点击直接触发window.open，且检测是否被拦截 */
-    var newTab = window.open(url, '_blank');
-    
-    /* 拦截判断：如果newTab为null或者被拦截，显示备用手动提交链接 */
-    if(!newTab || newTab.closed || typeof newTab.closed == 'undefined'){
-      tip('⚠️ 浏览器拦截了弹窗！请点击下方蓝色链接手动打开提交页面', false);
-      /* 在按钮下方插入备用提交链接，用户可直接点击 */
-      var submitBtn = document.querySelector('.fb-submit');
-      if(submitBtn){
-        /* 移除旧提示，避免重复插入 */
-        var oldTip = document.getElementById('fbBlockedTip');
-        if(oldTip) oldTip.parentNode.removeChild(oldTip);
-        var tipDiv = document.createElement('div');
-        tipDiv.id = 'fbBlockedTip';
-        tipDiv.style.cssText = 'margin:8px 0;padding:12px;background:#fef3c7;border-radius:10px;text-align:center;font-size:.88rem;color:#92400e;line-height:1.6;';
-        tipDiv.innerHTML = '🔒 弹窗被拦截啦！<br><a href="' + url + '" target="_blank" style="color:#2563eb;font-weight:600;text-decoration:underline;">👉 点这里手动打开GitHub提交页面</a><br><small>打开后直接点绿色「Submit new issue」按钮就完成提交啦，内容已经自动填好了</small>';
-        submitBtn.parentNode.insertBefore(tipDiv, submitBtn.nextSibling);
-      }
-    } else {
-      /* 打开成功提示，明确告诉用户下一步操作 */
-      tip('✅ 已打开GitHub提交页面！请切换到新标签页，点底部绿色「Submit new issue」按钮就提交完成啦', true, 6000);
-      
-      /* 记录到本地反馈列表 */
-      var mine = loadMine();
-      mine.unshift({ code: code, type: type, title: content.slice(0, 40), time: new Date().toLocaleString('zh-CN', {hour12:false}) });
-      saveMine(mine);
-      renderMine();
-
-      if(ta) ta.value = '';
-      if($('fbFormBox')) $('fbFormBox').classList.remove('show');
-      
-      /* 移除可能存在的拦截提示 */
-      var oldTip = document.getElementById('fbBlockedTip');
-      if(oldTip) oldTip.parentNode.removeChild(oldTip);
-
-      /* 5秒后自动刷新反馈看板，显示你刚提交的反馈 */
-      setTimeout(function(){ if(typeof loadFbBoard === 'function') loadFbBoard(true); }, 5000);
-    }
+    var url = fbBuildUrl();
+    var link = document.getElementById('fbSubmitLink'); if(link) link.setAttribute('href', url);
+    function onOk(){ tip('✅ 提交链接已复制！把它粘贴到浏览器地址栏打开，再点绿色「Submit new issue」即可完成反馈', true, 8000); }
+    function fallbackCopy(){var t=document.createElement('textarea');t.value=url;document.body.appendChild(t);t.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(t);}
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(url).then(onOk, function(){ fallbackCopy(); onOk(); });
+      }else{ fallbackCopy(); onOk(); }
+    }catch(e){ fallbackCopy(); onOk(); }
   };
 
   /* 备用：复制反馈文本到剪贴板，用户可手动提交 */
@@ -11894,7 +12193,7 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
         if(i >= apis.length){
           if(loading) loading.style.display = 'none';
           if(!silent && allList){
-            allList.innerHTML = '<div class="fb-empty"><span class="emoji">📡</span>暂时加载不了在线列表（网络不通或访问受限）<br><span style="font-size:.75rem;color:#9ca3af;">不影响反馈提交，你依然可以写反馈<br><b>所有你提交的反馈都会直接发送到作者邮箱nanchen1412@163.com</b><br><a href="https://github.com/' + GITHUB_REPO + '/issues" target="_blank" style="color:#667eea;">点这里直接去GitHub查看所有反馈 →</a></span></div>';
+            allList.innerHTML = '<div class="fb-empty"><span class="emoji">📡</span>暂时加载不了在线列表（网络不通或访问受限）<br><span style="font-size:.75rem;color:#9ca3af;">不影响反馈提交，你依然可以写反馈<br><b>所有你提交的反馈都会归集到GitHub公开反馈看板</b><br><a href="https://github.com/' + GITHUB_REPO + '/issues" target="_blank" style="color:#667eea;">点这里直接去GitHub查看所有反馈 →</a></span></div>';
           }
           return;
         }
@@ -11940,7 +12239,7 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
 
 <!-- V3.6.3 匿名反馈模块（反馈一键直送作者）：
    - 不收集任何隐私：不要邮箱/手机号/微信，不要注册、不要登录；
-   - 用户点「📨 一键提交给作者」→ 反馈由作者的 Cloudflare Worker 收下并推送到作者邮箱，
+   - 用户点「📨 一键提交给作者」→ 反馈由作者的 Cloudflare Worker 收下并归集到公开反馈看板，
      全程不跳转、不弹邮箱，用户邮箱等隐私不会被暴露；
    - 若 Worker 未配置或网络异常，自动降级为「复制反馈文本」，反馈不会丢；
    - 「看进度」直接读作者公开仓库的 Issue 列表（只读，无需登录），输入自己的追踪码即可定位；
@@ -12291,28 +12590,38 @@ html.dark .dpp-side{color:#9ca3af!important}
   }
 
   /* 复制思路到剪贴板 */
-  // 展开/收起本题思路提示
-  function toggleOutline(){
+  /* 展开/收起本题思路提示（V3.9.7修复：挂到window全局+按钮状态切换，手机端可正常点击） */
+  function toggleOutline(btn){
     var outline = document.getElementById('topicOutline');
-    var btn = document.getElementById('outlineToggleBtn');
+    if(!btn) btn = document.getElementById('outlineToggleBtn');
     if(!outline || !btn) return;
-    if(outline.style.display==='none'){
+    var isHidden = (outline.style.display==='none');
+    if(isHidden){
       outline.style.display='block';
-      btn.style.display='none';
+      btn.textContent = '🙈 收起思路提示';
+      btn.style.borderColor = '#d1d5db';
+      btn.style.color = '#374151';
+      btn.style.background = '#e5e7eb';
       outline.scrollIntoView({behavior:'smooth',block:'nearest'});
     }else{
       outline.style.display='none';
-      btn.style.display='inline-block';
+      btn.textContent = '💡 查看本题思路提示（没思路时再点）';
+      btn.style.borderColor = '#8b5cf6';
+      btn.style.color = '#8b5cf6';
+      btn.style.background = 'transparent';
     }
   }
 
   function copyOutline(btn){
-    var outline = document.getElementById('topicOutline');
+    // V3.9.8 适配原生details结构：从按钮向上找最近的hint-body
+    var outline = btn.closest('.hint-body');
     if(!outline) return;
-    var txt = '【开头】' + outline.querySelector('.outline-section:nth-child(2) .outline-content').innerText + '\n\n' +
-              '【核心论点】\n' + Array.from(outline.querySelectorAll('.outline-point')).map(function(el,i){return (i+1)+'. '+el.innerText.slice(2);}).join('\n') + '\n\n' +
-              '【举例建议】' + outline.querySelector('.outline-section:nth-child(4) .outline-content').innerText + '\n\n' +
-              '【结尾升华】' + outline.querySelector('.outline-section:nth-child(5) .outline-content').innerText;
+    var sections = outline.querySelectorAll('.outline-section');
+    if(sections.length < 4) return;
+    var txt = '【开头】' + sections[0].querySelector('.outline-content').innerText + '\n\n' +
+              '【核心论点】\n' + Array.from(sections[1].querySelectorAll('.outline-point')).map(function(el,i){return (i+1)+'. '+el.innerText.replace(/^\d+\s*/,'');}).join('\n') + '\n\n' +
+              '【举例建议】' + sections[2].querySelector('.outline-content').innerText + '\n\n' +
+              '【结尾升华】' + sections[3].querySelector('.outline-content').innerText;
     function flash(){btn.textContent='✅ 已复制';setTimeout(function(){btn.textContent='📋 复制';},1200);}
     function fallback(){var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);flash();}
     if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(flash).catch(fallback);}else{fallback();}
