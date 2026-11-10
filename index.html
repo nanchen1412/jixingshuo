@@ -18,7 +18,7 @@
      MINOR 满 10 同样进位到 MAJOR：V3.9.9 的下一个版本 = V4.0.0
    发版时只需改 APP_VERSION_ARRAY 这三个数字，展示字符串自动计算；
    也可以直接调用 window.bumpAppVersion() 按上述规则自动进一位。 */
-window.APP_VERSION_ARRAY = [4, 5, 1];   /* [MAJOR, MINOR, PATCH] */
+window.APP_VERSION_ARRAY = [4, 5, 3];   /* [MAJOR, MINOR, PATCH] */
 window.formatAppVersion = function(arr){
   var M = arr[0]|0, m = arr[1]|0, p = arr[2]|0;
   if(p >= 10){ m += Math.floor(p/10); p = p % 10; }
@@ -38,7 +38,7 @@ window.bumpAppVersion = function(){
   return window.APP_VERSION;
 };
 window.APP_VERSION = window.formatAppVersion(window.APP_VERSION_ARRAY);
-window.APP_BUILD = '2026-11-10 · V4.4.0 · 补丁整合版：点单词只弹一个卡片（消除被遮盖的第二个弹窗）';
+window.APP_BUILD = '2026-11-11 · V4.5.3 · 稳定修复版（补回AI陪练+自动更新+AI超时+版本号清理）';
 
 /* ===== PWA：内联 SVG 图标 + 内联 manifest（blob URL），零外部依赖 ===== */
 (function(){
@@ -84,29 +84,50 @@ window.APP_BUILD = '2026-11-10 · V4.4.0 · 补丁整合版：点单词只弹一
 
   /* 内联 Service Worker：仅做"打开时立即激活 + 缓存首屏HTML"，
      保证用户从桌面图标点开时秒开、无网也能用（核心功能本来就是离线单页）。
-     通过 blob URL 注册，不依赖外部 sw.js 文件。 */
+     通过 blob URL 注册，不依赖外部 sw.js 文件。
+     V4.5.2：activate 时自动清理所有旧版本缓存，避免老版本 SW 持续提供旧HTML；
+             同时每次激活立即接管页面，确保新版本立刻生效。 */
   if('serviceWorker' in navigator){
-    const swCode = `
-const CACHE = 'jixingshuo-${window.APP_VERSION}-v1';
-self.addEventListener('install', e => { self.skipWaiting(); });
-self.addEventListener('activate', e => { e.waitUntil(self.clients.claim()); });
-self.addEventListener('fetch', e => {
-  const req = e.request;
-  if(req.method !== 'GET') return;
-  // 只缓存同源导航请求与本页 HTML，外部资源（有道发音/TTS）走网络
-  if(req.mode === 'navigate'){
-    e.respondWith(
-      caches.open(CACHE).then(c => c.match(req).then(hit =>
-        hit || fetch(req).then(res => { c.put(req, res.clone()); return res; }).catch(()=>c.match('/'))
-      ))
-    );
-  }
-});
-`;
+    const _CACHE_NAME = 'jixingshuo-' + window.APP_VERSION + '-v2';
+    const swCode = "const CACHE = '" + _CACHE_NAME + "';\n" +
+"const CACHE_PREFIX = 'jixingshuo-';\n" +
+"self.addEventListener('install', e => { self.skipWaiting(); });\n" +
+"self.addEventListener('activate', e => {\n" +
+"  e.waitUntil(\n" +
+"    caches.keys().then(keys => Promise.all(\n" +
+"      keys.filter(k => k.indexOf(CACHE_PREFIX) === 0 && k !== CACHE)\n" +
+"          .map(k => caches.delete(k))\n" +
+"    )).then(() => self.clients.claim())\n" +
+"  );\n" +
+"});\n" +
+"self.addEventListener('fetch', e => {\n" +
+"  const req = e.request;\n" +
+"  if(req.method !== 'GET') return;\n" +
+"  if(req.mode === 'navigate'){\n" +
+"    e.respondWith(\n" +
+"      caches.open(CACHE).then(c => c.match(req).then(hit =>\n" +
+"        hit || fetch(req).then(res => { c.put(req, res.clone()); return res; }).catch(()=>c.match('/'))\n" +
+"      ))\n" +
+"    );\n" +
+"  }\n" +
+"});\n";
     try{
       const swBlob = new Blob([swCode], {type:'application/javascript'});
       const swUrl = URL.createObjectURL(swBlob);
-      navigator.serviceWorker.register(swUrl, {scope:'.'}).catch(()=>{/*忽略file://等场景*/});
+      navigator.serviceWorker.register(swUrl, {scope:'.'}).then(function(reg){
+        // 监听 SW 更新事件，有新版本立即提示用户刷新
+        if(reg) reg.addEventListener('updatefound', function(){
+          try{
+            var nw = reg.installing;
+            if(nw) nw.addEventListener('statechange', function(){
+              if(nw.state === 'installed' && navigator.serviceWorker.controller){
+                // 新版本SW已安装，提示用户刷新
+                window.__NEW_SW_READY__ = true;
+              }
+            });
+          }catch(e){}
+        });
+      }).catch(function(){});
     }catch(e){/*忽略*/}
   }
 
@@ -210,13 +231,39 @@ self.addEventListener('fetch', e => {
   window.__safeLS = _mkSafeStorage(window.localStorage);
   window.__safeSS = _mkSafeStorage(window.sessionStorage);
 
-  // ====== 安全 fetch：预览环境下任何远程 fetch 立即静默失败 ======
+  // ====== 安全 fetch：预览环境下仅拦截非白名单远程请求；AI API/TTS/发音/反馈接口永远放行 ======
   var _realFetch = window.fetch;
+  var _FETCH_ALLOWLIST = [
+    'api.siliconflow.cn',         // AI 大模型接口
+    'openapi.youdao.com',         // 有道查词/翻译
+    'fanyi.baidu.com',            // 百度翻译
+    'dict.youdao.com',            // 有道词典
+    'api.github.com',             // GitHub 反馈看板
+    'github.com',                 // GitHub 提交 issue
+    'raw.githubusercontent.com', // 题库更新
+    'tts', 'speech', 'voice'      // 常见语音合成关键词兜底
+  ];
+  function _urlInFetchAllowlist(urlStr){
+    if(!urlStr) return false;
+    try{
+      var host = '';
+      if(/^https?:\/\//i.test(urlStr)){ host = new URL(urlStr).host.toLowerCase(); }
+      for(var i=0;i<_FETCH_ALLOWLIST.length;i++){
+        var kw = _FETCH_ALLOWLIST[i].toLowerCase();
+        if(host.indexOf(kw) >= 0) return true;
+      }
+    }catch(e){}
+    return false;
+  }
   window.fetch = function(){
     try{
       var url = arguments[0];
       var urlStr = typeof url==='string' ? url : (url && url.url ? url.url : '');
-      // 只允许 data:/blob:/about: 等本地URL；远程 http(s) 在预览环境直接 reject
+      // 白名单域名永远放行，任何环境下都不拦截（保证 AI 大模型、查词、发音、反馈、题库更新正常工作）
+      if(_urlInFetchAllowlist(urlStr)){
+        return _realFetch.apply(this, arguments);
+      }
+      // 只允许 data:/blob:/about: 等本地URL；其他远程 http(s) 在预览环境直接静默失败
       if(urlStr && /^https?:\/\//i.test(urlStr) && window.__JXX_PREVIEW_SAFE){
         return Promise.resolve(new Response('{"error":"preview-mode-blocked"}', {status:200}));
       }
@@ -1159,7 +1206,7 @@ html.dark .growth-card-close{background:#2a2a44!important;color:#cbd5e1!importan
 html.dark .debate-input{background:#1c1c30!important;color:#e4e4ed!important;border-color:#3a3a5a!important}
 html.dark .debate-seg-recap{border-color:#3a3a5a!important}
 html.dark .seg-row{border-bottom-color:#2a2a44!important}
-#aiDebatePanel{display:none!important}
+#aiDebatePanel{display:none}
 html.dark .growth-card{box-shadow:0 4px 20px rgba(0,0,0,.3)!important}
 .growth-card-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
 .growth-card-title{font-weight:700;font-size:1rem;color:#1f2937;display:flex;align-items:center;gap:6px}
@@ -1223,7 +1270,7 @@ html.dark .growth-rec-topic{color:#e4e4ed!important}
 /* ---- AI 辩手面板（仅在辩论模式显示，复用当前抽到的辩题，不重复提供独立辩题输入） ---- */
 .ai-debate-panel{display:none;background:linear-gradient(135deg,#fff5f5 0%,#f0f4ff 100%);border-radius:14px;padding:18px;margin-top:14px;border:1px solid #e0e7ff}
 html.dark .ai-debate-panel{background:linear-gradient(135deg,#2a2035 0%,#202540 100%)!important;border-color:#3a3a5a!important}
-.ai-debate-panel.show{display:block;animation:fadeUp .3s ease}
+#aiDebatePanel.show{display:block!important;animation:fadeUp .3s ease}
 .ai-debate-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .ai-debate-title{font-weight:700;color:#4338ca;display:flex;align-items:center;gap:6px;font-size:.92rem}
 .ai-debate-desc{font-size:.8rem;color:#6b7280;margin-bottom:10px;line-height:1.5}
@@ -1400,6 +1447,26 @@ html.dark .cec-go{color:#a78bfa}
     <div class="topic-display" id="topicDisplay">
       <div class="topic-empty" id="topicEmpty">👇 默认「大题库随机」模式，点击「抽题」即可开始；点「展开分类」可精准选题</div>
       <div id="topicContent" style="display:none;width:100%"></div>
+    </div>
+    <!-- V4.5.3 修复：补回 V4.5.0 合并补丁时误删的「AI 陪练对辩」面板 -->
+    <div id="aiDebatePanel" class="ai-debate-panel">
+      <div class="ai-debate-head">
+        <div class="ai-debate-title"><span>🤖</span>AI 陪练对辩</div>
+        <button class="btn btn-ghost btn-sm" onclick="window.closeAIDebate && closeAIDebate()" style="padding:2px 10px;font-size:.78rem">收起</button>
+      </div>
+      <div class="ai-debate-desc">基于当前抽到的辩题自动扮演对方辩手与你对辩，使用新国辩简化赛制；发言可语音或手打，结束后生成可解释评分。</div>
+      <div class="ai-debate-ctrl">
+        <span style="font-size:.82rem;color:#6b7280">我的立场：</span>
+        <button id="aiDebSideBtn" class="ai-debate-side" onclick="window.toggleAISide && toggleAISide()">我是正方</button>
+        <button class="btn btn-primary btn-sm" id="aiDebStartBtn" onclick="window.startAIDebate && startAIDebate()" style="padding:6px 14px">⚔️ 开始 AI 陪练</button>
+      </div>
+      <div id="aiDebChat" class="ai-debate-chat" style="display:none"></div>
+      <div id="aiDebInputRow" class="ai-debate-row" style="display:none">
+        <input type="text" id="aiDebTextInput" placeholder="输入你的论点（或点麦克风语音）" style="flex:1;min-width:160px;padding:8px 12px;border:1px solid #e0e7ff;border-radius:8px;font-size:.88rem" />
+        <button class="btn btn-sm" id="aiDebSendBtn" onclick="window.sendAIDebateText && sendAIDebateText()" style="padding:8px 14px">发送</button>
+        <button class="btn btn-danger btn-sm" id="aiDebMicBtn" onclick="window.toggleAIDebateMic && toggleAIDebateMic()" style="padding:8px 14px">🎙️</button>
+        <button class="btn btn-ghost btn-sm" onclick="window.endAIDebate && endAIDebate()" style="padding:8px 14px">⏹ 结束复盘</button>
+      </div>
     </div>
     <div class="btn-row" id="mainBtns" style="display:none!important"></div>
   </div>
@@ -1619,8 +1686,9 @@ html.dark .cec-go{color:#a78bfa}
           </div>
           <div id="fbMobileTip" style="display:none;margin:8px 0;padding:10px;background:#fef3c7;border-radius:10px;font-size:.82rem;color:#92400e;line-height:1.7;text-align:left;"></div>
           <button class="btn btn-ghost" onclick="fbCopyLink()" style="width:100%;margin-bottom:8px;">🔗 复制提交链接（手机推荐，粘贴到浏览器打开）</button>
-          <button class="btn btn-ghost" onclick="fbCopyText()" style="width:100%;">📋 复制反馈文本（备用手动提交）</button>
-          <div class="fb-hint">提交不需要任何账号/登录，不需要提供邮箱、手机号等隐私信息，点击提交后会自动打开GitHub，标题正文、标签全部预填好，只需要点确认即可。提交后内容公开显示在反馈看板，作者会看到并处理，追踪码可查询处理进度。</div>
+          <button class="btn btn-ghost" onclick="fbCopyText()" style="width:100%;margin-bottom:8px;">📋 复制反馈文本（备用手动提交）</button>
+          <div id="fbFallbackTip" style="display:none;margin:8px 0;padding:10px;background:#fef3c7;border-radius:10px;font-size:.82rem;color:#92400e;line-height:1.7;"></div>
+          <div class="fb-hint">提交不需要任何账号/登录，不需要提供邮箱、手机号等隐私信息，点击提交后会自动打开GitHub，标题正文、标签全部预填好，只需要点确认即可。提交后内容公开显示在反馈看板，作者会看到并处理，追踪码可查询处理进度。<br><b>如果点了按钮没反应，请直接点上面「📋 复制反馈文本」把内容复制下来发给作者。</b></div>
           <div class="fb-channel" id="fbChannelLine" style="display:none"></div>
         </div>
 
@@ -3503,17 +3571,24 @@ function refreshAiHint(){
     hint.style.color = '#9ca3af';
   }
 }
-function saveAiSettings(){
+async function saveAiSettings(){
   var keyEl=document.getElementById('setAiApiKey');
   var key=(keyEl.value||'').trim();
   settings.aiApiKey = key;
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
   refreshAiHint();
-  toast('✅ AI配置已保存');
   var resEl=document.getElementById('aiTestResult');
-  if(resEl) resEl.innerHTML = '<div style="color:#16a34a;">✅ 配置已保存，现在可以测试连接是否正常</div>';
+  if(!key){
+    toast('✅ AI配置已清空（使用离线模式）');
+    if(resEl) resEl.innerHTML = '<div style="color:#9ca3af;">💤 未配置API Key，AI辩论将使用离线模板</div>';
+    return;
+  }
+  toast('✅ AI配置已保存，正在测试连接…');
+  if(resEl) resEl.innerHTML = '<div style="color:#2563eb;">🔄 配置已保存，正在测试连接 SiliconFlow…</div>';
+  // 保存后立即自动测试一次连接，避免用户不知道是否填对了
+  try{ await testAiConnection(true); }catch(e){}
 }
-async function testAiConnection(){
+async function testAiConnection(silent){
   var key=(settings.aiApiKey||'').trim();
   var resEl=document.getElementById('aiTestResult');
   if(!key){
@@ -3522,8 +3597,12 @@ async function testAiConnection(){
   }
   if(resEl) resEl.innerHTML = '<div style="color:#2563eb;">🔄 正在测试连接...</div>';
   try{
+    // V4.5.3：15 秒超时保护，避免网络卡住时一直转圈无响应
+    var _ac = new AbortController();
+    var _to = setTimeout(function(){ try{ _ac.abort(); }catch(_){} }, 15000);
     var resp = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
       method: 'POST',
+      signal: _ac.signal,
       headers: {
         'Authorization': 'Bearer '+key,
         'Content-Type': 'application/json'
@@ -3535,18 +3614,24 @@ async function testAiConnection(){
         temperature: 0.1
       })
     });
-    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    clearTimeout(_to);
+    if(!resp.ok){
+      var errTxt = '';
+      try{ var errJson = await resp.json(); errTxt = (errJson.error && errJson.error.message) || ('HTTP '+resp.status); }catch(_){ errTxt = 'HTTP '+resp.status; }
+      throw new Error(errTxt);
+    }
     var data = await resp.json();
     var reply = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content || '';
     if(reply.includes('成功')){
       if(resEl) resEl.innerHTML = '<div style="color:#16a34a;">✅ 连接正常！AI辩论已可以正常使用，所有打开页面的用户都能免费使用，无需注册</div>';
-      toast('✅ AI连接成功');
+      if(!silent) toast('✅ AI连接成功');
     }else{
       throw new Error('返回异常: '+reply.slice(0,30));
     }
   }catch(e){
-    if(resEl) resEl.innerHTML = '<div style="color:#dc2626;">❌ 连接失败：'+e.message+'，请检查Key是否正确，或稍后再试</div>';
-    toast('❌ AI连接失败');
+    var _reason = (e&&e.name==='AbortError') ? '连接超时（15秒）：可能是网络无法访问 api.siliconflow.cn，换个网络环境或稍后再试' : e.message;
+    if(resEl) resEl.innerHTML = '<div style="color:#dc2626;">❌ 连接失败：'+_reason+'<br><span style="font-size:.8rem;color:#6b7280;">请检查：① API Key 是否以 sk- 开头、复制完整；② 网络能否访问 api.siliconflow.cn（国内网络若被墙请换网络）；③ 账号内是否还有额度</span></div>';
+    if(!silent) toast('❌ AI连接失败：'+_reason);
   }
 }
 /* V3.9.7: 跨设备配置同步（链接 / 配置码） */
@@ -3609,10 +3694,21 @@ function importKeyCode(){
 /* V3.8.0：大模型生成辩词核心函数 */
 async function aiCallDebateLLM(prompt){
   var key=(settings.aiApiKey||'').trim();
-  if(!key) return null;
+  if(!key){
+    // V4.5.3：未配置 Key 时给出一次性提示，避免用户以为按钮坏了
+    if(!window.__jxsAiKeyHinted){
+      window.__jxsAiKeyHinted = true;
+      try{ toast('💡 未配置 AI 大模型 Key，本轮使用离线模板。可在 ⚙️ 设置 → AI 大模型 中填入 Key 启用AI辩词', 4000); }catch(_){}
+    }
+    return null;
+  }
   try{
+    // V4.5.3：20 秒超时保护，避免一直转圈无提示
+    var _ac = new AbortController();
+    var _to = setTimeout(function(){ try{ _ac.abort(); }catch(_){} }, 20000);
     var resp = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
       method: 'POST',
+      signal: _ac.signal,
       headers: {
         'Authorization': 'Bearer '+key,
         'Content-Type': 'application/json'
@@ -3631,12 +3727,26 @@ async function aiCallDebateLLM(prompt){
         top_p: 0.9
       })
     });
-    if(!resp.ok) return null;
+    clearTimeout(_to);
+    if(!resp.ok){
+      var _errMsg = 'HTTP '+resp.status;
+      try{ var _ej = await resp.json(); if(_ej.error && _ej.error.message) _errMsg = _ej.error.message; }catch(_){}
+      console.warn('AI返回错误：'+_errMsg);
+      return null;
+    }
     var data = await resp.json();
     var text = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content || '';
     return text.trim().replace(/^["']|["']$/g,'').replace(/^谢谢主席.*?各位。?/,'').trim();
   }catch(e){
-    console.warn('AI大模型调用失败，回退到离线模板',e);
+    if(e && e.name==='AbortError'){
+      console.warn('AI调用超时（20秒），回退到离线模板');
+      if(!window.__jxsAiTimeoutHinted){
+        window.__jxsAiTimeoutHinted = true;
+        try{ toast('⏱️ AI 请求超时（网络可能连不上硅基流动），已自动回退到离线模板', 3500); }catch(_){}
+      }
+    }else{
+      console.warn('AI大模型调用失败，回退到离线模板',e);
+    }
     return null;
   }
 }
@@ -3915,7 +4025,7 @@ var QR_SHARE_URL_KEY='jixingshuo_qr_url';
 /* ===== 版本 / 缓存刷新：解决“更新后打开还是旧页面” ===== */
 /* V3.5.1：版本号由 head 里的 formatAppVersion 基于 APP_VERSION_ARRAY 统一计算，
    全局 esc/朗读模块零回归；逢十进一：PATCH>=10→MINOR+1 且 PATCH=0，MINOR>=10→MAJOR+1。 */
-var APP_VERSION = window.APP_VERSION || 'V3.5.1';
+var APP_VERSION = window.APP_VERSION || 'V4.5.3';
 var APP_BUILD = window.APP_BUILD || ('2026-10-31 · ' + APP_VERSION);
 
 /* 触发PWA安装提示 */
@@ -4917,6 +5027,43 @@ function debateFinish(){
 */
 function bootApp(){
   if(window.__jxxBooted) return; window.__jxxBooted = true;
+
+  /* ====== V4.5.2：版本迁移检查 ======
+     老版本（如 v3.9.9）用户的 Service Worker 缓存了旧 HTML，导致"打开永远是旧版本、必须手动强制刷新"。
+     这里在 boot 最开始对比 localStorage 记录的上次运行版本 vs 当前页面版本：
+       - 如果是首次启动（没记录）→ 写入当前版本，正常启动；
+       - 如果版本号不同 → 清理 SW 缓存 + 自动带 v=时间戳 重载一次（仅一次，用户几乎无感知）；
+       - 如果 SW 提示新版本已在后台安装完成 → 弹出顶部条让用户一键刷新到新版。 */
+  (function doVersionMigration(){
+    try{
+      var curVer = window.APP_VERSION || 'V0';
+      var lastVerKey = 'jxx_last_run_version';
+      var lastVer = localStorage.getItem(lastVerKey) || '';
+      var urlV = new URLSearchParams(window.location.search).get('v');
+      // 如果刚做过版本迁移重载（URL 带 v= 参数）就不再循环刷新
+      if(!lastVer || urlV){
+        localStorage.setItem(lastVerKey, curVer);
+      }else if(lastVer !== curVer){
+        // 版本变化：清 SW 缓存，然后带 v= 参数重载一次
+        try{
+          if('serviceWorker' in navigator && navigator.serviceWorker.controller){
+            navigator.serviceWorker.controller.postMessage({action:'clearCache'});
+          }
+          if('caches' in window){
+            caches.keys().then(function(keys){
+              return Promise.all(keys.filter(function(k){ return k.indexOf('jixingshuo-')===0; }).map(function(k){ return caches.delete(k); }));
+            });
+          }
+        }catch(_e){}
+        localStorage.setItem(lastVerKey, curVer);
+        var href = window.location.href.split('#')[0];
+        var sep = href.indexOf('?')>=0 ? '&' : '?';
+        window.location.replace(href + sep + 'v=' + Date.now() + window.location.hash);
+        return; // 本轮停止 boot，等重载
+      }
+    }catch(_e){}
+  })();
+
   var _ld=document.getElementById('__loading'),_lb=document.getElementById('__lbar');
   function _p(v){try{if(_lb)_lb.style.width=v+'%';}catch(_){}}
   function _removeLoading(){
@@ -4975,6 +5122,11 @@ function bootApp(){
     _p(100);
     // 渲染完成：延迟 50ms 再移除（让UI有时间绘制）
     setTimeout(_removeLoading,50);
+
+    // V4.5.3：启动自动检查题库更新（根据用户「启动时自动检查」开关与频率）
+    setTimeout(function(){
+      try{ if(typeof tryAutoUpdateOnStart==='function') tryAutoUpdateOnStart(); }catch(_){}
+    }, 1500);
 
     // 欢迎 toast
     setTimeout(function(){
@@ -8257,7 +8409,7 @@ function _chainNext(i){
  * ============================================================ */
 (function(){
 'use strict';
-var PATCH = 'V3.5.1';
+/* 旧版本 PATCH 徽标已在 V4.5.3 统一清理，版本号由 APP_VERSION_ARRAY 唯一驱动 */
 try{ console.log('[JXX] patching '+PATCH+' ...'); }catch(e){}
 
 /* ---------- 【修复2】全新 splitEnSentences ---------- */
@@ -8405,10 +8557,13 @@ if(typeof _origZh === 'function'){
   }
 });
 
-/* 版本号 */
+/* 版本号徽标同步（V4.5.2：统一用 window.APP_VERSION，不再使用过时的 PATCH 变量） */
 try{
   setTimeout(function(){
-    document.querySelectorAll('.ver-badge,.version-badge,#verBadge').forEach(function(b){ b.textContent=PATCH; });
+    var v = window.APP_VERSION || '';
+    if(v){
+      document.querySelectorAll('.ver-badge,.version-badge,#verBadge').forEach(function(b){ b.textContent=v; });
+    }
   },300);
 }catch(e){}
 
@@ -9873,7 +10028,7 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
  *     播完才进入下一句。
  * ============================================================ */
 (function(){
-  var PATCH='V3.5.1';
+  /* 旧 PATCH='V3.5.1' 已废弃，版本号统一由 head 驱动 */
   function log(m){ try{ console.log('[JXX] '+PATCH+' '+m); }catch(e){} }
 
   /* ---------- A. 自带一套断行/切句（与 V3.3.14 同规则，避免依赖其私有作用域） ---------- */
@@ -10356,11 +10511,12 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
   if(window.__JX_UNIFIED_PATCH_V450__) return;
   window.__JX_UNIFIED_PATCH_V450__ = true;
 
-  /* ===== 统一版本号（写在 window 上，供各模块读取） ===== */
-  window.APP_VERSION_ARRAY = [4, 5, 1];
-  window.APP_VERSION       = 'V4.5.1';
-  window.APP_BUILD         = '2026-11-10 · V4.5.1 · 样式回归修复版（所有历史补丁合并为一，杜绝叠层冲突）';
-  window.JXSHUO_VERSION    = 'V4.5.1';
+  /* ===== 统一版本号（由 head 的 APP_VERSION_ARRAY 统一计算，这里不再硬编码，避免覆盖） ===== */
+  window.APP_VERSION_ARRAY = window.APP_VERSION_ARRAY || [4, 5, 3];
+  if(window.formatAppVersion){ window.APP_VERSION = window.formatAppVersion(window.APP_VERSION_ARRAY); }
+  window.APP_VERSION       = window.APP_VERSION || 'V4.5.3';
+  window.APP_BUILD         = window.APP_BUILD || ('2026-11-11 · ' + window.APP_VERSION + ' · 稳定修复版');
+  window.JXSHUO_VERSION    = window.APP_VERSION;
 
   /* ==================================================================
    * §1. V3.5.2 · 单词点击延迟/卡顿修复
@@ -10746,7 +10902,7 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
   }
 
   /* ---------- 版本号统一（head 里 APP_VERSION_ARRAY 已升到 [3,6,3]） ---------- */
-  window.APP_VERSION = window.APP_VERSION || (window.formatAppVersion ? window.formatAppVersion(window.APP_VERSION_ARRAY || [3,6,3]) : 'V3.6.3');
+  window.APP_VERSION = window.APP_VERSION || (window.formatAppVersion ? window.formatAppVersion(window.APP_VERSION_ARRAY || [4,5,3]) : 'V4.5.3');
   window.APP_BUILD = window.APP_BUILD || ('2026-10-31 · ' + window.APP_VERSION);
   function syncVer(){
     var V = window.APP_VERSION;
@@ -10756,7 +10912,7 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
       var stamp=document.getElementById('buildStamp');
       if(stamp) stamp.textContent='构建 '+(window.APP_BUILD||('2026-11-09 · '+V));
       var vi=document.getElementById('verInfo');
-      if(vi) vi.innerHTML='当前版本：<b>'+V+'</b>（构建 '+(window.APP_BUILD||('2026-11-09 · '+V))+'）';
+      if(vi) vi.innerHTML='当前版本：<b id="verInfoNum">'+V+'</b>（构建 '+(window.APP_BUILD||('2026-11-11 · '+V))+'）';
       var foots=document.querySelectorAll('div');
       for(var fi=0;fi<foots.length;fi++){
         var ft=foots[fi].textContent||'';
@@ -11218,7 +11374,7 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
 
   /* ---- 版本徽标统一为当前版本（读取 window.APP_VERSION，防止旧补丁把它改回旧号） ---- */
   try{
-    var _V = window.APP_VERSION || 'V3.5.1';
+    var _V = window.APP_VERSION || 'V4.5.3';
     var _bs = document.querySelectorAll('.ver-badge,.version-badge,#verBadge');
     for(var _bi = 0; _bi < _bs.length; _bi++){ if(_bs[_bi].textContent && /V3\.\d\.\d/.test(_bs[_bi].textContent)) _bs[_bi].textContent = _V; }
     var _stamp = document.getElementById('buildStamp');
@@ -11956,7 +12112,7 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
 
   /* ---- 版本徽标统一更新到当前版本（读取 head 统一计算的 window.APP_VERSION，不再硬编码） ---- */
   try{
-    var APP_VERSION = window.APP_VERSION || 'V3.5.1';
+    var APP_VERSION = window.APP_VERSION || 'V4.5.3';
     var APP_BUILD = window.APP_BUILD || ('2026-11-09 · ' + APP_VERSION);
     window.APP_VERSION = APP_VERSION;
     window.APP_BUILD = APP_BUILD;
@@ -11964,7 +12120,7 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
     for(var i = 0; i < bs.length; i++){ if(bs[i].textContent && /V3\.\d\.\d/.test(bs[i].textContent)) bs[i].textContent = APP_VERSION; }
   /* [version-sync stripped] *//* 替换设置页版本信息 */
     var vi = document.getElementById('verInfo');
-    if(vi){ vi.innerHTML = '当前版本：<b>'+APP_VERSION+'</b>（构建 '+APP_BUILD+'）'; }
+    if(vi){ vi.innerHTML = '当前版本：<b id="verInfoNum">'+APP_VERSION+'</b>（构建 '+APP_BUILD+'）'; }
     /* 页面底部的版本小标签也统一 */
     var footers = document.querySelectorAll('div[style*="opacity\\:.55"]');
     for(var fi = 0; fi < footers.length; fi++){
@@ -12355,27 +12511,67 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
     var link = document.getElementById('fbSubmitLink');
     if(link) link.setAttribute('href', url);
 
-    /* 先记录到本地反馈列表 */
+    /* 先记录到本地反馈列表（即使没提交成功本地也有记录） */
     var mine = loadMine();
     mine.unshift({ code: code, type: type, title: content.slice(0, 40), time: new Date().toLocaleString('zh-CN', {hour12:false}) });
     saveMine(mine);
     renderMine();
 
-    /* 微信 / QQ 内置浏览器打不开外部新页面：阻止默认跳转，改为引导复制链接 */
-    if(isInnerBrowser()){
+    /* 微信/QQ内置浏览器 或 file:// 本地文件打开：阻止默认跳转，改为引导复制链接/文本 */
+    var isLocal = /^file:/i.test(window.location.href);
+    if(isInnerBrowser() || isLocal){
       if(ev) ev.preventDefault();
-      fbShowMobileTip(url);
+      // 先尝试复制反馈文本到剪贴板，然后显示明显的引导区
+      try{
+        var attach = !!($('fbAttachDiag') && $('fbAttachDiag').checked);
+        var tech = attach ? techInfo() : null;
+        var text = buildFeedbackText(content, type, code, tech);
+        var ok = copyText(text, function(){});
+      }catch(e){}
+      fbShowLocalFallback(url, code, isLocal);
       return false;
     }
 
-    /* 其他情况：交给 <a target="_blank"> 原生打开（电脑、手机标准浏览器均有效） */
-    tip('✅ 正在打开GitHub提交页面！请在新页面点最底部绿色「Submit new issue」按钮完成提交', true, 6000);
+    /* 其他情况（http/https 部署场景）：交给 <a target="_blank"> 原生打开 */
+    tip('✅ 正在打开GitHub提交页面！请在新标签页点最底部绿色「Submit new issue」按钮完成提交<br>如果没看到新标签页弹出 → 请看浏览器顶部"允许弹出窗口"提示，或点下面的「🔗 复制提交链接」', true, 8000);
+    // 800ms 后显示兜底提示（万一弹窗被浏览器拦截了用户能看到）
+    setTimeout(function(){
+      var mt = document.getElementById('fbFallbackTip');
+      if(mt){ mt.style.display = 'block'; mt.innerHTML =
+        '⚠️ <b>没看到新标签页弹出？</b>浏览器可能拦截了弹窗：<br>'
+        + '① 查看浏览器地址栏右侧是否有"弹窗被拦截"的小图标，点它允许弹出；<br>'
+        + '② 或者直接点下面的「🔗 复制提交链接」粘贴到浏览器地址栏打开；<br>'
+        + '③ 也可以点「📋 复制反馈文本」，把内容直接发给作者。';
+      }
+    }, 800);
     if(ta) ta.value = '';
-    var box = $('fbFormBox'); if(box) box.classList.remove('show');
-    var mt = document.getElementById('fbMobileTip'); if(mt) mt.style.display = 'none';
+    var mt2 = document.getElementById('fbMobileTip'); if(mt2) mt2.style.display = 'none';
     setTimeout(function(){ if(typeof loadFbBoard === 'function') loadFbBoard(true); }, 5000);
     return true;
   };
+
+  /* 本地 file:// 打开 或 微信/QQ 内置浏览器兜底：展示可复制链接+反馈文本 */
+  function fbShowLocalFallback(url, code, isLocal){
+    var box = document.getElementById('fbMobileTip');
+    if(!box) return;
+    box.style.display = 'block';
+    var reason = isLocal ? '你现在是<b>双击本地HTML文件</b>打开的页面' : '你现在使用的是<b>微信/QQ内置浏览器</b>';
+    box.innerHTML =
+      '📌 ' + reason + '，浏览器不允许自动打开新页面，已为你准备好两种提交方式（任选一种）：<br><br>'
+      + '<b>方式一（推荐）：复制提交链接到浏览器打开</b><br>'
+      + '<div style="display:flex;gap:6px;margin-top:4px;">'
+      + '<button class="btn btn-primary btn-sm" onclick="fbCopyLink()">🔗 一键复制提交链接</button>'
+      + '<span style="font-size:.8rem;color:#92400e;align-self:center;">复制后粘贴到 Chrome/Edge/Safari 地址栏打开即可</span>'
+      + '</div><br>'
+      + '<b>方式二：复制反馈文本直接发给作者</b><br>'
+      + '<div style="display:flex;gap:6px;margin-top:4px;">'
+      + '<button class="btn btn-primary btn-sm" onclick="fbCopyText()">📋 一键复制反馈文本</button>'
+      + '<span style="font-size:.8rem;color:#92400e;align-self:center;">复制后粘贴到任意聊天窗口发给作者</span>'
+      + '</div><br>'
+      + '你的追踪码：<b>' + esc(code) + '</b>（用于后续查询处理进度）';
+    try{ box.scrollIntoView({behavior:'smooth', block:'center'}); }catch(e){}
+    tip('⚠️ 当前环境无法直接打开GitHub，请使用下面两种方式之一提交', false, 6000);
+  }
 
   /* 复制提交链接：手机最稳的兜底方式（粘贴到浏览器地址栏即可） */
   window.fbCopyLink = function(){
@@ -12875,23 +13071,35 @@ window.findHint=findHint;
     if(_origDraw)_origDraw.apply(this,arguments);
   };
 
-  /* ========= 监听模式切换：辩论模式显示AI陪练面板，其他模式隐藏；统一状态源 ========= */
+  /* ========= V4.5.3 稳定版：监听模式切换——辩论模式且有话题时显示AI陪练面板 ========= */
+  function _syncAIDebatePanel(){
+    var panel=document.getElementById('aiDebatePanel');
+    if(!panel) return;
+    var curMode = (window.STATE && window.STATE.mode) || window._jxs_curMode || 'improv';
+    var hasTopic = !!(window.STATE && window.STATE.currentTopic);
+    if(curMode==='debate'){
+      panel.classList.add('show');
+    }else{
+      panel.classList.remove('show');
+      if(typeof closeAIDebate==='function'){ try{ closeAIDebate(true); }catch(_){} }
+    }
+  }
   var modeTabs=document.getElementById('modeTabs');
   if(modeTabs){
-    // 仅在 tab 点击时同步状态（不替绑 onclick，避免破坏原版逻辑）
+    // 用冒泡阶段监听（更早版本用捕获阶段会被别的监听器 stopPropagation 拦掉）
     modeTabs.addEventListener('click',function(e){
-      var tab=e.target.closest('.mode-tab');
-      if(!tab)return;
-      var m=tab.dataset.mode;
-      window._jxs_curMode=m;
-      if(window.STATE)window.STATE.mode=m;
-      var panel=document.getElementById('aiDebatePanel');
-      if(panel){
-        if(m==='debate'){panel.classList.add('show');}
-        else{panel.classList.remove('show');closeAIDebate(true);}
-      }
-    },true);
+      setTimeout(_syncAIDebatePanel, 50); // 延迟一帧等 STATE 更新完
+    }, false);
   }
+  // 抽题后也同步一次，保证辩论模式抽完题立即看到面板
+  var _origDraw2 = window.drawTopic;
+  window.drawTopic = function(){
+    var r = _origDraw2 ? _origDraw2.apply(this,arguments) : undefined;
+    setTimeout(_syncAIDebatePanel, 100);
+    return r;
+  };
+  // 启动时同步一次
+  setTimeout(_syncAIDebatePanel, 200);
 
   /* ========= AI 陪练对辩（接入辩论模式，复用当前辩题） ========= */
   var aiState={running:false,mySide:'正方',recognizing:false,recognition:null,
@@ -14741,7 +14949,7 @@ window.findHint=findHint;
    * ================================================================== */
   (function syncVersionUI(){
     try{
-      var V   = window.APP_VERSION  || 'V4.5.0';
+      var V   = window.APP_VERSION  || 'V4.5.3';
       var B   = window.APP_BUILD    || '2026-11-10 · V4.5.1 · 样式回归修复版（所有历史补丁合并为一，杜绝叠层冲突）';
       var TQ  = (typeof __totalQ==='function') ? __totalQ() : 0;
 
@@ -14761,7 +14969,7 @@ window.findHint=findHint;
 
       // 设置面板里的版本信息
       var vi = document.getElementById('verInfo');
-      if(vi) vi.innerHTML = '当前版本：<b>' + V + '</b>（' + B + '）';
+      if(vi) vi.innerHTML = '当前版本：<b id="verInfoNum">' + V + '</b>（' + B + '）';
 
       // 页脚"X · N 道演讲训练题"文案
       var divs = document.getElementsByTagName('div');
@@ -14788,13 +14996,13 @@ window.findHint=findHint;
   // DOM ready 后再同步一次（保险）
   function _runSync(){
     try{
-      var V = window.APP_VERSION || 'V4.5.0';
+      var V = window.APP_VERSION || 'V4.5.3';
       var badges = document.querySelectorAll('.ver-badge,.version-badge,#verBadge,.badge');
       for(var i=0;i<badges.length;i++){
         if(badges[i].id === 'verBadge'){ badges[i].textContent = V; }
       }
       var stamp = document.getElementById('buildStamp');
-      var B = window.APP_BUILD || '2026-11-10 · V4.5.1 · 样式回归修复版（所有历史补丁合并为一，杜绝叠层冲突）';
+      var B = window.APP_BUILD || '2026-11-10 · V4.5.2 · 全面修复版（AI大模型/反馈/自动更新/样式四大问题修复）';
       if(stamp) stamp.textContent = '构建 ' + B;
     }catch(_){}
   }
