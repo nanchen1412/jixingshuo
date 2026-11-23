@@ -18,7 +18,7 @@
      MINOR 满 10 同样进位到 MAJOR：V3.9.9 的下一个版本 = V4.0.0
    发版时只需改 APP_VERSION_ARRAY 这三个数字，展示字符串自动计算；
    也可以直接调用 window.bumpAppVersion() 按上述规则自动进一位。 */
-window.APP_VERSION_ARRAY = [1, 5, 0];   /* [MAJOR, MINOR, PATCH] V1.4.5 → AI评价弹层不再遮挡朗读内容：默认高度只占屏幕下半部分、可一键「最小化」收成底部细条、打开时自动把朗读稿顶到弹层上方；同时保留拖拽调大小、内容区滚动、文字/语音清空按钮，主页面可正常滑动 */
+window.APP_VERSION_ARRAY = [1, 5, 0];   /* [MAJOR, MINOR, PATCH] V1.5.0 → AI评价弹层不再遮挡朗读内容：默认高度只占屏幕下半部分、可一键「最小化」收成底部细条、打开时自动把朗读稿顶到弹层上方；同时保留拖拽调大小、内容区滚动、文字/语音清空按钮，主页面可正常滑动 */
 window.formatAppVersion = function(arr){
   var M = arr[0]|0, m = arr[1]|0, p = arr[2]|0;
   if(p >= 10){ m += Math.floor(p/10); p = p % 10; }
@@ -38,7 +38,7 @@ window.bumpAppVersion = function(){
   return window.APP_VERSION;
 };
 window.APP_VERSION = window.formatAppVersion(window.APP_VERSION_ARRAY);
-window.APP_BUILD = '2026-11-19 · V1.4.5：AI评价弹层不再遮挡朗读内容——默认高度只占屏幕下半部分、可一键最小化收起成底栏、打开时自动把朗读稿顶到弹层上方；保留拖拽调大小与内容区滚动，文字/语音模式都有清空按钮，主页面可正常滑动';
+window.APP_BUILD = '2026-11-19 · V1.5.0：AI评价弹层不再遮挡朗读内容——默认高度只占屏幕下半部分、可一键最小化收起成底栏、打开时自动把朗读稿顶到弹层上方；保留拖拽调大小与内容区滚动，文字/语音模式都有清空按钮，主页面可正常滑动';
 
 /* ===== PWA：内联 SVG 图标 + 内联 manifest（blob URL），零外部依赖 ===== */
 (function(){
@@ -291,7 +291,7 @@ window.APP_BUILD = '2026-11-19 · V1.4.5：AI评价弹层不再遮挡朗读内�
 })();
 </script>
 <meta name="x5-tap-highlight" content="no">
-<title>即兴说 - 演讲口才训练 V1.0.8</title>
+<title>即兴说 V1.5.0</title>
 
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -406,22 +406,21 @@ img,svg,video,canvas,iframe,pre,table{max-width:100%}
 .timer-actions{margin-top:24px;display:flex;gap:10px;justify-content:center}
 .timer-actions .btn{color:#fff;background:rgba(255,255,255,.15)}.timer-actions .btn:hover{background:rgba(255,255,255,.3)}
 
-.mask{display:none !important;pointer-events:none !important;z-index:-1 !important;}
-.mask.show{display:none !important;}
-/* V1.4.5：取消所有遮罩层，主页面永远可点击、可滑动，不会变暗变色 */
-html.dark .mask{display:none !important;}
+.mask{position:fixed;inset:0;background:rgba(0,0,0,0);z-index:205;display:none;transition:background .25s ease}
+.mask.show{display:block;background:rgba(0,0,0,0);pointer-events:none}
+/* V1.4.9：取消主页面锁定、模糊、变暗遮罩，主页面正常显示可滑动 */
 .settings-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;
   padding:0;border-radius:20px;z-index:215;width:min(760px,94vw);max-height:90vh;overflow:hidden;
   display:none;flex-direction:column;box-shadow:0 25px 80px rgba(0,0,0,.3)}
 .settings-panel.show{display:flex}
-/* V1.4.5：AI评价弹层修复：1. 彻底兼容所有浏览器滚动（flex三段式+内容区独立滚动） 2. 顶部增加拖拽把手可自由调整弹层大小 3. 文字/语音模式都显示清空按钮 */
-/* V1.4.5：默认高度降到半屏（不再遮挡上方朗读稿）+ 支持一键最小化收成底栏 */
+/* V1.5.0：AI评价弹层修复：1. 彻底兼容所有浏览器滚动（flex三段式+内容区独立滚动） 2. 顶部增加拖拽把手可自由调整弹层大小 3. 文字/语音模式都显示清空按钮 */
+/* V1.5.0：默认高度降到半屏（不再遮挡上方朗读稿）+ 支持一键最小化收成底栏 */
 .review-panel{position:fixed;left:50%;bottom:0;transform:translate(-50%,100%);background:#fff;
   padding:0;border-radius:20px 20px 0 0;z-index:210;width:100%;max-width:900px;height:50vh;
   display:flex;flex-direction:column;box-shadow:0 -14px 46px rgba(0,0,0,.25);transition:transform .3s ease-out;
   box-sizing:border-box}
 .review-panel.show{transform:translate(-50%,0)}
-/* V1.4.5：最小化（收起）状态——只留一条标题栏，完全不遮挡上方朗读内容 */
+/* V1.5.0：最小化（收起）状态——只留一条标题栏，完全不遮挡上方朗读内容 */
 .review-panel.minimized{height:48px!important;border-radius:16px 16px 0 0}
 .review-panel.minimized .resize-handle,
 .review-panel.minimized .panel-body,
@@ -431,17 +430,16 @@ html.dark .mask{display:none !important;}
   border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:1.05rem;line-height:1;cursor:pointer;
   display:flex;align-items:center;justify-content:center}
 .review-panel .panel-min:hover{background:rgba(255,255,255,.35)}
-/* V1.4.5：弹层打开时给主页面预留底部空间，使朗读稿能滚动到弹层上方，不被遮挡 */
+/* V1.5.0：弹层打开时给主页面预留底部空间，使朗读稿能滚动到弹层上方，不被遮挡 */
 body.review-open{padding-bottom:var(--review-pad,52vh)}
 /* 拖拽调整大小把手 */
-.review-panel 
+.review-panel .resize-handle{width:100%;height:20px;display:flex;align-items:center;justify-content:center;cursor:ns-resize;flex-shrink:0;touch-action:none;user-select:none}
 .review-panel .resize-handle::after{content:"";width:48px;height:5px;background:#d1d5db;border-radius:3px;transition:background .2s}
 .review-panel .resize-handle:hover::after,.review-panel .resize-handle.dragging::after{background:#667eea;width:60px}
 /* 悬浮评分小卡（评价完成后自动收起显示） */
 .review-float-card{position:fixed;right:20px;bottom:20px;background:#fff;border-radius:16px;padding:12px 18px;
-  box-shadow:0 8px 28px rgba(102,126,234,.25);z-index:211;display:none;align-items:center;gap:12px;
-  cursor:pointer;border:1px solid #e0e7ff;animation:floatIn .3s ease-out;transition:bottom .3s ease}
-body.review-open .review-float-card{bottom:62vh;}
+  box-shadow:0 8px 28px rgba(102,126,234,.25);z-index:200;display:none;align-items:center;gap:12px;
+  cursor:pointer;border:1px solid #e0e7ff;animation:floatIn .3s ease-out}
 .review-float-card.show{display:flex}
 .review-float-card:hover{box-shadow:0 10px 32px rgba(102,126,234,.35);transform:translateY(-2px)}
 .review-float-score{font-size:1.5rem;font-weight:700;color:#4f46e5;min-width:48px;text-align:center}
@@ -452,7 +450,7 @@ body.review-open .review-float-card{bottom:62vh;}
   background:#f3f4f6;border:none;font-size:.7rem;cursor:pointer;color:#6b7280;display:flex;align-items:center;justify-content:center}
 .review-float-close:hover{background:#e5e7eb;color:#1f2937}
 @keyframes floatIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-/* V1.4.5：三段式flex布局，中间panel-body独立滚动，100%兼容所有浏览器（包括百度/QQ/微信等内置浏览器） */
+/* V1.5.0：三段式flex布局，中间panel-body独立滚动，100%兼容所有浏览器（包括百度/QQ/微信等内置浏览器） */
 .review-panel .panel-head{position:relative;z-index:2;flex-shrink:0;margin:0}
 .review-panel .panel-body{padding:16px 24px 24px;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain;min-height:0}
 .review-panel .panel-footer{padding:12px 24px 24px calc(24px + env(safe-area-inset-bottom,0px));flex-shrink:0;border-top:1px solid #f3f4f6;background:#fff}
@@ -461,7 +459,7 @@ body.review-open .review-float-card{bottom:62vh;}
 .review-panel .panel-body::-webkit-scrollbar-track{background:transparent}
 .review-panel .panel-body::-webkit-scrollbar-thumb{background:#c7d2fe;border-radius:3px}
 .review-panel .panel-body::-webkit-scrollbar-thumb:hover{background:#a5b4fc}
-/* ===== V1.4.5：大屏小屏都完整显示所有按钮，清空按钮在文字/语音模式都显示 ===== */
+/* ===== V1.5.0：大屏小屏都完整显示所有按钮，清空按钮在文字/语音模式都显示 ===== */
 @media (max-width:900px){
   .review-panel{max-width:100vw;height:52vh}
   .review-float-card{right:12px;bottom:12px;padding:10px 14px}
@@ -534,7 +532,7 @@ body.review-open .review-float-card{bottom:62vh;}
   font-size:.7rem;margin-left:6px;vertical-align:middle}
 .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);
   color:#fff;padding:10px 20px;border-radius:20px;font-size:.88rem;z-index:300;opacity:0;
-  transition:opacity .3s;pointer-events:auto}
+  transition:opacity .3s;pointer-events:none}
 .toast.show{opacity:1}
 
 .update-status{margin-top:8px;padding:10px;border-radius:8px;font-size:.85rem}
@@ -596,7 +594,7 @@ body.review-open .review-float-card{bottom:62vh;}
 .search-input{width:100%;padding:12px 40px 12px 42px;border:2px solid #e5e7eb;border-radius:14px;
   font-size:1rem;font-family:inherit;background:#f9fafb;transition:all .2s}
 .search-input:focus{outline:none;border-color:#667eea;background:#fff;box-shadow:0 0 0 4px rgba(102,126,234,.12)}
-.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:1.1rem;color:#9ca3af;pointer-events:auto}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:1.1rem;color:#9ca3af;pointer-events:none}
 .search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:24px;height:24px;
   border:none;background:#e5e7eb;color:#6b7280;border-radius:50%;font-size:.8rem;cursor:pointer;
   display:none;line-height:1}
@@ -710,6 +708,7 @@ body.review-open .review-float-card{bottom:62vh;}
 .input-mode-tab{padding:6px 14px;border-radius:20px;font-size:.82rem;background:#f3f4f6;color:#6b7280;cursor:pointer;transition:all .2s}
 .input-mode-tab.active{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}
 .input-mode-tab .icon{margin-right:4px}
+
 
 /* ===== v2.0 折叠式说明书 ===== */
 .manual-list{border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;background:#fafbff}
@@ -847,6 +846,7 @@ body.review-open .review-float-card{bottom:62vh;}
 .fb-tabs{display:flex;gap:6px;margin-bottom:8px}
 .fb-board-foot{font-size:.71rem;color:#9ca3af;margin-top:7px;line-height:1.6;text-align:center}
 
+
 /* ===== v2.0 辩论AI对辩 ===== */
 .debate-log .dl-line{padding:6px 8px;margin-bottom:6px;border-radius:8px;font-size:.85rem;line-height:1.65;animation:fadeIn .3s}
 .debate-log .dl-pro{background:#fef3c7;color:#78350f;border-left:3px solid #f59e0b}
@@ -857,6 +857,7 @@ body.review-open .review-float-card{bottom:62vh;}
 .debate-turn.t-con{background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe}
 .debate-turn.t-sys{background:#f3f4f6;color:#4b5563;border:1px solid #e5e7eb}
 .debate-side.chosen{box-shadow:0 0 0 3px #667eea;transform:scale(1.02)}
+
 
 /* ========== V3.0 英文朗诵 ========== */
 .recite-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 16px;padding:12px;background:linear-gradient(135deg,#f0f4ff 0%,#faf5ff 100%);border-radius:12px;border:1px solid #e0e7ff;}
@@ -885,6 +886,7 @@ body.review-open .review-float-card{bottom:62vh;}
 .recite-translation{margin-top:18px;padding:16px;background:linear-gradient(135deg,#fffbeb 0%,#fef3c7 100%);border-radius:12px;border-left:4px solid #f59e0b;}
 .recite-translation-title{font-weight:700;color:#b4530b;margin-bottom:8px;font-size:.9rem;}
 .recite-translation-body{font-size:.95rem;line-height:1.8;color:#78350f;white-space:pre-wrap;}
+
 
 /* ========== V3.4.0 句级对照样式（重做版） ========== */
 .recite-pair{margin-bottom:14px;padding:8px 10px;border-radius:10px;transition:background .25s;}
@@ -1079,6 +1081,7 @@ details.native-hint .hint-body{
   outline:none !important;
 }
 
+
 /* V3.3.5 最终修复：按钮极淡内描边，消除圆角抗锯齿色差镶边 */
 .card{box-shadow:0 12px 40px rgba(0,0,0,.15);border-radius:20px;border:none;}
 .all-big{
@@ -1117,6 +1120,11 @@ button:active,.btn:active,.btn-primary:active,.settings-btn:active,.side-btn:act
 }
 .cat-card:active,.toggle-cats:active,.cat-group-head:active{filter:brightness(.97);transform:none !important;}
 body{background-attachment:fixed !important;}
+/* 强制所有非设置遮罩隐藏，不阻挡按钮点击 */
+.drawer-mask, .ai-mask {
+  display: none !important;
+  pointer-events: none !important;display:none !important;pointer-events:none !important;}
+.settings-mask {z-index:199;}
 </style>
 
 <style>
@@ -1181,6 +1189,11 @@ html.dark .growth-card-tabs{background:#374151}
 html.dark .gctab{color:#9ca3af}
 html.dark .gctab.active{background:#1f2937;color:#ddd6fe;box-shadow:0 2px 8px rgba(139,92,246,.2)}
 html.dark .coach-head{background:#312e81;color:#ddd6fe}
+/* 强制所有非设置遮罩隐藏，不阻挡按钮点击 */
+.drawer-mask, .ai-mask {
+  display: none !important;
+  pointer-events: none !important;display:none !important;pointer-events:none !important;}
+.settings-mask {z-index:199;}
 </style>
 
 <script>
@@ -1234,7 +1247,95 @@ html.dark .v114-panel [style*="background:#fff"]{background:#252540!important;co
 html.dark .v114-panel [style*="background:#f9fafb"]{background:#252540!important;color:#e4e4ed!important;}
 html.dark .v114-panel [style*="border-color:#e5e7eb"],html.dark .v114-panel [style*="border:1px solid #e5e7eb"]{border-color:#3a3a5a!important;}
 html.dark .v114-panel [style*="color:#000"]{color:#e4e4ed!important;}
+/* 强制所有非设置遮罩隐藏，不阻挡按钮点击 */
+.drawer-mask, .ai-mask {
+  display: none !important;
+  pointer-events: none !important;display:none !important;pointer-events:none !important;}
+.settings-mask {z-index:199;}
 </style>
+
+<style>
+/* ===== V1.5.0 AI评价底部抽屉样式 ===== */
+.review-panel {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 60vh !important;
+  max-height: 85vh !important;
+  border-radius: 16px 16px 0 0 !important;
+  transform: translateY(100%) !important;
+  transition: transform .3s ease !important;
+  z-index: 900 !important;
+  box-shadow: 0 -4px 24px rgba(0,0,0,.15) !important;
+  background: var(--card-bg) !important;
+}
+.review-panel.show {
+  transform: translateY(0) !important;
+}
+/* 打开AI评价时，主页面底部留白，内容可上滑不遮挡 */
+body.review-open {
+  padding-bottom: 62vh !important;
+}
+/* 隐藏AI评价全屏遮罩，不阻挡主页面点击 */
+.review-mask, .drawer-mask {
+  display: none !important;
+}
+/* 悬浮结果按钮自动上移，不被面板压住 */
+body.review-open #floatResultBtn {
+  bottom: calc(62vh + 16px) !important;
+}
+/* 面板顶部把手 */
+.review-panel::before {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 4px;
+  background: var(--border-color);
+  border-radius: 2px;
+  margin: 8px auto 0;
+}
+/* 清爽简洁头部 */
+.review-panel .panel-head {
+  padding: 8px 16px 12px !important;
+  border-bottom: 1px solid var(--border-color);
+}
+.review-panel .panel-head h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+.review-panel .panel-body {
+  padding: 16px !important;
+  overflow-y: auto;
+  height: calc(100% - 120px);
+}
+/* 设置面板遮罩单独处理，只在设置打开时显示 */
+.settings-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+  z-index: 999;
+  display: none;
+}
+.settings-mask.show {
+  display: block;
+}
+.settings-panel {
+  max-height: 85vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  z-index: 1000 !important;
+}
+/* 强制所有非设置遮罩隐藏，不阻挡按钮点击 */
+.drawer-mask, .ai-mask {
+  display: none !important;
+  pointer-events: none !important;display:none !important;pointer-events:none !important;}
+.settings-mask {z-index:199;}
+</style>
+
 </head>
 <body>
 <div id="__loading" style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;z-index:999999;font-family:system-ui,-apple-system,sans-serif;">
@@ -1249,6 +1350,11 @@ html.dark .v114-panel [style*="color:#000"]{color:#e4e4ed!important;}
 <style>
 @keyframes __p{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.12);opacity:.85}}
 @keyframes __lbarSlide{0%{transform:translateX(-100%);}100%{transform:translateX(220px);}}
+/* 强制所有非设置遮罩隐藏，不阻挡按钮点击 */
+.drawer-mask, .ai-mask {
+  display: none !important;
+  pointer-events: none !important;display:none !important;pointer-events:none !important;}
+.settings-mask {z-index:199;}
 </style>
 <!-- ================ V4.5.1 样式回归修复：补回曾在合并补丁时误删的 V3.7.3~V4.0.6 主样式块（深色模式/成长卡片/辩论/tip-card/思路大纲/入口按钮/移动端适配） ================ -->
 <style>
@@ -1278,7 +1384,7 @@ html.dark .setting-group{background:#252540!important;border-color:#3a3a5a!impor
 html.dark .setting-group-head{background:#202038!important}
 html.dark .setting-group-body{background:#1e1e35!important}
 html.dark .setting-row label,html.dark .panel-head{color:#ccccdd!important}
-html.dark .mask{display:none !important;pointer-events:none !important;z-index:-1 !important;}
+html.dark .mask{background:rgba(0,0,0,.7)!important}
 html.dark .settings-btn{background:rgba(255,255,255,.12)!important;color:#fff!important}
 html.dark .badge{background:rgba(255,255,255,.2)!important}
 html.dark .recite-toolbar{background:linear-gradient(135deg,#252540,#2d2350)!important;border-color:#3a3a5a!important}
@@ -1432,7 +1538,7 @@ html.dark .dpp-side{color:#9ca3af!important}
 
 /* ================ 完整版：左侧常驻竖条入口 + 右侧滑入抽屉 ================ */
 /* 左侧常驻竖条：两个圆形按钮垂直居中固定在屏幕左边，不遮挡主要内容 */
-.side-entry-bar{position:fixed;left:16px;top:16px;display:flex;flex-direction:row;gap:10px;z-index:72;pointer-events:auto}
+.side-entry-bar{position:fixed;left:16px;top:16px;display:flex;flex-direction:row;gap:10px;z-index:72;pointer-events:none}
 .side-entry-btn{position:relative;pointer-events:auto;display:inline-flex;align-items:center;justify-content:center;
   width:42px;height:42px;border:none;border-radius:50%;
   background:rgba(255,255,255,.3);color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.18);
@@ -1521,6 +1627,11 @@ html.dark .drawer-mask{background:rgba(0,0,0,.6)}
   .side-entry-bar{left:8px;top:8px}
   .side-entry-btn{width:34px;height:34px;font-size:1rem}
 }
+/* 强制所有非设置遮罩隐藏，不阻挡按钮点击 */
+.drawer-mask, .ai-mask {
+  display: none !important;
+  pointer-events: none !important;display:none !important;pointer-events:none !important;}
+.settings-mask {z-index:199;}
 </style>
 
 <button class="settings-btn" onclick="toggleSettings()" title="设置">⚙️</button>
@@ -1649,8 +1760,8 @@ html.dark .drawer-mask{background:rgba(0,0,0,.6)}
 </div>
 
 <div class="review-panel" id="reviewPanel">
-  
-  <div class="panel-head" onclick="onReviewHeadClick(event)"><h3>🤖 AI 智能评价 &amp; 复盘</h3><button class="panel-close" onclick="event.stopPropagation();closeReview()">✕</button></div>
+  <div class="resize-handle" id="reviewResizeHandle" title="拖拽调整大小"></div>
+  <div class="panel-head" onclick="onReviewHeadClick(event)"><h3>🤖 AI 智能评价 &amp; 复盘</h3><button class="panel-min" id="reviewMinBtn" onclick="event.stopPropagation();toggleReviewMin()" title="收起/展开弹层">▼</button><button class="panel-close" onclick="event.stopPropagation();closeReview()">✕</button></div>
   <div class="panel-body">
         <div class="input-mode-tabs">
       <div class="input-mode-tab active" data-input="text" onclick="switchInputMode('text')"><span class="icon">⌨️</span>文字模式</div>
@@ -2270,6 +2381,7 @@ var qrcode=function(){function i(t,r){function a(t,r){g=function(t){for(var r=ne
   window.QRCode = { drawCanvas: drawCanvas, matrix: matrix };
 })();
 
+
 /* ========== 数据初始化（使用 let 避免 const 重赋值崩溃） ========== */
 
 // V3.5.1: 全局重写 localStorage 为安全代理 - 在严格沙箱下防止抛错
@@ -2351,6 +2463,7 @@ let LIB = {"categories":[{"id":"general","name":"通用话题","emoji":"✦","mo
     (LIB.reciteGroups?LIB.reciteGroups.length:0)+'个朗诵分组'
   );
 })();
+
 
 const SETTINGS_KEY = 'jxs_settings_v6';
 const HISTORY_KEY = 'jxs_history_v4';
@@ -2930,8 +3043,8 @@ function renderTopic(t){
         '<button class="recite-tool-btn" onclick="reciteReadFull(\'uk\')" title="英音逐句朗读（有道真人发音）">🇬🇧 英音整段<\/button>' +
         '<button class="recite-tool-btn" onclick="reciteReadChinese()" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;" title="朗读中文翻译">🇨🇳 中文整段<\/button>' +
         '<button class="recite-tool-btn" onclick="reciteReadBilingual()" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff;" title="先英后中，双语对照朗读">🔁 英中双语<\/button>' +
-        '<span class="recite-rate-group" id="reciteRateGroup" title="调节朗读速度（）">' +
-        '<span class="recite-rate-label">⚡<\/span>' +
+        '<span class="recite-rate-group" id="reciteRateGroup" title="调节朗读速度（倍速）">' +
+        '<span class="recite-rate-label">⚡倍速<\/span>' +
         '<button class="recite-rate-btn" data-rate="0.5" onclick="reciteSetRate(0.5)">0.5×<\/button>' +
         '<button class="recite-rate-btn" data-rate="0.75" onclick="reciteSetRate(0.75)">0.75×<\/button>' +
         '<button class="recite-rate-btn active" data-rate="1" onclick="reciteSetRate(1)">1.0×<\/button>' +
@@ -2960,7 +3073,7 @@ function renderTopic(t){
     }else{
       /* ===== V3.5.2：中文朗诵专属独立工具栏（完全独立于英文朗读，互不影响）===== */
       /* ===== V3.6.0 中文工具栏统一主页面蓝紫主题，新增音色选择，双引擎真人朗读 ===== */
-      /* V1.3.6：按用户要求，中文朗读模块移除「自动风格朗读 / 5个风格按钮 / 音色 / 」控件（此前仅隐藏且失效） */
+      /* V1.3.6：按用户要求，中文朗读模块移除「自动风格朗读 / 5个风格按钮 / 音色 / 倍速」控件（此前仅隐藏且失效） */
       toolBar = '<div class="recite-toolbar" id="reciteToolbar" style="display:none">' +
         '<button class="recite-tool-btn recite-tool-btn-sm" id="btnZhReciteReplay" onclick="zhReciteReplay()" style="display:none;" title="再听一遍当前朗读">🔁 再听<\/button>' +
         '<button class="recite-tool-btn recite-tool-btn-sm" id="btnZhRecitePause" onclick="zhReciteTogglePause()" style="display:none;">⏸️ 暂停<\/button>' +
@@ -3383,7 +3496,7 @@ function showHistory(){
 function clearHistory(){
   if(confirm('确定清空所有练习记录？')){ localStorage.removeItem(HISTORY_KEY); showHistory(); toast('已清空'); }
 }
-/* V1.4.5：AI评价弹层最小化（收起）/展开 */
+/* V1.5.0：AI评价弹层最小化（收起）/展开 */
 var _reviewPrevHeight = '';
 function resetReviewMin(){
   var p=document.getElementById('reviewPanel');
@@ -3414,7 +3527,7 @@ function onReviewHeadClick(e){
   if(e && e.target && e.target.closest && e.target.closest('button')) return;
   toggleReviewMin();
 }
-/* V1.4.5：把主页面朗读稿（题目/稿件区）滚到弹层上方的可见区域，避免被弹层挡住 */
+/* V1.5.0：把主页面朗读稿（题目/稿件区）滚到弹层上方的可见区域，避免被弹层挡住 */
 function _ensureTopicVisible(){
   var panel=document.getElementById('reviewPanel');
   if(!panel || !panel.classList.contains('show')) return;
@@ -3441,7 +3554,7 @@ function _ensureTopicVisible(){
   try{ sc.scrollTop = target; }
   catch(e){ try{ window.scrollBy(0, need); }catch(e2){} }
 }
-/* V1.4.5：打开后连续对齐（短时轮询约2.4秒），兼容字体/内容延迟渲染导致的布局变化 */
+/* V1.5.0：打开后连续对齐（短时轮询约2.4秒），兼容字体/内容延迟渲染导致的布局变化 */
 function _scheduleEnsureTopic(){
   var n=0;
   try{ _ensureTopicVisible(); }catch(e){}
@@ -3456,7 +3569,7 @@ function _scheduleEnsureTopic(){
     }
   }catch(e){}
 }
-/* V1.4.5：按弹层当前实际高度同步页面底部留白（拖拽/最小化后也保持一致） */
+/* V1.5.0：按弹层当前实际高度同步页面底部留白（拖拽/最小化后也保持一致） */
 function _syncReviewPad(){
   var p=document.getElementById('reviewPanel');
   if(!p) return;
@@ -3471,9 +3584,9 @@ function openReview(){
   document.getElementById('reviewResult').classList.remove('show');
   // V1.3.7：打开面板时隐藏悬浮卡
   document.getElementById('reviewFloatCard').classList.remove('show');
-  // V1.4.5：打开时把弹层内容滚回顶部
+  // V1.5.0：打开时把弹层内容滚回顶部
   try{var _pb0=document.querySelector('#reviewPanel .panel-body'); if(_pb0)_pb0.scrollTop=0;}catch(e){}
-  // V1.4.5：恢复常规高度态；给页面预留底部空间，并自动把朗读稿顶到弹层上方
+  // V1.5.0：恢复常规高度态；给页面预留底部空间，并自动把朗读稿顶到弹层上方
   try{ resetReviewMin(); }catch(e){}
   try{ document.body.classList.add('review-open'); }catch(e){}
   setTimeout(function(){
@@ -3489,16 +3602,16 @@ function showReviewPanel(){
   // try{document.body.classList.add('panel-open');}catch(e){}
   document.getElementById('mask').classList.add('show');
   document.getElementById('reviewFloatCard').classList.remove('show');
-  // V1.4.5：从这里展开时也把内容滚回顶部
+  // V1.5.0：从这里展开时也把内容滚回顶部
   try{var _pb1=document.querySelector('#reviewPanel .panel-body'); if(_pb1)_pb1.scrollTop=0;}catch(e){}
-  // V1.4.5：恢复常规高度态；给页面预留底部空间，并自动把朗读稿顶到弹层上方
+  // V1.5.0：恢复常规高度态；给页面预留底部空间，并自动把朗读稿顶到弹层上方
   try{ resetReviewMin(); }catch(e){}
   try{ document.body.classList.add('review-open'); }catch(e){}
   setTimeout(function(){ try{_syncReviewPad();}catch(e){} },60);
   _scheduleEnsureTopic();
 }
 
-/* V1.4.5：拖拽调整AI评价弹层大小功能 */
+/* V1.5.0：拖拽调整AI评价弹层大小功能 */
 (function(){
   var handle = document.getElementById('reviewResizeHandle');
   var panel = document.getElementById('reviewPanel');
@@ -3552,7 +3665,7 @@ function showReviewPanel(){
 function closeReview(forceClose){
   document.getElementById('reviewPanel').classList.remove('show');
   try{document.body.classList.remove('panel-open');}catch(e){}
-  // V1.4.5：关闭弹层时收回页面底部留白
+  // V1.5.0：关闭弹层时收回页面底部留白
   try{ document.body.classList.remove('review-open'); document.body.style.removeProperty('--review-pad'); }catch(e){}
   if(!document.getElementById('timerBox').classList.contains('show') &&
      !document.getElementById('settingsPanel').classList.contains('show'))
@@ -3717,7 +3830,7 @@ function switchInputMode(mode){
   document.querySelectorAll('.input-mode-tab').forEach(function(t){t.classList.toggle('active', t.dataset.input===mode);});
   document.getElementById('textInputBox').style.display = mode==='text'?'':'none';
   document.getElementById('voiceInputBox').style.display = mode==='voice'?'':'none';
-  // V1.4.5：清空按钮在文字和语音模式下都显示
+  // V1.5.0：清空按钮在文字和语音模式下都显示
   document.getElementById('clearInputBtn').style.display = '';
   STATE._inputMode = mode;
   if(mode==='voice'){
@@ -4861,6 +4974,7 @@ function initShortcuts(){
   });
 }
 
+
 /* ========== v2.0 说明书折叠 ========== */
 function toggleManual(el){
   var item = el.parentElement;
@@ -4872,6 +4986,7 @@ function toggleSettingGroup(headEl){
   var group = headEl.parentElement;
   group.classList.toggle('open');
 }
+
 
 /* ========== v2.0 辩论对抗：真人 VS AI，按新国辩赛制 ========== */
 /* 赛制（简化版新国辩）：
@@ -5514,6 +5629,7 @@ function __jxxFinalGuard(){
 setTimeout(__jxxFinalGuard, 800);
 setTimeout(__jxxFinalGuard, 2000);
 setTimeout(__jxxFinalGuard, 5000);
+
 
 /* ========== V3.0 英文朗诵：跟读/发音（事件委托版，修复长按无效bug） ========== */
 // 语音对象缓存
@@ -6671,7 +6787,7 @@ function reciteReadFull(variant){
 var _zhLongPlay = null;       // 中文朗读独立状态（和英文_longPlay彻底分离）
 var _zhAudio = null;          // 中文兜底Audio元素（和英文_longAudio互不干扰）
 var _zhLastConfig = null;     // 上次朗读配置，用于重播
-var _zhReciteRate = 1.0;      // 中文独立，不影响英文
+var _zhReciteRate = 1.0;      // 中文独立倍速，不影响英文倍速
 var _zhNativeMode = false;    // 是否正在使用原生神经语音模式
 var _zhUtter = null;          // 原生语音utterance实例
 
@@ -6903,14 +7019,14 @@ function zhReciteReplay(){
   if(_zhLastConfig){ zhRecitePlay(_zhLastConfig.text, _zhLastConfig.styleKey); }
 }
 
-// ========== 切换 ==========
+// ========== 倍速切换 ==========
 function zhSetRate(rate){
   _zhReciteRate = rate;
   if(_zhLongPlay && _zhNativeMode && _zhUtter){
     _zhUtter.rate = ZH_RECITE_STYLES[_zhLongPlay.styleKey].rate * rate;
   }
   var label = rate === 0.75 ? '慢速' : (rate === 1.0 ? '标准' : (rate === 1.25 ? '稍快' : '快速'));
-  toast('⏱️ 中文朗读：' + label, 1500);
+  toast('⏱️ 中文朗读倍速：' + label, 1500);
 }
 
 // ========== 百度翻译真人发音URL构造（稳定兜底方案） ==========
@@ -7010,7 +7126,7 @@ function _zhPlayNative(text, style, voice){
     var u = new SpeechSynthesisUtterance(text);
     u.lang = 'zh-CN';
     u.voice = voice;
-    // 应用风格语速 + 全局
+    // 应用风格语速 + 全局倍速
     u.rate = style.rate * (_zhReciteRate || 1.0);
     u.pitch = style.pitch;
     u.volume = 1.0;
@@ -7198,6 +7314,7 @@ function reciteToggleLineTrans(){
     'div[data-act]:active{background:#e0e7ff!important;}';
   document.head.appendChild(st);
 })();
+
 
 /* ======== V3.0.4 本页查词弹窗（有道 suggest JSONP） ======== */
 function _dictJsonp(url, cb){
@@ -7400,6 +7517,7 @@ function reciteShowWordDef(word){
   });
 }
 
+
 // V3.3：预热语音列表（某些浏览器需要触发一次才能拿到voices）
 if('speechSynthesis' in window){
   function loadVoices(){ try{ speechSynthesis.getVoices(); }catch(e){} }
@@ -7408,6 +7526,8 @@ if('speechSynthesis' in window){
     speechSynthesis.onvoiceschanged = loadVoices;
   }
 }
+
+
 
 /* ===================== 【发音 / 朗读引擎修复补丁 v5】 =====================
    本补丁在脚本末尾统一重写发声与整段朗读逻辑，覆盖此前残缺实现：
@@ -7769,16 +7889,17 @@ function speakEnglishBoth(text){
   setTimeout(function(){ speakEnglish(t,'uk',rate); }, dur);
 }
 
+
 /* ============================================================
    【V3.3.8 修复补丁】
    ① 点击小喇叭有延迟：预连接 + 音频元素池复用 + 后台预取 mp3，点击即响
    ② 「美式整段」后点小喇叭出现两种音频：单点发音前统一停掉整段/中文朗读，彻底互斥
-   ③ 新增「⚡」控件：0.5× 0.75× 1.0× 1.25× 1.5×，
+   ③ 新增「⚡倍速」控件：0.5× 0.75× 1.0× 1.25× 1.5×，
       单词、句子、美音整段、英音整段、中文整段、双语跟读全部跟随；
-      播放中切换会从当前句按新速度继续
+      播放中切换倍速会从当前句按新速度继续
    ============================================================ */
 
-/* ---- ③-a 控件样式 ---- */
+/* ---- ③-a 倍速控件样式 ---- */
 (function(){
   try{
     var st=document.createElement('style');
@@ -7931,7 +8052,7 @@ function _warmupAudio(){
   document.addEventListener('mouseover', function(e){ warmFrom(e.target); }, true);
 })();
 
-/* ---- ①-f 覆盖 speakEnglish：互斥停播 + 多音源兜底 +  + 预取备用音源 ---- */
+/* ---- ①-f 覆盖 speakEnglish：互斥停播 + 多音源兜底 + 倍速 + 预取备用音源 ---- */
 function speakEnglish(text, variant, rateArg){
   variant = variant||'us';
   var raw = String(text||'').trim();
@@ -7983,7 +8104,7 @@ function _speakOneSentence(text, variant, rate, onEnd){
   })(0);
 }
 
-/* ---- 覆盖 _speakLong：支持 startIdx（切从当前句继续）+ 预取后续句 ---- */
+/* ---- 覆盖 _speakLong：支持 startIdx（切倍速从当前句继续）+ 预取后续句 ---- */
 function _speakLong(text, variant, rate, opts){
   opts=opts||{};
   var sents=(typeof splitEnSentences==='function')?splitEnSentences(text):String(text||'').split(/\n+/);
@@ -8001,7 +8122,7 @@ function _speakLong(text, variant, rate, opts){
   _chainNext(_longPlay.idx);
 }
 
-/* ---- ③-b ：设置 / 界面同步 / 播放中切换即从当前句继续 ---- */
+/* ---- ③-b 倍速：设置 / 界面同步 / 播放中切换即从当前句继续 ---- */
 function _syncReciteRateUI(){
   try{
     var btns=document.querySelectorAll('.recite-rate-btn');
@@ -8020,7 +8141,7 @@ function reciteSetRate(r){
   _setReciteRate(nr);
   try{ localStorage.setItem('jxx_recite_rate', String(nr)); }catch(e){}
   _syncReciteRateUI();
-  try{ toast('\u26a1 朗读：'+String(nr).replace(/\.0$/,'')+'\u00d7',1200); }catch(e){}
+  try{ toast('\u26a1 朗读倍速：'+String(nr).replace(/\.0$/,'')+'\u00d7',1200); }catch(e){}
   if(!changed) return;
   var t=(typeof STATE!=='undefined')?STATE.currentTopic:null;
   if(_longPlay && !_longPlay._stopped && t && t.content){
@@ -8034,7 +8155,7 @@ function reciteSetRate(r){
   }
 }
 
-/* ---- 恢复上次选择的 ---- */
+/* ---- 恢复上次选择的倍速 ---- */
 (function(){
   try{
     var v=parseFloat(localStorage.getItem('jxx_recite_rate'));
@@ -8042,7 +8163,7 @@ function reciteSetRate(r){
   }catch(e){}
 })();
 
-/* ---- 朗诵卡片渲染后：同步按钮高亮 + 预热本篇音频（点击即响） ---- */
+/* ---- 朗诵卡片渲染后：同步倍速按钮高亮 + 预热本篇音频（点击即响） ---- */
 (function(){
   try{
     if(typeof initReciteWordEvents==='function'){
@@ -8055,6 +8176,7 @@ function reciteSetRate(r){
     }
   }catch(e){}
 })();
+
 
 /* ============================================================
    【V3.3.3 延迟专项修复 · 真正"点击即响"】
@@ -8318,6 +8440,7 @@ function _stopLongPlay(silent){
   try{ if(_fxPlayingEl){ _fxPlayingEl.pause(); } }catch(e){}
   try{ if('speechSynthesis' in window){ speechSynthesis.cancel(); } }catch(e){}
 }
+
 
 /* ============================================================
    【V3.3.4 根因修复 · 有道的长句音源本来就取不到，自动改用可靠音源】
@@ -8647,6 +8770,7 @@ function _stopLongPlay(silent){
   try{ if('speechSynthesis' in window){ speechSynthesis.cancel(); } }catch(e){}
 }
 
+
 /* ============================================================
    【V3.3.8 补丁 · 让"长句音源"真正可用（百度必须先无 Referer 预热）】
    浏览器实测结论：
@@ -8846,6 +8970,7 @@ function _chainNext(i){
     else{ attempt(); }
   })(0);
 }
+
 
 /* ============================================================
  * V3.3.8 补丁：解决两个核心问题
@@ -9508,6 +9633,7 @@ function _speakOneSentenceV339(text, variant, rate, onEnd){
 }
 window._speakOneSentence = _speakOneSentenceV339;
 
+
 /* ====================================================
    修复二：中英"相邻顺序"对齐算法（彻底解决错位）
    
@@ -9828,6 +9954,7 @@ try{ console.log('[JXX] '+PATCH_V339+' patch applied (no-double-speak state mach
 })();
 
 })();
+
 
 /* =====================================================
  * V3.3.11 修复：点单词本身默认发美音（不再必须点美/英按钮才响）
@@ -10336,6 +10463,7 @@ try{
 }catch(e){}
 try{ console.log('[JXX] V3.3.14 applied: true sentence splitter + per-sentence speaker buttons.'); }catch(e){}
 })();
+
 
 /* ============================================================
  * V3.3.14 续：抢跑预取（按下/悬停/触摸即拉）+ 点击即时反馈 + 失败音源重试
@@ -10905,6 +11033,7 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
 
   log('applied (per-sentence bilingual align + shorter gap).');
 })();
+
 
 </script>
 
@@ -13451,6 +13580,7 @@ window.LAW_OPEN=LAW_OPEN;
 
 window.findHint=findHint;
 
+
   /* 复制思路到剪贴板 */
   /* 展开/收起本题思路提示（V3.9.7修复：挂到window全局+按钮状态切换，手机端可正常点击） */
   function toggleOutline(btn){
@@ -15251,9 +15381,10 @@ window.findHint=findHint;
 })();
 </script>
 
+
 <script>
 /* =======================================================================
- * 即兴说 · V1.0.8 中文真人化朗读引擎（中英彻底隔离）
+ * 即兴说 V1.5.0 中文真人化朗读引擎（中英彻底隔离）
  * -----------------------------------------------------------------------
  * 现象根因：中文朗读原来走 Web Speech API（系统语音合成），必须依赖操作
  *   系统装有中文语音包；没有中文语音包 / 语音列表异步未就绪时，就被判定为
@@ -15263,7 +15394,7 @@ window.findHint=findHint;
  *   ① 系统中文真人语音（可控制语速/音调，最贴近真人风格）
  *   ② 百度翻译 TTS（联网即可用，带语速档位，稳定兜底）
  *   ③ 有道真人发音（短句兜底）
- *   中英文的状态、音频元素、、停顿完全隔离，互不影响。
+ *   中英文的状态、音频元素、倍速、停顿完全隔离，互不影响。
  * ======================================================================= */
 (function(){
 'use strict';
@@ -15833,7 +15964,7 @@ window.reciteReadChinese = function(){
   zhPlay(zh, key);
 };
 
-/* =================== 十、：中英统一，互不干扰 =================== */
+/* =================== 十、倍速：中英统一，互不干扰 =================== */
 window.reciteSetRate = function(r){
   var nr = parseFloat(r);
   if(isNaN(nr) || nr <= 0) nr = 1.0;
@@ -15852,7 +15983,7 @@ window.reciteSetRate = function(r){
       else btns[i].classList.remove('active');
     }
   }catch(e){}
-  try{ toast('⚡ 朗读：' + String(nr).replace(/\.0$/,'') + '×', 1200); }catch(e){}
+  try{ toast('⚡ 朗读倍速：' + String(nr).replace(/\.0$/,'') + '×', 1200); }catch(e){}
   // 正在朗读时实时生效
   if(Z.playing){
     if(Z.channel === 'system'){
@@ -16725,7 +16856,7 @@ try{ console.log('[JXX] V1.0.8 中文真人化朗读引擎已装载（三级通�
 
 <script>
 /* ============================================================
-   即兴说 V1.1.5 新增模块：练习报告导出 + 数据备份/恢复
+   即兴说 V1.5.0 新增模块：练习报告导出 + 数据备份/恢复
    （补足「升级方案」中文件原本缺失的两项功能）
    ============================================================ */
 (function(){
@@ -16802,7 +16933,95 @@ try{ console.log('[JXX] V1.0.8 中文真人化朗读引擎已装载（三级通�
       +'ul{padding-left:20px;line-height:1.9;}'
       +'.ft{margin-top:26px;color:#a8adbd;font-size:.76rem;text-align:center;}'
       +'@media print{body{background:#fff;padding:0;}.wrap{box-shadow:none;border-radius:0;}}';
-    return '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><title>即兴说-练习报告</title><style>'+css+'</style></head><body><div class="wrap">'
+    return '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><title>即兴说-练习报告</title><style>'+css+'/* 强制所有非设置遮罩隐藏，不阻挡按钮点击 */
+.drawer-mask, .ai-mask {
+  display: none !important;
+  pointer-events: none !important;display:none !important;pointer-events:none !important;}
+.settings-mask {z-index:199;}
+</style>
+<style>
+/* ===== V1.5.0 AI评价底部抽屉样式 ===== */
+.review-panel {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 60vh !important;
+  max-height: 85vh !important;
+  border-radius: 16px 16px 0 0 !important;
+  transform: translateY(100%) !important;
+  transition: transform .3s ease !important;
+  z-index: 900 !important;
+  box-shadow: 0 -4px 24px rgba(0,0,0,.15) !important;
+  background: var(--card-bg) !important;
+}
+.review-panel.show {
+  transform: translateY(0) !important;
+}
+/* 打开AI评价时，主页面底部留白，内容可上滑不遮挡 */
+body.review-open {
+  padding-bottom: 62vh !important;
+}
+/* 隐藏AI评价全屏遮罩，不阻挡主页面点击 */
+.review-mask, .drawer-mask {
+  display: none !important;
+}
+/* 悬浮结果按钮自动上移，不被面板压住 */
+body.review-open #floatResultBtn {
+  bottom: calc(62vh + 16px) !important;
+}
+/* 面板顶部把手 */
+.review-panel::before {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 4px;
+  background: var(--border-color);
+  border-radius: 2px;
+  margin: 8px auto 0;
+}
+/* 清爽简洁头部 */
+.review-panel .panel-head {
+  padding: 8px 16px 12px !important;
+  border-bottom: 1px solid var(--border-color);
+}
+.review-panel .panel-head h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+.review-panel .panel-body {
+  padding: 16px !important;
+  overflow-y: auto;
+  height: calc(100% - 120px);
+}
+/* 设置面板遮罩单独处理，只在设置打开时显示 */
+.settings-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+  z-index: 999;
+  display: none;
+}
+.settings-mask.show {
+  display: block;
+}
+.settings-panel {
+  max-height: 85vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  z-index: 1000 !important;
+}
+/* 强制所有非设置遮罩隐藏，不阻挡按钮点击 */
+.drawer-mask, .ai-mask {
+  display: none !important;
+  pointer-events: none !important;display:none !important;pointer-events:none !important;}
+.settings-mask {z-index:199;}
+</style>
+
+</head><body><div class="wrap">'
       +'<h1>📊 即兴说 · 练习报告</h1><div class="sub">生成时间：'+fmtTime(Date.now())+' · 共 '+n+' 次练习记录</div>'
       +'<div class="cards">'
       +'<div class="card"><div class="v">'+n+'</div><div class="k">练习次数</div></div>'
@@ -16816,150 +17035,56 @@ try{ console.log('[JXX] V1.0.8 中文真人化朗读引擎已装载（三级通�
       +'<h2>已解锁徽章（'+got.length+'/'+BADGES.length+'）</h2><div>'+badgeHTML+'</div>'
       +'<h2>最近记录</h2><table><tr><th>时间</th><th style="text-align:center;">总分</th><th style="text-align:center;">内容/逻辑/语言/流利/感染</th><th style="text-align:center;">时长</th></tr>'+recent+'</table>'
       +'<div class="ft">本报告由「即兴说」本地生成 · 数据仅存于本机浏览器，未上传任何服务器</div>'
-      +'</div></body></html>';
-  }
-
-  function exportReport(){
-    var h=getHistory();
-    if(!h.length){ toast('还没有练习记录，先完成一次即兴练习再导出吧～'); return; }
-    download('即兴说-练习报告-'+ymd()+'.html', buildReportHTML(h), 'text/html');
-    toast('✅ 练习报告已导出，用浏览器打开后可打印为 PDF', 3200);
-  }
-
-  var PREFIX='jxx_';
-  function collectAllData(){
-    var data={};
-    try{
-      for(var i=0;i<localStorage.length;i++){
-        var k=localStorage.key(i);
-        if(k && k.indexOf(PREFIX)===0){
-          try{ data[k]=JSON.parse(localStorage.getItem(k)); }catch(e){ data[k]=localStorage.getItem(k); }
-        }
-      }
-    }catch(e){}
-    return data;
-  }
-  function exportBackup(){
-    var data=collectAllData();
-    if(!Object.keys(data).length){ toast('暂无可备份的数据，先练习几次吧～'); return; }
-    var pack={app:'即兴说',version:(window.APP_VERSION||'V1.2.2'),exportedAt:new Date().toISOString(),data:data};
-    download('即兴说-数据备份-'+ymd()+'.json', JSON.stringify(pack,null,2), 'application/json');
-    toast('✅ 数据备份已导出（含记录/徽章/打卡/题库）',3000);
-  }
-  function importBackup(ev){
-    var f=ev.target.files && ev.target.files[0]; if(!f) return;
-    var r=new FileReader();
-    r.onload=function(){
-      try{
-        var pack=JSON.parse(r.result);
-        var data=(pack && pack.data)?pack.data:pack;
-        var cnt=0;
-        Object.keys(data).forEach(function(k){
-          if(k.indexOf(PREFIX)===0){ localStorage.setItem(k, JSON.stringify(data[k])); cnt++; }
-        });
-        if(!cnt){ toast('⚠️ 文件里没有可识别的练习数据'); return; }
-        toast('✅ 已恢复 '+cnt+' 项数据，即将刷新页面…',2600);
-        setTimeout(function(){ location.reload(); },1300);
-      }catch(e){ toast('❌ 文件格式不正确，请选择「即兴说」导出的备份文件'); }
-    };
-    r.readAsText(f);
-    ev.target.value='';
-  }
-
-  function injectReportButton(){
-    var gc=$('growthCard'); if(!gc || $('v115ReportBtn')) return;
-    var bar=qs('.growth-card-tabs',gc)||gc;
-    var btn=document.createElement('button');
-    btn.id='v115ReportBtn';
-    btn.type='button';
-    btn.textContent='📤 导出报告';
-    btn.style.cssText='margin-left:auto;background:linear-gradient(135deg,#8b5cf6,#ec4899);color:#fff;border:none;border-radius:10px;padding:7px 12px;font-size:.8rem;cursor:pointer;font-weight:600;';
-    btn.onclick=function(e){ if(e&&e.stopPropagation)e.stopPropagation(); exportReport(); };
-    bar.appendChild(btn);
-  }
-
-  function injectBackupGroup(){
-    var sp=$('settingsPanel'); if(!sp || $('v115BackupGroup')) return;
-    var g=document.createElement('div');
-    g.className='setting-group';
-    g.id='v115BackupGroup';
-    g.innerHTML=''
-      +'<div class="setting-group-head" onclick="toggleSettingGroup(this)">'
-      +'<span class="g-icon">💾</span><span class="g-title">数据备份与恢复</span><span class="g-hint">换设备不丢数据</span><span class="g-arrow">▶</span></div>'
-      +'<div class="setting-group-body">'
-      +'<p style="font-size:.82rem;color:#6b7280;margin:0 0 10px;line-height:1.7;">把你的练习记录、徽章、打卡、自定义题库打包成一个文件；换手机或电脑时导入即可恢复。数据只存在本机浏览器，不上传任何服务器。</p>'
-      +'<div style="display:flex;gap:8px;flex-wrap:wrap;">'
-      +'<button id="v115ExportBackup" class="btn btn-primary btn-sm" type="button">📤 导出数据备份</button>'
-      +'<button id="v115ImportBackup" class="btn btn-ghost btn-sm" type="button">📥 导入数据备份</button>'
-      +'<input type="file" id="v115ImportFile" accept=".json,application/json" style="display:none;">'
-      +'</div><div id="v115BackupTip" style="font-size:.78rem;color:#9ca3af;margin-top:8px;"></div>'
-      +'</div>';
-    sp.appendChild(g);
-    if($('v115ExportBackup')) $('v115ExportBackup').onclick=exportBackup;
-    if($('v115ImportBackup')) $('v115ImportBackup').onclick=function(){ var fi=$('v115ImportFile'); if(fi) fi.click(); };
-    if($('v115ImportFile')) $('v115ImportFile').onchange=importBackup;
-  }
-
-  function init(){ setTimeout(function(){ injectReportButton(); injectBackupGroup(); }, 1500); }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
-})();
-</script>
-
+      +'</div>
 <script>
-/* ================= V1.2.0 收尾：版本号兜底同步 + 「我的素材题库」实时题数 ================= */
-(function(){
-  'use strict';
-  var VER='V1.2.6';
-  function curVer(){ return String(window.APP_VERSION||VER); }
-  function syncVer(){
-    try{
-      var V=curVer();
-      var vb=document.getElementById('verBadge'); if(vb) vb.textContent=V;
-      var gv=document.getElementById('gVerHint'); if(gv) gv.textContent=V;
-      var vi=document.getElementById('verInfoNum'); if(vi) vi.textContent=V;
-      var oldStamp=document.getElementById('buildStamp'); if(oldStamp && oldStamp.parentNode) oldStamp.parentNode.removeChild(oldStamp);
-      var title='即兴说 · 演讲口才训练 '+V;
-      if(document.title!==title) document.title=title;
-      document.querySelectorAll('.ver-badge,.version-badge').forEach(function(el){
-        if(/^V\d+\.\d+\.\d+$/.test((el.textContent||'').trim())) el.textContent=V;
-      });
-    }catch(e){}
+// ===== V1.5.0 AI评价底部抽屉逻辑 =====
+// 打开AI评价
+const originalOpenReview = window.openReview;
+window.openReview = function() {
+  document.body.classList.add('review-open');
+  // 隐藏所有非设置遮罩
+  document.querySelectorAll('.mask:not(.settings-mask)').forEach(el => el.style.display = 'none');
+  if (originalOpenReview) originalOpenReview();
+  // 面板滚动到顶部
+  const panel = document.querySelector('.review-panel');
+  if (panel) panel.scrollTop = 0;
+}
+// 关闭AI评价
+const originalCloseReview = window.closeReview;
+window.closeReview = function() {
+  document.body.classList.remove('review-open');
+  if (originalCloseReview) originalCloseReview();
+}
+// 设置面板遮罩控制
+const originalOpenSettings = window.openSettings;
+window.openSettings = function() {
+  let mask = document.querySelector('.settings-mask');
+  if (!mask) {
+    mask = document.createElement('div');
+    mask.className = 'settings-mask';
+    mask.onclick = closeSettings;
+    document.body.appendChild(mask);
   }
-  function countCustom(){
-    try{
-      var n=0;
-      if(window.LIB && LIB._source==='custom' && LIB.categories){
-        LIB.categories.forEach(function(c){ n+=(c.items||[]).length; });
-        return n;
-      }
-      var raw=localStorage.getItem('jxs_custom_lib_v6');
-      if(raw){
-        var o=JSON.parse(raw);
-        if(Array.isArray(o)) return o.length;
-        if(o && o.categories) o.categories.forEach(function(c){ n+=(c.items||[]).length; });
-      }
-      return n;
-    }catch(e){ return 0; }
-  }
-  function syncCount(){
-    var el=document.getElementById('myLibCount'); if(!el) return;
-    el.textContent=countCustom();
-  }
-  function run(){ syncVer(); syncCount(); }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', run); else run();
-  window.addEventListener('load', run);
-  setTimeout(run, 1200);
-  // 打开设置时刷新题数（不改动原函数逻辑，只在其后补一次刷新）
-  try{
-    var _ot=window.toggleSettings;
-    if(typeof _ot==='function' && !_ot.__v120wrap){
-      var wrapped=function(){ var r=_ot.apply(this,arguments); setTimeout(function(){ syncVer(); syncCount(); }, 300); return r; };
-      wrapped.__v120wrap=true;
-      window.toggleSettings=wrapped;
-    }
-  }catch(e){}
-})();
+  mask.classList.add('show');
+  if (originalOpenSettings) originalOpenSettings();
+}
+const originalCloseSettings = window.closeSettings;
+window.closeSettings = function() {
+  const mask = document.querySelector('.settings-mask');
+  if (mask) mask.classList.remove('show');
+  if (originalCloseSettings) originalCloseSettings();
+}
+// 页面加载完成后，强制移除所有可能阻挡点击的层
+window.addEventListener('DOMContentLoaded', function() {
+  // 移除初始加载层
+  const loading = document.getElementById('__loading');
+  if (loading) loading.remove();
+  // 隐藏所有非设置遮罩
+  document.querySelectorAll('.mask:not(.settings-mask), .drawer-mask, .overlay').forEach(el => {
+    el.style.display = 'none';
+    el.style.pointerEvents = 'none';
+  });
+});
 </script>
 
-</body>
-</html>
+</body></html>
