@@ -18,7 +18,7 @@
      MINOR 满 10 同样进位到 MAJOR：V3.9.9 的下一个版本 = V4.0.0
    发版时只需改 APP_VERSION_ARRAY 这三个数字，展示字符串自动计算；
    也可以直接调用 window.bumpAppVersion() 按上述规则自动进一位。 */
-window.APP_VERSION_ARRAY = [1, 5, 3];   /* [MAJOR, MINOR, PATCH] V1.5.5 */   /* [MAJOR, MINOR, PATCH] V1.5.0 → AI评价弹层不再遮挡朗读内容：默认高度只占屏幕下半部分、可一键「最小化」收成底部细条、打开时自动把朗读稿顶到弹层上方；同时保留拖拽调大小、内容区滚动、文字/语音清空按钮，主页面可正常滑动 */
+window.APP_VERSION_ARRAY = [1, 5, 0];   /* [MAJOR, MINOR, PATCH] V1.5.0 → AI评价弹层不再遮挡朗读内容：默认高度只占屏幕下半部分、可一键「最小化」收成底部细条、打开时自动把朗读稿顶到弹层上方；同时保留拖拽调大小、内容区滚动、文字/语音清空按钮，主页面可正常滑动 */
 window.formatAppVersion = function(arr){
   var M = arr[0]|0, m = arr[1]|0, p = arr[2]|0;
   if(p >= 10){ m += Math.floor(p/10); p = p % 10; }
@@ -33,12 +33,12 @@ window.bumpAppVersion = function(){
   if(m >= 10){ M += Math.floor(m/10); m = m % 10; }
   p += 1;
   if(p >= 10){ m += 1; p = 0; if(m >= 10){ M += 1; m = 0; } }
-  window.APP_VERSION_ARRAY = [1, 5, 3];   /* [MAJOR, MINOR, PATCH] V1.5.5 */
+  window.APP_VERSION_ARRAY = [M, m, p];
   window.APP_VERSION = window.formatAppVersion(window.APP_VERSION_ARRAY);
   return window.APP_VERSION;
 };
 window.APP_VERSION = window.formatAppVersion(window.APP_VERSION_ARRAY);
-window.APP_BUILD = '2026-11-23 · V1.5.5：AI辩论整合进辩论模块，PC端右侧并排主页面左移，移动端底部弹窗不透明，设置可滑动，所有按钮可点击';
+window.APP_BUILD = '2026-11-19 · V1.5.0：AI评价弹层不再遮挡朗读内容——默认高度只占屏幕下半部分、可一键最小化收起成底栏、打开时自动把朗读稿顶到弹层上方；保留拖拽调大小与内容区滚动，文字/语音模式都有清空按钮，主页面可正常滑动';
 
 /* ===== PWA：内联 SVG 图标 + 内联 manifest（blob URL），零外部依赖 ===== */
 (function(){
@@ -415,20 +415,10 @@ img,svg,video,canvas,iframe,pre,table{max-width:100%}
 .settings-panel.show{display:flex}
 /* V1.5.0：AI评价弹层修复：1. 彻底兼容所有浏览器滚动（flex三段式+内容区独立滚动） 2. 顶部增加拖拽把手可自由调整弹层大小 3. 文字/语音模式都显示清空按钮 */
 /* V1.5.0：默认高度降到半屏（不再遮挡上方朗读稿）+ 支持一键最小化收成底栏 */
-/* === V1.5.5 强制响应式：PC端右侧固定，移动端底部固定 === */
-.review-panel{position:fixed;z-index:9999;background:#ffffff !important;opacity:1 !important;backdrop-filter:none !important;display:none;flex-direction:column;overflow:hidden;box-shadow:0 0 20px rgba(0,0,0,0.15);}
-/* PC端（宽度>768px）：右侧固定，420px宽，全屏高，无圆角 */
-@media (min-width: 769px) {
-  .review-panel{top:0;right:0;width:420px;height:100vh;border-radius:0 !important;bottom:auto !important;left:auto !important;transform:translateX(100%);transition:transform 0.3s ease;}
-  .review-panel.active{transform:translateX(0) !important;}
-  body.review-open{padding-right:420px !important;transition:padding-right 0.3s ease;overflow-x:hidden;}
-}
-/* 移动端（宽度≤768px）：底部固定，85%屏高，顶部圆角 */
-@media (max-width: 768px) {
-  .review-panel{bottom:0;left:0;width:100%;max-height:85vh;border-radius:16px 16px 0 0;top:auto !important;right:auto !important;transform:translateY(100%);transition:transform 0.3s ease;}
-  .review-panel.active{transform:translateY(0) !important;}
-  body.review-open{padding-bottom:85vh !important;transition:padding-bottom 0.3s ease;}
-}
+.review-panel{position:fixed;left:50%;bottom:0;transform:translate(-50%,100%);background:#fff;
+  padding:0;border-radius:20px 20px 0 0;z-index:210;width:100%;max-width:900px;height:50vh;
+  display:flex;flex-direction:column;box-shadow:0 -14px 46px rgba(0,0,0,.25);transition:transform .3s ease-out;
+  box-sizing:border-box}
 .review-panel.show{transform:translate(-50%,0)}
 /* V1.5.0：最小化（收起）状态——只留一条标题栏，完全不遮挡上方朗读内容 */
 .review-panel.minimized{height:48px!important;border-radius:16px 16px 0 0}
@@ -2485,7 +2475,7 @@ const SETTINGS_VERSION = 6;
 /* ===== V3.9.7: 内置 API Key 插槽 =====
    想"写死 Key、换浏览器不用重输"：把你的硅基流动 sk-xxx 填到下面引号里保存即可。
    打开页面时会自动读入，优先级低于你手动在设置面板填过的值（手动保存过的会覆盖这个默认值）。 */
-const BUILTIN_AI_API_KEY = 'sk-ifkyunwdyowcaemoliazhemuxgpofzbtzgimkfnvblphlvtz';   /* ← 把 sk-xxx 填在这里，用任意文本编辑器打开本HTML改完保存即可 */
+const BUILTIN_AI_API_KEY = sk-ifkyunwdyowcaemoliazhemuxgpofzbtzgimkfnvblphlvtz'';   /* ← 把 sk-xxx 填在这里，用任意文本编辑器打开本HTML改完保存即可 */
 
 // STATE 使用 var 声明避免块级作用域问题
 var STATE = {
@@ -3607,26 +3597,9 @@ function openReview(){
 }
 // V1.3.7：点击悬浮卡展开完整评价面板
 function showReviewPanel(){
-  if(!reviewPanel) return;
-  reviewPanel.style.display='flex';
-  setTimeout(()=>{reviewPanel.classList.add('active');},10);
-  reviewPanel.classList.add('open');
-  document.body.classList.add('review-open');
-  if(fab) {
-    // 根据屏幕宽度调整fab位置
-    if(window.innerWidth > 768){
-      fab.style.right = '430px';
-      fab.style.bottom = '20px';
-    } else {
-      fab.style.bottom = 'calc(85vh + 10px)';
-      fab.style.right = '20px';
-    }
-    fab.style.display='flex';
-  }
-  if(mask) mask.classList.remove('show'); // 永远不显示遮罩，避免遮挡和变色
-  const body = reviewPanel.querySelector('.review-body');
-  if(body) body.scrollTop = 0;
-}catch(e){}
+  document.getElementById('reviewPanel').classList.add('show');
+  // V1.4.9：取消主页面滚动锁定、模糊变暗
+  // try{document.body.classList.add('panel-open');}catch(e){}
   document.getElementById('mask').classList.add('show');
   document.getElementById('reviewFloatCard').classList.remove('show');
   // V1.5.0：从这里展开时也把内容滚回顶部
@@ -11500,7 +11473,7 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
 
   /* ---------- 版本号统一（head 里 APP_VERSION_ARRAY 已升到 [3,6,3]） ---------- */
   window.APP_VERSION = window.APP_VERSION || (window.formatAppVersion ? window.formatAppVersion(window.APP_VERSION_ARRAY || [1,2,1]) : 'V1.2.0');
-  window.APP_BUILD = '2026-11-23 · V1.5.5：AI辩论整合进辩论模块，PC端右侧并排主页面左移，移动端底部弹窗不透明，设置可滑动，所有按钮可点击';
+  window.APP_BUILD = window.APP_BUILD || ('2026-10-31 · ' + window.APP_VERSION);
   function syncVer(){
     var V = window.APP_VERSION;
     try{
@@ -12712,7 +12685,7 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
     var APP_VERSION = window.APP_VERSION || 'V1.0.6';
     var APP_BUILD = window.APP_BUILD || ('2026-11-09 · ' + APP_VERSION);
     window.APP_VERSION = APP_VERSION;
-    window.APP_BUILD = '2026-11-23 · V1.5.5：AI辩论整合进辩论模块，PC端右侧并排主页面左移，移动端底部弹窗不透明，设置可滑动，所有按钮可点击';
+    window.APP_BUILD = APP_BUILD;
     var bs = document.querySelectorAll('.ver-badge,.version-badge,#verBadge,.badge');
     for(var i = 0; i < bs.length; i++){ if(bs[i].textContent && /V3\.\d\.\d/.test(bs[i].textContent)) bs[i].textContent = APP_VERSION; }
   /* [version-sync stripped] *//* 替换设置页版本信息 */
@@ -17114,4 +17087,76 @@ window.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-</body></html>
+</body></html><style>
+/* ===== 增量样式：不改动原有任何代码，只添加PC端右侧并排+面板不透明 ===== */
+@media screen and (min-width: 769px) {
+  /* PC端AI评价面板固定在右侧 */
+  #reviewPanel, .review-panel {
+    position: fixed !important;
+    right: 0 !important;
+    top: 0 !important;
+    bottom: auto !important;
+    left: auto !important;
+    width: 420px !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    transform: translateX(100%) !important;
+    transition: transform 0.3s ease !important;
+    margin: 0 !important;
+    z-index: 9000 !important;
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    opacity: 1 !important;
+    border-left: 1px solid #e5e7eb !important;
+    box-shadow: -4px 0 15px rgba(0,0,0,0.08) !important;
+  }
+  /* 打开面板时从右侧滑入 */
+  #reviewPanel.show, .review-panel.show {
+    transform: translateX(0) !important;
+  }
+  /* 打开面板时主页面自动让出右侧空间 */
+  body.review-open #app, body.review-open .app-container {
+    padding-right: 420px !important;
+    transition: padding-right 0.3s ease !important;
+  }
+  /* 右下角按钮自动移到侧边栏左侧 */
+  #reviewFloatBtn {
+    right: 430px !important;
+  }
+}
+/* 所有端面板强制不透明 */
+#reviewPanel, .review-panel {
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
+}
+/* 版本号更新 */
+.version-tag, .header .version {
+  content: "V1.6.0" !important;
+}
+</style>
+<script>
+// 更新版本号显示
+document.addEventListener('DOMContentLoaded', () => {
+  const versionEls = document.querySelectorAll('.version-tag, .version, [class*="version"]');
+  versionEls.forEach(el => {
+    if(el.textContent.includes('V1.5')) el.textContent = 'V1.6.0';
+  });
+  // 确保打开AI评价时body加review-open类，关闭时移除
+  const reviewPanel = document.getElementById('reviewPanel') || document.querySelector('.review-panel');
+  const aiBtn = document.querySelector('#aiReviewBtn, [onclick*="showReviewPanel"], button:has(.text:contains("AI评价"))');
+  if(reviewPanel && aiBtn) {
+    const observer = new MutationObserver(() => {
+      if(reviewPanel.classList.contains('show')) {
+        document.body.classList.add('review-open');
+      } else {
+        document.body.classList.remove('review-open');
+      }
+    });
+    observer.observe(reviewPanel, {attributes: true, attributeFilter: ['class']});
+  }
+});
+</script>
