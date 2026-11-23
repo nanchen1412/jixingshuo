@@ -38,7 +38,7 @@ window.bumpAppVersion = function(){
   return window.APP_VERSION;
 };
 window.APP_VERSION = window.formatAppVersion(window.APP_VERSION_ARRAY);
-window.APP_BUILD = '2026-11-24 · V2.1.3';
+window.APP_BUILD = '2026-11-24 · V2.1.4';
 
 /* ===== PWA：内联 SVG 图标 + 内联 manifest（blob URL），零外部依赖 ===== */
 (function(){
@@ -291,7 +291,7 @@ window.APP_BUILD = '2026-11-24 · V2.1.3';
 })();
 </script>
 <meta name="x5-tap-highlight" content="no">
-<title>即兴说 V2.1.3</title>
+<title>即兴说 V2.1.4</title>
 
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -413,7 +413,7 @@ img,svg,video,canvas,iframe,pre,table{max-width:100%}
   padding:0;border-radius:20px;z-index:215;width:min(760px,94vw);max-height:90vh;overflow:hidden;
   display:none;flex-direction:column;box-shadow:0 25px 80px rgba(0,0,0,.3)}
 .settings-panel.show{display:flex}
-/* V2.0.6：PC 端改为「右侧并排」布局——AI评价面板固定在视口右侧，主页面在左，互不遮挡、互不推挤 */
+/* V2.1.4：PC 端改为「右侧并排」布局——AI评价面板固定在视口右侧，主页面在左，互不遮挡、互不推挤 */
 /* 小屏（<1080px）仍回落为「底部抽屉」，保持原有移动端体验 */
 .review-panel{position:fixed;top:0;right:0;bottom:0;left:auto;transform:translateX(100%);
   background:#fff;padding:0;border-radius:16px 0 0 16px;z-index:210;
@@ -1330,30 +1330,35 @@ html.dark .v114-panel [style*="color:#000"]{color:#e4e4ed!important;}
 </style>
 
 <style>
-/* ===== V2.1.1 AI评价面板样式（超紧凑模式：语音只留录音按钮、文字留小输入框） ===== */
+/* ===== V2.1.4 AI评价面板修复：PC端垂直居中悬浮小卡片，高度随内容，不挡主页面 ===== */
 .review-panel {
   position: fixed !important;
-  top: 0 !important;
-  bottom: 0 !important;
-  right: 0 !important;
+  top: 50% !important;
+  bottom: auto !important;
+  right: 16px !important;
   left: auto !important;
-  width: var(--review-w,280px);
+  width: var(--review-w,320px);
   max-width: 85vw !important;
-  height: 100vh !important;
-  height: 100dvh !important;
-  max-height: 100dvh !important;
-  border-radius: 16px 0 0 16px !important;
-  transform: translateX(100%) !important;
+  height: auto !important;
+  max-height: 88vh !important;
+  border-radius: 16px !important;
+  transform: translate(calc(100% + 20px), -50%) !important;
   transition: transform .3s ease, width .25s ease !important;
   z-index: 900 !important;
-  box-shadow: -4px 0 24px rgba(0,0,0,.15) !important;
-  background: var(--card-bg) !important;
+  box-shadow: 0 8px 40px rgba(102,126,234,.28) !important;
+  background: #fff !important;
+  overflow: hidden;
+  /* 透明区域不拦截点击，只有面板本体接收事件 */
+  pointer-events: none;
 }
-.review-panel.mode-voice{ width: var(--review-w,230px) !important; }
-.review-panel.mode-text{ width: var(--review-w,280px) !important; }
-.review-panel.has-result{ width: var(--review-w,380px) !important; }
+.review-panel > * {
+  pointer-events: auto;
+}
+.review-panel.mode-voice{ width: var(--review-w,272px) !important; }
+.review-panel.mode-text{ width: var(--review-w,320px) !important; }
+.review-panel.has-result{ width: var(--review-w,430px) !important; max-height: 88vh !important; }
 .review-panel.show {
-  transform: translateX(0) !important;
+  transform: translate(0, -50%) !important;
 }
 /* PC 并排：打开面板时主页面右侧让位，页面本身不滚动、不上推 */
 body.review-open {
@@ -1361,27 +1366,34 @@ body.review-open {
 }
 @media (min-width:1080px){
   body.review-open .app{
-    max-width: calc(100vw - var(--review-w,280px) - 24px) !important;
-    margin-left: 8px !important;
+    max-width: calc(100vw - var(--review-w,320px) - 48px) !important;
+    margin-left: 16px !important;
     margin-right: auto !important;
     transition: max-width .25s ease;
   }
+  body.review-open.review-has-result .app{
+    max-width: calc(100vw - var(--review-w,430px) - 48px) !important;
+  }
 }
-/* 小屏回落：底部抽屉，语音模式更矮 */
+/* 小屏回落：底部抽屉，高度随内容，语音模式最矮 */
 @media (max-width:1079px){
   .review-panel{
     top: auto !important; bottom: 0 !important; left: 50% !important; right: auto !important;
     width: 100% !important; max-width: 900px !important;
-    height: 42vh !important; max-height: 92vh !important;
+    height: auto !important; max-height: 88vh !important;
     border-radius: 16px 16px 0 0 !important;
     transform: translate(-50%,100%) !important;
+    pointer-events: none;
   }
-  .review-panel.mode-voice{ height: 34vh !important; }
-  .review-panel.has-result{ height: 72vh !important; }
+  .review-panel > * {
+    pointer-events: auto;
+  }
+  .review-panel.mode-voice{ height: auto !important; }
+  .review-panel.has-result{ height: auto !important; max-height: 88vh !important; }
   .review-panel.show{ transform: translate(-50%,0) !important; }
   /* 留白跟随面板实际高度（--review-pad 由 _syncReviewPad 实时写入），拖拽时同步变化 */
   body.review-open{ padding-bottom: var(--review-pad,42vh) !important; }
-  body.review-open.review-has-result{ padding-bottom: 72vh !important; }
+  body.review-open.review-has-result{ padding-bottom: var(--review-pad,72vh) !important; }
 }
 /* 隐藏AI评价全屏遮罩，不阻挡主页面点击 */
 .review-mask, .drawer-mask {
@@ -2576,7 +2588,7 @@ const SETTINGS_VERSION = 6;
 /* ===== V3.9.7: 内置 API Key 插槽 =====
    想"写死 Key、换浏览器不用重输"：把你的硅基流动 sk-xxx 填到下面引号里保存即可。
    打开页面时会自动读入，优先级低于你手动在设置面板填过的值（手动保存过的会覆盖这个默认值）。 */
-const BUILTIN_AI_API_KEY = sk-ifkyunwdyowcaemoliazhemuxgpofzbtzgimkfnvblphlvtz'';   /* ← 把 sk-xxx 填在这里，用任意文本编辑器打开本HTML改完保存即可 */
+const BUILTIN_AI_API_KEY = 'sk-ifkyunwdyowcaemoliazhemuxgpofzbtzgimkfnvblphlvtz';   /* ← 把 sk-xxx 填在这里，用任意文本编辑器打开本HTML改完保存即可 */
 
 // STATE 使用 var 声明避免块级作用域问题
 var STATE = {
@@ -3670,7 +3682,7 @@ function onReviewHeadClick(e){
   if(e && e.target && e.target.closest && e.target.closest('button')) return;
   toggleReviewMin();
 }
-/* V2.0.6：取消「打开AI评价后自动把朗读稿顶上移」的行为
+/* V2.1.4：取消「打开AI评价后自动把朗读稿顶上移」的行为
  * 原逻辑会导致点击AI评价时主页面被自动向上滚动（页面整体上移）
  * PC 端已改为右侧并排布局，主页面无需让位；小屏保持底部抽屉，也不自动滚动
  */
@@ -3719,7 +3731,7 @@ function openReview(){
     try{ _applyReviewModeSize(); }catch(e){}
     try{document.getElementById('reviewInput').focus({preventScroll:true});}catch(e){}
   },60);
-  // V2.0.6：不再自动滚动主页面（避免点开AI评价后页面被向上推）
+  // V2.1.4：不再自动滚动主页面（避免点开AI评价后页面被向上推）
 }
 // V1.3.7：点击悬浮卡展开完整评价面板
 function showReviewPanel(){
@@ -3741,7 +3753,7 @@ function showReviewPanel(){
   try{ resetReviewMin(); }catch(e){}
   try{ document.body.classList.add('review-open'); }catch(e){}
   setTimeout(function(){ try{ _applyReviewModeSize(); }catch(e){} },60);
-  // V2.0.6：不再自动滚动主页面
+  // V2.1.4：不再自动滚动主页面
 }
 
 /* V2.0.7：拖拽把手 = 面板顶部那条「小横杠」，真正可滑动调整面板大小
@@ -4010,7 +4022,7 @@ function switchInputMode(mode){
   if(!document.getElementById('reviewResult').classList.contains('show')){
     panel.classList.remove('has-result');
   }
-  // V2.1.3：切模式时清掉拖拽尺寸，并套用该模式的默认小尺寸
+  // V2.1.4：切模式时清掉拖拽尺寸，并套用该模式的默认小尺寸
   try{ _applyReviewModeSize(); }catch(e){}
   if(mode==='voice'){
     document.getElementById('voiceTranscript').textContent = '';
@@ -17241,7 +17253,7 @@ window.addEventListener('DOMContentLoaded', function() {
 }
 </style>
 <style>
-/* ===== V2.1.3：AI评价面板 → 高度自适应内容的「悬浮小卡片」 =====
+/* ===== V2.1.4：AI评价面板 → 高度自适应内容的「悬浮小卡片」 =====
    语音模式 = 一颗圆形录音按钮的小浮窗；文字模式 = 一个小输入框；
    面板高度随内容收缩，不再占满整屏；结果出来后自动展开成大卡片。 */
 .review-panel{display:flex !important;flex-direction:column !important}
@@ -17308,7 +17320,7 @@ window.addEventListener('DOMContentLoaded', function() {
 </style>
 
 <script>
-/* V2.1.3：按「当前模式 + 是否已有结果」套用面板默认尺寸，并同步主页面留白。
+/* V2.1.4：按「当前模式 + 是否已有结果」套用面板默认尺寸，并同步主页面留白。
    · PC：面板贴右侧、垂直居中，宽度按模式取 272(语音)/320(文字)/430(结果)
    · 小屏：底部抽屉高度自适应内容，留白由 --review-pad 实时同步 */
 function _applyReviewModeSize(){
