@@ -18,7 +18,7 @@
      MINOR 满 10 同样进位到 MAJOR：V3.9.9 的下一个版本 = V4.0.0
    发版时只需改 APP_VERSION_ARRAY 这三个数字，展示字符串自动计算；
    也可以直接调用 window.bumpAppVersion() 按上述规则自动进一位。 */
-window.APP_VERSION_ARRAY = [1, 6, 0];   /* [MAJOR, MINOR, PATCH] V1.5.0 → AI评价弹层不再遮挡朗读内容：默认高度只占屏幕下半部分、可一键「最小化」收成底部细条、打开时自动把朗读稿顶到弹层上方；同时保留拖拽调大小、内容区滚动、文字/语音清空按钮，主页面可正常滑动 */
+window.APP_VERSION_ARRAY = [1, 6, 1];   /* [MAJOR, MINOR, PATCH] V1.5.0 → AI评价弹层不再遮挡朗读内容：默认高度只占屏幕下半部分、可一键「最小化」收成底部细条、打开时自动把朗读稿顶到弹层上方；同时保留拖拽调大小、内容区滚动、文字/语音清空按钮，主页面可正常滑动 */
 window.formatAppVersion = function(arr){
   var M = arr[0]|0, m = arr[1]|0, p = arr[2]|0;
   if(p >= 10){ m += Math.floor(p/10); p = p % 10; }
@@ -38,7 +38,7 @@ window.bumpAppVersion = function(){
   return window.APP_VERSION;
 };
 window.APP_VERSION = window.formatAppVersion(window.APP_VERSION_ARRAY);
-window.APP_BUILD = '2026-11-19 · V1.6.0：PC端右侧并排、面板不透明、按钮可点击——默认高度只占屏幕下半部分、可一键最小化收起成底栏、打开时自动把朗读稿顶到弹层上方；保留拖拽调大小与内容区滚动，文字/语音模式都有清空按钮，主页面可正常滑动';
+window.APP_BUILD = '2026-11-23 · V1.6.1：PC端AI评价右侧并排+无弹窗无空白+按钮可点击：AI评价弹层不再遮挡朗读内容——默认高度只占屏幕下半部分、可一键最小化收起成底栏、打开时自动把朗读稿顶到弹层上方；保留拖拽调大小与内容区滚动，文字/语音模式都有清空按钮，主页面可正常滑动';
 
 /* ===== PWA：内联 SVG 图标 + 内联 manifest（blob URL），零外部依赖 ===== */
 (function(){
@@ -291,7 +291,7 @@ window.APP_BUILD = '2026-11-19 · V1.6.0：PC端右侧并排、面板不透明�
 })();
 </script>
 <meta name="x5-tap-highlight" content="no">
-<title>即兴说 V1.6.0</title>
+<title>即兴说 V1.6.1</title>
 
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -1278,6 +1278,8 @@ html.dark .v114-panel [style*="color:#000"]{color:#e4e4ed!important;}
 }
 /* 打开AI评价时，主页面底部留白，内容可上滑不遮挡 */
 body.review-open {
+    padding-bottom: 0 !important;
+    padding-right: 420px !important;
   padding-bottom: 62vh !important;
 }
 /* 隐藏AI评价全屏遮罩，不阻挡主页面点击 */
@@ -1340,7 +1342,7 @@ body.review-open #floatResultBtn {
 <body>
 <div id="__loading" style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;z-index:999999;font-family:system-ui,-apple-system,sans-serif;">
 <div style="font-size:56px;margin-bottom:20px;animation:__p 1.4s infinite;">🎤</div>
-<div style="font-size:26px;font-weight:700;margin-bottom:8px;letter-spacing:2px;">即兴说</div><div style="font-size:14px;opacity:0.9;">V1.6.0</div>
+<div style="font-size:26px;font-weight:700;margin-bottom:8px;letter-spacing:2px;">即兴说</div>
 <div style="font-size:14px;opacity:.8;margin-bottom:28px;">演讲口才训练 · 正在加载题库…</div>
 <div style="width:220px;height:5px;background:rgba(255,255,255,.18);border-radius:6px;overflow:hidden;">
   <div id="__lbar" style="width:70%;height:100%;background:linear-gradient(90deg,#ffd89b,#fff,#ffd89b);border-radius:6px;animation:__lbarSlide 1.6s ease-in-out infinite;"></div>
@@ -2475,7 +2477,7 @@ const SETTINGS_VERSION = 6;
 /* ===== V3.9.7: 内置 API Key 插槽 =====
    想"写死 Key、换浏览器不用重输"：把你的硅基流动 sk-xxx 填到下面引号里保存即可。
    打开页面时会自动读入，优先级低于你手动在设置面板填过的值（手动保存过的会覆盖这个默认值）。 */
-const BUILTIN_AI_API_KEY = 'sk-ifkyunwdyowcaemoliazhemuxgpofzbtzgimkfnvblphlvtz';   /* ← 把 sk-xxx 填在这里，用任意文本编辑器打开本HTML改完保存即可 */
+const BUILTIN_AI_API_KEY = sk-ifkyunwdyowcaemoliazhemuxgpofzbtzgimkfnvblphlvtz'';   /* ← 把 sk-xxx 填在这里，用任意文本编辑器打开本HTML改完保存即可 */
 
 // STATE 使用 var 声明避免块级作用域问题
 var STATE = {
@@ -17160,17 +17162,3 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 </script>
-<style>
-/* V1.6.0 强制按钮可点击 */
-button,.btn,#aiReviewBtn,#settingsBtn,.header *{pointer-events:auto !important;z-index:99999 !important;}
-/* PC端右侧并排 */
-@media (min-width:769px){
-  #reviewPanel{position:fixed !important;right:0 !important;top:0 !important;bottom:auto !important;left:auto !important;width:420px !important;height:100vh !important;border-radius:0 !important;transform:translateX(100%) !important;z-index:9000 !important;background:#fff !important;opacity:1 !important;backdrop-filter:none !important;}
-  #reviewPanel.show{transform:translateX(0) !important;}
-  body.review-open{padding-right:420px !important;}
-}
-/* 所有端面板不透明 */
-#reviewPanel{background:#fff !important;opacity:1 !important;backdrop-filter:none !important;-webkit-backdrop-filter:none !important;}
-</style>
-</body>
-</html>
