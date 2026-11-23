@@ -18,7 +18,7 @@
      MINOR 满 10 同样进位到 MAJOR：V3.9.9 的下一个版本 = V4.0.0
    发版时只需改 APP_VERSION_ARRAY 这三个数字，展示字符串自动计算；
    也可以直接调用 window.bumpAppVersion() 按上述规则自动进一位。 */
-window.APP_VERSION_ARRAY = [1, 3, 4];   /* [MAJOR, MINOR, PATCH] V1.3.4 正式修复版 → ①彻底修复"先弹出空白光幕再出抽屉"问题：遮罩/抽屉动画完全同步，初始完全隐藏，点击同时滑入；②修复7天训练计划：已完成Day显示灰色「复习」按钮，当天显示蓝色「开始」，任意小题标签可点击选题，点击后正常加载题目+专属思路+自动启用开始按钮；③仅删除中文朗读发音功能，完整保留全部中文朗诵素材文本，英文朗读功能100%完整保留 */
+window.APP_VERSION_ARRAY = [1, 5, 0];   /* [MAJOR, MINOR, PATCH] V1.4.5 → AI评价弹层不再遮挡朗读内容：默认高度只占屏幕下半部分、可一键「最小化」收成底部细条、打开时自动把朗读稿顶到弹层上方；同时保留拖拽调大小、内容区滚动、文字/语音清空按钮，主页面可正常滑动 */
 window.formatAppVersion = function(arr){
   var M = arr[0]|0, m = arr[1]|0, p = arr[2]|0;
   if(p >= 10){ m += Math.floor(p/10); p = p % 10; }
@@ -38,7 +38,7 @@ window.bumpAppVersion = function(){
   return window.APP_VERSION;
 };
 window.APP_VERSION = window.formatAppVersion(window.APP_VERSION_ARRAY);
-window.APP_BUILD = '2026-11-17 · 正式修复版 V1.3.4：①修复点击成长助手"先出空白光幕再出抽屉"问题：遮罩/抽屉动画完全同步，初始完全隐藏，点击同时平滑滑入；②修复7天训练计划无法使用：已完成Day显示灰色「复习」按钮、当天显示蓝色「开始」按钮，任意小题标签可点击选题，点击后自动关闭抽屉、加载对应题目+专属匹配思路、自动启用开始按钮可直接练习；③仅删除中文朗读发音功能（自动风格朗读/风格按钮/中文TTS音色），完整保留全部中文朗诵素材文本，英文朗读功能100%完整保留；④成长按钮与设置按钮完全对称布局';
+window.APP_BUILD = '2026-11-19 · V1.4.5：AI评价弹层不再遮挡朗读内容——默认高度只占屏幕下半部分、可一键最小化收起成底栏、打开时自动把朗读稿顶到弹层上方；保留拖拽调大小与内容区滚动，文字/语音模式都有清空按钮，主页面可正常滑动';
 
 /* ===== PWA：内联 SVG 图标 + 内联 manifest（blob URL），零外部依赖 ===== */
 (function(){
@@ -406,18 +406,80 @@ img,svg,video,canvas,iframe,pre,table{max-width:100%}
 .timer-actions{margin-top:24px;display:flex;gap:10px;justify-content:center}
 .timer-actions .btn{color:#fff;background:rgba(255,255,255,.15)}.timer-actions .btn:hover{background:rgba(255,255,255,.3)}
 
-.mask{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:150;display:none}
-.mask.show{display:block}
-.review-panel,.settings-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;
-  padding:0;border-radius:20px;z-index:210;width:min(760px,94vw);max-height:90vh;overflow:hidden;
+.mask{display:none !important;pointer-events:none !important;z-index:-1 !important;}
+.mask.show{display:none !important;}
+/* V1.4.5：取消所有遮罩层，主页面永远可点击、可滑动，不会变暗变色 */
+html.dark .mask{display:none !important;}
+.settings-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;
+  padding:0;border-radius:20px;z-index:215;width:min(760px,94vw);max-height:90vh;overflow:hidden;
   display:none;flex-direction:column;box-shadow:0 25px 80px rgba(0,0,0,.3)}
-.review-panel.show,.settings-panel.show{display:flex}
+.settings-panel.show{display:flex}
+/* V1.4.5：AI评价弹层修复：1. 彻底兼容所有浏览器滚动（flex三段式+内容区独立滚动） 2. 顶部增加拖拽把手可自由调整弹层大小 3. 文字/语音模式都显示清空按钮 */
+/* V1.4.5：默认高度降到半屏（不再遮挡上方朗读稿）+ 支持一键最小化收成底栏 */
+.review-panel{position:fixed;left:50%;bottom:0;transform:translate(-50%,100%);background:#fff;
+  padding:0;border-radius:20px 20px 0 0;z-index:210;width:100%;max-width:900px;height:50vh;
+  display:flex;flex-direction:column;box-shadow:0 -14px 46px rgba(0,0,0,.25);transition:transform .3s ease-out;
+  box-sizing:border-box}
+.review-panel.show{transform:translate(-50%,0)}
+/* V1.4.5：最小化（收起）状态——只留一条标题栏，完全不遮挡上方朗读内容 */
+.review-panel.minimized{height:48px!important;border-radius:16px 16px 0 0}
+.review-panel.minimized .resize-handle,
+.review-panel.minimized .panel-body,
+.review-panel.minimized .panel-footer{display:none!important}
+.review-panel.minimized .panel-head{cursor:pointer}
+.review-panel .panel-min{position:absolute;top:14px;right:60px;z-index:3;background:rgba(255,255,255,.2);
+  border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:1.05rem;line-height:1;cursor:pointer;
+  display:flex;align-items:center;justify-content:center}
+.review-panel .panel-min:hover{background:rgba(255,255,255,.35)}
+/* V1.4.5：弹层打开时给主页面预留底部空间，使朗读稿能滚动到弹层上方，不被遮挡 */
+body.review-open{padding-bottom:var(--review-pad,52vh)}
+/* 拖拽调整大小把手 */
+.review-panel 
+.review-panel .resize-handle::after{content:"";width:48px;height:5px;background:#d1d5db;border-radius:3px;transition:background .2s}
+.review-panel .resize-handle:hover::after,.review-panel .resize-handle.dragging::after{background:#667eea;width:60px}
+/* 悬浮评分小卡（评价完成后自动收起显示） */
+.review-float-card{position:fixed;right:20px;bottom:20px;background:#fff;border-radius:16px;padding:12px 18px;
+  box-shadow:0 8px 28px rgba(102,126,234,.25);z-index:211;display:none;align-items:center;gap:12px;
+  cursor:pointer;border:1px solid #e0e7ff;animation:floatIn .3s ease-out;transition:bottom .3s ease}
+body.review-open .review-float-card{bottom:62vh;}
+.review-float-card.show{display:flex}
+.review-float-card:hover{box-shadow:0 10px 32px rgba(102,126,234,.35);transform:translateY(-2px)}
+.review-float-score{font-size:1.5rem;font-weight:700;color:#4f46e5;min-width:48px;text-align:center}
+.review-float-info{display:flex;flex-direction:column;gap:2px}
+.review-float-grade{font-size:.95rem;font-weight:600;color:#1f2937}
+.review-float-hint{font-size:.75rem;color:#6b7280}
+.review-float-close{position:absolute;top:6px;right:6px;width:20px;height:20px;border-radius:50%;
+  background:#f3f4f6;border:none;font-size:.7rem;cursor:pointer;color:#6b7280;display:flex;align-items:center;justify-content:center}
+.review-float-close:hover{background:#e5e7eb;color:#1f2937}
+@keyframes floatIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+/* V1.4.5：三段式flex布局，中间panel-body独立滚动，100%兼容所有浏览器（包括百度/QQ/微信等内置浏览器） */
+.review-panel .panel-head{position:relative;z-index:2;flex-shrink:0;margin:0}
+.review-panel .panel-body{padding:16px 24px 24px;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain;min-height:0}
+.review-panel .panel-footer{padding:12px 24px 24px calc(24px + env(safe-area-inset-bottom,0px));flex-shrink:0;border-top:1px solid #f3f4f6;background:#fff}
+.review-panel .panel-close{position:absolute;top:14px;right:20px;z-index:3}
+.review-panel .panel-body::-webkit-scrollbar{width:6px}
+.review-panel .panel-body::-webkit-scrollbar-track{background:transparent}
+.review-panel .panel-body::-webkit-scrollbar-thumb{background:#c7d2fe;border-radius:3px}
+.review-panel .panel-body::-webkit-scrollbar-thumb:hover{background:#a5b4fc}
+/* ===== V1.4.5：大屏小屏都完整显示所有按钮，清空按钮在文字/语音模式都显示 ===== */
+@media (max-width:900px){
+  .review-panel{max-width:100vw;height:52vh}
+  .review-float-card{right:12px;bottom:12px;padding:10px 14px}
+}
+@media (max-width:420px){
+  .review-panel{height:54vh;height:54dvh}
+  .review-panel .panel-body{padding:14px 14px 16px}
+  .review-panel .panel-footer{padding:10px 14px 20px calc(14px + env(safe-area-inset-bottom,0px))}
+  .review-panel .review-input{min-height:112px}
+  .review-panel .input-mode-tab{padding:7px 16px;font-size:.85rem}
+  /* 小屏下按钮自动换行，不隐藏 */
+  .review-panel .btn-row{justify-content:flex-start}
+}
 .panel-head{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:16px 22px;
   display:flex;justify-content:space-between;align-items:center}
 .panel-head h3{font-size:1.1rem;font-weight:600}
 .panel-close{background:rgba(255,255,255,.2);border:none;color:#fff;width:32px;height:32px;
   border-radius:50%;font-size:1.2rem;cursor:pointer}
-.panel-body{padding:20px 24px;overflow-y:auto;flex:1}
 
 .review-input{width:100%;min-height:120px;padding:12px;border:2px solid #e5e7eb;border-radius:10px;
   font-family:inherit;font-size:.95rem;resize:vertical;line-height:1.6}
@@ -472,7 +534,7 @@ img,svg,video,canvas,iframe,pre,table{max-width:100%}
   font-size:.7rem;margin-left:6px;vertical-align:middle}
 .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);
   color:#fff;padding:10px 20px;border-radius:20px;font-size:.88rem;z-index:300;opacity:0;
-  transition:opacity .3s;pointer-events:none}
+  transition:opacity .3s;pointer-events:auto}
 .toast.show{opacity:1}
 
 .update-status{margin-top:8px;padding:10px;border-radius:8px;font-size:.85rem}
@@ -534,7 +596,7 @@ img,svg,video,canvas,iframe,pre,table{max-width:100%}
 .search-input{width:100%;padding:12px 40px 12px 42px;border:2px solid #e5e7eb;border-radius:14px;
   font-size:1rem;font-family:inherit;background:#f9fafb;transition:all .2s}
 .search-input:focus{outline:none;border-color:#667eea;background:#fff;box-shadow:0 0 0 4px rgba(102,126,234,.12)}
-.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:1.1rem;color:#9ca3af;pointer-events:none}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:1.1rem;color:#9ca3af;pointer-events:auto}
 .search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:24px;height:24px;
   border:none;background:#e5e7eb;color:#6b7280;border-radius:50%;font-size:.8rem;cursor:pointer;
   display:none;line-height:1}
@@ -648,7 +710,6 @@ img,svg,video,canvas,iframe,pre,table{max-width:100%}
 .input-mode-tab{padding:6px 14px;border-radius:20px;font-size:.82rem;background:#f3f4f6;color:#6b7280;cursor:pointer;transition:all .2s}
 .input-mode-tab.active{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}
 .input-mode-tab .icon{margin-right:4px}
-
 
 /* ===== v2.0 折叠式说明书 ===== */
 .manual-list{border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;background:#fafbff}
@@ -786,7 +847,6 @@ img,svg,video,canvas,iframe,pre,table{max-width:100%}
 .fb-tabs{display:flex;gap:6px;margin-bottom:8px}
 .fb-board-foot{font-size:.71rem;color:#9ca3af;margin-top:7px;line-height:1.6;text-align:center}
 
-
 /* ===== v2.0 辩论AI对辩 ===== */
 .debate-log .dl-line{padding:6px 8px;margin-bottom:6px;border-radius:8px;font-size:.85rem;line-height:1.65;animation:fadeIn .3s}
 .debate-log .dl-pro{background:#fef3c7;color:#78350f;border-left:3px solid #f59e0b}
@@ -797,7 +857,6 @@ img,svg,video,canvas,iframe,pre,table{max-width:100%}
 .debate-turn.t-con{background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe}
 .debate-turn.t-sys{background:#f3f4f6;color:#4b5563;border:1px solid #e5e7eb}
 .debate-side.chosen{box-shadow:0 0 0 3px #667eea;transform:scale(1.02)}
-
 
 /* ========== V3.0 英文朗诵 ========== */
 .recite-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 16px;padding:12px;background:linear-gradient(135deg,#f0f4ff 0%,#faf5ff 100%);border-radius:12px;border:1px solid #e0e7ff;}
@@ -826,7 +885,6 @@ img,svg,video,canvas,iframe,pre,table{max-width:100%}
 .recite-translation{margin-top:18px;padding:16px;background:linear-gradient(135deg,#fffbeb 0%,#fef3c7 100%);border-radius:12px;border-left:4px solid #f59e0b;}
 .recite-translation-title{font-weight:700;color:#b4530b;margin-bottom:8px;font-size:.9rem;}
 .recite-translation-body{font-size:.95rem;line-height:1.8;color:#78350f;white-space:pre-wrap;}
-
 
 /* ========== V3.4.0 句级对照样式（重做版） ========== */
 .recite-pair{margin-bottom:14px;padding:8px 10px;border-radius:10px;transition:background .25s;}
@@ -1020,7 +1078,6 @@ details.native-hint .hint-body{
   color:#fff !important;
   outline:none !important;
 }
-
 
 /* V3.3.5 最终修复：按钮极淡内描边，消除圆角抗锯齿色差镶边 */
 .card{box-shadow:0 12px 40px rgba(0,0,0,.15);border-radius:20px;border:none;}
@@ -1221,7 +1278,7 @@ html.dark .setting-group{background:#252540!important;border-color:#3a3a5a!impor
 html.dark .setting-group-head{background:#202038!important}
 html.dark .setting-group-body{background:#1e1e35!important}
 html.dark .setting-row label,html.dark .panel-head{color:#ccccdd!important}
-html.dark .mask{background:rgba(0,0,0,.7)!important}
+html.dark .mask{display:none !important;pointer-events:none !important;z-index:-1 !important;}
 html.dark .settings-btn{background:rgba(255,255,255,.12)!important;color:#fff!important}
 html.dark .badge{background:rgba(255,255,255,.2)!important}
 html.dark .recite-toolbar{background:linear-gradient(135deg,#252540,#2d2350)!important;border-color:#3a3a5a!important}
@@ -1375,7 +1432,7 @@ html.dark .dpp-side{color:#9ca3af!important}
 
 /* ================ 完整版：左侧常驻竖条入口 + 右侧滑入抽屉 ================ */
 /* 左侧常驻竖条：两个圆形按钮垂直居中固定在屏幕左边，不遮挡主要内容 */
-.side-entry-bar{position:fixed;left:16px;top:16px;display:flex;flex-direction:row;gap:10px;z-index:72;pointer-events:none}
+.side-entry-bar{position:fixed;left:16px;top:16px;display:flex;flex-direction:row;gap:10px;z-index:72;pointer-events:auto}
 .side-entry-btn{position:relative;pointer-events:auto;display:inline-flex;align-items:center;justify-content:center;
   width:42px;height:42px;border:none;border-radius:50%;
   background:rgba(255,255,255,.3);color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.18);
@@ -1421,24 +1478,19 @@ html.dark .dpp-side{color:#9ca3af!important}
 .growth-card{position:fixed;top:0;right:0;bottom:0;width:66.6667vw;max-width:66.6667vw;background:#fff;
   border-radius:16px 0 0 16px;box-shadow:-8px 0 32px rgba(31,41,55,.22);padding:48px 16px 20px;
   z-index:70;box-sizing:border-box;overflow-y:auto;overflow-x:hidden;
-  transform:translateX(105%);transition:transform .32s cubic-bezier(.4,.0,.2,1);
-  visibility:hidden;pointer-events:none;
+  transform:translateX(105%);transition:transform .32s cubic-bezier(.4,.0,.2,1);display:block!important;
   -webkit-overflow-scrolling:touch}
-.growth-card.show{transform:translateX(0);visibility:visible;pointer-events:auto}
+.growth-card.show{transform:translateX(0)}
 .growth-card-close{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:50%;border:none;
   background:#f1f5f9;color:#64748b;cursor:pointer;font-size:1.05rem;line-height:1;z-index:3;
   display:flex;align-items:center;justify-content:center;transition:background .18s,color .18s;
   box-shadow:0 2px 8px rgba(0,0,0,.08)}
 .growth-card-close:hover{background:#e2e8f0;color:#1f2937}
 
-/* 抽屉遮罩：和抽屉完全同步动画 */
-.drawer-mask{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(15,23,42,.35);z-index:69;
-  opacity:0;visibility:hidden;pointer-events:none;
-  transition:opacity .32s cubic-bezier(.4,.0,.2,1), visibility .32s;
-  backdrop-filter:blur(2px)}
-.drawer-mask.show{opacity:1;visibility:visible;pointer-events:auto}
-.drawer-mask:not(.show){transition-delay:0s;}
-.drawer-mask.show{transition-delay:0s;}
+/* 抽屉遮罩 */
+.drawer-mask{position:fixed;left:0;top:0;bottom:0;width:33.3333vw;background:rgba(15,23,42,.35);z-index:69;opacity:0;pointer-events:none;
+  transition:opacity .28s ease;backdrop-filter:blur(2px)}
+.drawer-mask.show{opacity:1;pointer-events:auto}
 
 /* 深色模式 */
 html.dark .side-entry-btn{background:rgba(31,41,55,.55);color:#e5e7eb;box-shadow:0 4px 16px rgba(0,0,0,.4);backdrop-filter:blur(6px)}
@@ -1458,7 +1510,8 @@ html.dark .drawer-mask{background:rgba(0,0,0,.6)}
 
 /* 手机端：抽屉全屏宽；入口按钮缩小 */
 @media (max-width:640px){
-  .growth-card{width:82vw;max-width:82vw;border-radius:16px 0 0 16px;top:0;right:0}
+  .growth-card{width:75vw;max-width:75vw;border-radius:16px 0 0 16px;top:0;right:0}
+  .drawer-mask{width:25vw}
   .side-entry-bar{left:10px;top:10px;gap:8px}
   .side-entry-btn{width:36px;height:36px;font-size:1.05rem}
   .se-dot{display:none}
@@ -1596,31 +1649,29 @@ html.dark .drawer-mask{background:rgba(0,0,0,.6)}
 </div>
 
 <div class="review-panel" id="reviewPanel">
-  <div class="panel-head"><h3>🤖 AI 智能评价 &amp; 复盘</h3><button class="panel-close" onclick="closeReview()">✕</button></div>
+  
+  <div class="panel-head" onclick="onReviewHeadClick(event)"><h3>🤖 AI 智能评价 &amp; 复盘</h3><button class="panel-close" onclick="event.stopPropagation();closeReview()">✕</button></div>
   <div class="panel-body">
         <div class="input-mode-tabs">
       <div class="input-mode-tab active" data-input="text" onclick="switchInputMode('text')"><span class="icon">⌨️</span>文字模式</div>
       <div class="input-mode-tab" data-input="voice" onclick="switchInputMode('voice')"><span class="icon">🎙️</span>语音模式</div>
     </div>
     <div id="textInputBox">
-      <div style="font-size:.85rem;color:#6b7280;margin-bottom:8px;">📌 粘贴或输入你的演讲文字（可手打、或用输入法语音转文字），AI 将从 5 个维度打分并给出提升建议。</div>
-      <textarea class="review-input" id="reviewInput" placeholder="在这里输入/粘贴你的演讲内容...&#10;建议150字以上，评价更准确。&#10;提示：Ctrl/Cmd+Enter 快速提交"></textarea>
+      <textarea class="review-input" id="reviewInput" placeholder="输入或粘贴演讲内容...&#10;建议150字以上，Ctrl+Enter 快速提交"></textarea>
     </div>
     <div id="voiceInputBox" style="display:none">
-      <div style="font-size:.85rem;color:#6b7280;margin-bottom:10px;">🎙️ 点击下方按钮开始朗读你的演讲，AI 会实时识别语音并在结束后自动评分复盘。</div>
-      <div class="voice-env" id="voiceEnvBox">正在检测当前打开方式…</div>
-      <div style="text-align:center;padding:18px 10px 8px;background:linear-gradient(135deg,#f5f3ff,#ede9fe);border-radius:14px">
-        <button class="btn btn-danger" onclick="toggleVoiceRec()" id="micBtn" style="padding:18px 28px;font-size:1.05rem;min-width:180px;border-radius:50px">🎙️ 点击开始录音</button>
-        <div class="mic-status" id="micStatus">点击开始，对着麦克风讲你的演讲内容</div>
-        <div style="margin-top:10px">
-          <button class="btn btn-ghost btn-sm" onclick="voiceDiag()">🔍 麦克风自检（点不动时先点这里）</button>
+      <div id="voiceEnvBox" style="font-size:.82rem;text-align:center;margin-bottom:10px;padding:6px 10px;border-radius:8px;background:#f3f4f6;color:#6b7280;">正在检测麦克风环境…</div>
+      <div style="text-align:center;padding:16px 10px 8px;background:linear-gradient(135deg,#f5f3ff,#ede9fe);border-radius:14px">
+        <button class="btn btn-danger" onclick="toggleVoiceRec()" id="micBtn" style="padding:16px 28px;font-size:1.05rem;min-width:160px;border-radius:50px">🎙️ 开始录音</button>
+        <div class="mic-status" id="micStatus">点击按钮开始朗读</div>
+        <div style="margin-top:8px;display:none" id="micDiagWrap">
+          <button class="btn btn-ghost btn-sm" onclick="voiceDiag()">🔍 麦克风自检</button>
         </div>
-        <div id="micEnvHint" style="margin-top:8px;font-size:.8rem;color:#9ca3af">需 Chrome / Edge 等现代浏览器；且必须以 <b>https://</b> 或 <b>http://localhost</b> 打开，浏览器才放行麦克风</div>
       </div>
       <div class="voice-diag" id="voiceDiagResult"></div>
       <div style="margin-top:10px">
-        <div style="font-size:.82rem;color:#6b7280;margin-bottom:6px">📝 实时识别内容：</div>
-        <div class="review-input" id="voiceTranscript" style="min-height:100px;white-space:pre-wrap;background:#fafafa;color:#374151;font-size:.9rem;line-height:1.7"></div>
+        <div style="font-size:.82rem;color:#6b7280;margin-bottom:6px">📝 实时识别：</div>
+        <div class="review-input" id="voiceTranscript" style="min-height:80px;white-space:pre-wrap;background:#fafafa;color:#374151;font-size:.9rem;line-height:1.7"></div>
       </div>
     </div>
     <div class="length-tabs">
@@ -1629,12 +1680,26 @@ html.dark .drawer-mask{background:rgba(0,0,0,.6)}
       <div class="length-tab active" data-len="normal">📄 正常</div>
       <div class="length-tab" data-len="long">🗣️ 长篇</div>
     </div>
-    <div class="btn-row" style="margin-top:8px;">
-      <button class="btn btn-primary" onclick="runAIReview()" id="aiSubmitBtn">🔍 开始评价</button>
-      <button class="btn btn-ghost" onclick="clearReviewInput()" id="clearInputBtn" style="display:none">🗑️ 清空</button>
-      <button class="btn btn-ghost" onclick="showHistory()">📜 历史记录</button>
-    </div>
     <div class="review-result" id="reviewResult"></div>
+    <div id="aiDeepReviewSection">
+      <button class="btn btn-primary" onclick="aiDeepReview()" style="width:100%;background:linear-gradient(135deg,#a855f7,#ec4899);margin-top:14px">🔍 AI 深度点评（真实大模型）</button>
+    </div>
+  </div>
+  <div class="panel-footer">
+    <div class="btn-row" style="margin-top:0;">
+      <button class="btn btn-primary" onclick="runAIReview()" id="aiSubmitBtn">🔍 开始评价</button>
+      <button class="btn btn-ghost btn-clear" onclick="clearReviewInput()" id="clearInputBtn">🗑️ 清空</button>
+      <button class="btn btn-ghost btn-history" onclick="showHistory()">📜 历史</button>
+    </div>
+  </div>
+</div>
+<!-- V1.3.7：评价完成后显示的悬浮评分小卡 -->
+<div class="review-float-card" id="reviewFloatCard" onclick="showReviewPanel()">
+  <button class="review-float-close" onclick="event.stopPropagation();closeReview(true)">✕</button>
+  <div class="review-float-score" id="floatScore">--</div>
+  <div class="review-float-info">
+    <div class="review-float-grade" id="floatGrade">点击查看评价</div>
+    <div class="review-float-hint">AI 评价结果</div>
   </div>
 </div>
 
@@ -2205,7 +2270,6 @@ var qrcode=function(){function i(t,r){function a(t,r){g=function(t){for(var r=ne
   window.QRCode = { drawCanvas: drawCanvas, matrix: matrix };
 })();
 
-
 /* ========== 数据初始化（使用 let 避免 const 重赋值崩溃） ========== */
 
 // V3.5.1: 全局重写 localStorage 为安全代理 - 在严格沙箱下防止抛错
@@ -2288,7 +2352,6 @@ let LIB = {"categories":[{"id":"general","name":"通用话题","emoji":"✦","mo
   );
 })();
 
-
 const SETTINGS_KEY = 'jxs_settings_v6';
 const HISTORY_KEY = 'jxs_history_v4';
 const CUSTOM_LIB_KEY = 'jxs_custom_lib_v6';
@@ -2299,7 +2362,7 @@ const SETTINGS_VERSION = 6;
 /* ===== V3.9.7: 内置 API Key 插槽 =====
    想"写死 Key、换浏览器不用重输"：把你的硅基流动 sk-xxx 填到下面引号里保存即可。
    打开页面时会自动读入，优先级低于你手动在设置面板填过的值（手动保存过的会覆盖这个默认值）。 */
-const BUILTIN_AI_API_KEY = '';   /* ← 把 sk-xxx 填在这里，用任意文本编辑器打开本HTML改完保存即可 */
+const BUILTIN_AI_API_KEY = 'sk-ifkyunwdyowcaemoliazhemuxgpofzbtzgimkfnvblphlvtz';   /* ← 把 sk-xxx 填在这里，用任意文本编辑器打开本HTML改完保存即可 */
 
 // STATE 使用 var 声明避免块级作用域问题
 var STATE = {
@@ -2798,10 +2861,9 @@ function renderTopic(t){
       guideBlockHTML({open:lawOpen, points:[lawPoint, _p2], example:t.example, close:_lc})+'<\/div>';
 
   }else if(t._kind==='speech'){
-    // 优先使用训练计划专属思路，没有再用通用生成
-    var _so = t._planHint || getSpeechHint(t.text) || generateTopicOutline(t.text, t._cat);
+    var _so = generateTopicOutline(t.text, t._cat);
     box.innerHTML = '<div class="speech-card"><div class="speech-q">'+esc(t.text)+'<\/div>'+
-      '<div style="text-align:center;margin-bottom:10px;"><span class="topic-tag">'+esc(t._cat||'口才演练')+'<\/span><\/div>'+
+      '<div style="text-align:center;margin-bottom:10px;"><span class="topic-tag">'+esc(t._cat)+'<\/span><\/div>'+
       guideBlockHTML(_so)+'<\/div>';
 
   }else if(t._kind==='debate'){
@@ -2868,8 +2930,8 @@ function renderTopic(t){
         '<button class="recite-tool-btn" onclick="reciteReadFull(\'uk\')" title="英音逐句朗读（有道真人发音）">🇬🇧 英音整段<\/button>' +
         '<button class="recite-tool-btn" onclick="reciteReadChinese()" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;" title="朗读中文翻译">🇨🇳 中文整段<\/button>' +
         '<button class="recite-tool-btn" onclick="reciteReadBilingual()" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff;" title="先英后中，双语对照朗读">🔁 英中双语<\/button>' +
-        '<span class="recite-rate-group" id="reciteRateGroup" title="调节朗读速度（倍速）">' +
-        '<span class="recite-rate-label">⚡倍速<\/span>' +
+        '<span class="recite-rate-group" id="reciteRateGroup" title="调节朗读速度（）">' +
+        '<span class="recite-rate-label">⚡<\/span>' +
         '<button class="recite-rate-btn" data-rate="0.5" onclick="reciteSetRate(0.5)">0.5×<\/button>' +
         '<button class="recite-rate-btn" data-rate="0.75" onclick="reciteSetRate(0.75)">0.75×<\/button>' +
         '<button class="recite-rate-btn active" data-rate="1" onclick="reciteSetRate(1)">1.0×<\/button>' +
@@ -2898,38 +2960,8 @@ function renderTopic(t){
     }else{
       /* ===== V3.5.2：中文朗诵专属独立工具栏（完全独立于英文朗读，互不影响）===== */
       /* ===== V3.6.0 中文工具栏统一主页面蓝紫主题，新增音色选择，双引擎真人朗读 ===== */
-      toolBar = '<div class="recite-toolbar" id="reciteToolbar">' +
-        '<button class="recite-tool-btn" onclick="zhReciteAutoStyle()" style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-weight:600;" title="自动识别素材类型，使用微软Azure Edge真人神经语音朗读，自动匹配最贴合的朗诵风格（古诗词/现代诗/散文/贯口/演讲）">🎭 自动风格朗读<\/button>' +
-        '<button class="recite-tool-btn" onclick="zhReciteStyle(\'poem_classic\')" title="古诗词专用：慢速吟诵，句间长停顿，符合诗词韵律">📜 古诗词<\/button>' +
-        '<button class="recite-tool-btn" onclick="zhReciteStyle(\'poem_modern\')" title="现代诗专用：抒情舒缓，节奏自然">📝 现代诗<\/button>' +
-        '<button class="recite-tool-btn" onclick="zhReciteStyle(\'prose\')" title="散文/古文专用：标准语速，自然停顿，流畅朗读">📖 散文/古文<\/button>' +
-        '<button class="recite-tool-btn" onclick="zhReciteStyle(\'guankou\')" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;" title="贯口/绕口令/快板专用：快节奏，极短停顿，一气呵成">🎙️ 贯口/快板<\/button>' +
-        '<button class="recite-tool-btn" onclick="zhReciteStyle(\'speech\')" title="演讲词专用：稍快、洪亮、有感染力">🗣️ 演讲词<\/button>' +
-        '<span class="recite-rate-group" style="margin-left:4px;" title="选择朗读音色（微软Azure Edge神经真人语音，和Edge浏览器"大声朗读"同款声音）">' +
-        '<span class="recite-rate-label">🎙️音色<\/span>' +
-        '<select id="zhVoiceSelect" onchange="zhSetVoice(this.value)" style="padding:6px 8px;border-radius:8px;border:1px solid #c7d2fe;background:#f8fafc;font-size:.82rem;color:#374151;cursor:pointer;outline:none;">' +
-        '<option value="auto">🔄 自动选最佳真人音色<\/option>' +
-        '<option value="xiaoxiao">👩 晓晓（温柔女声·默认推荐）<\/option>' +
-        '<option value="yunxi">👨 云希（沉稳男声·影视解说）<\/option>' +
-        '<option value="xiaoyi">👩 晓伊（亲切女声）<\/option>' +
-        '<option value="yunyang">👨 云扬（新闻播音男声）<\/option>' +
-        '<option value="yunjian">👨 云健（磁性男声）<\/option>' +
-        '<option value="yunhao">👨 云皓（活力男声）<\/option>' +
-        '<option value="xiaohan">👩 晓涵（温柔女声）<\/option>' +
-        '<option value="xiaomo">👩 晓墨（知性女声）<\/option>' +
-        '<option value="xiaomeng">👩 晓梦（甜美女声）<\/option>' +
-        '<option value="xiaorou">👩 晓柔（甜美女声）<\/option>' +
-        '<option value="xiaozhen">👩 晓甄（活力女声）<\/option>' +
-        '<option value="baidu">🔊 百度翻译女声（稳定兜底）<\/option>' +
-        '<\/select>' +
-        '<\/span>' +
-        '<span class="recite-rate-group" id="reciteRateGroup" title="调节朗读速度（倍速）">' +
-        '<span class="recite-rate-label">⚡倍速<\/span>' +
-        '<button class="recite-rate-btn" data-rate="0.75" onclick="reciteSetRate(0.75)">0.75×<\/button>' +
-        '<button class="recite-rate-btn active" data-rate="1" onclick="reciteSetRate(1)">1.0×<\/button>' +
-        '<button class="recite-rate-btn" data-rate="1.25" onclick="reciteSetRate(1.25)">1.25×<\/button>' +
-        '<button class="recite-rate-btn" data-rate="1.5" onclick="reciteSetRate(1.5)">1.5×<\/button>' +
-        '<\/span>' +
+      /* V1.3.6：按用户要求，中文朗读模块移除「自动风格朗读 / 5个风格按钮 / 音色 / 」控件（此前仅隐藏且失效） */
+      toolBar = '<div class="recite-toolbar" id="reciteToolbar" style="display:none">' +
         '<button class="recite-tool-btn recite-tool-btn-sm" id="btnZhReciteReplay" onclick="zhReciteReplay()" style="display:none;" title="再听一遍当前朗读">🔁 再听<\/button>' +
         '<button class="recite-tool-btn recite-tool-btn-sm" id="btnZhRecitePause" onclick="zhReciteTogglePause()" style="display:none;">⏸️ 暂停<\/button>' +
         '<button class="recite-tool-btn recite-tool-btn-sm" id="btnZhReciteStop" onclick="zhReciteStop()" style="display:none;">⏹️ 停止<\/button>' +
@@ -3119,6 +3151,7 @@ function hideConfirm(ok){
 function closeTimer(){
   document.getElementById('timerBox').classList.remove('show');
   var _bar=document.getElementById('debateTimerBar'); if(_bar) _bar.style.display='none'; // V3.7.4：同时收起辩论内嵌计时条
+  try{document.body.classList.remove('panel-open');}catch(e){}
   if(!document.getElementById('reviewPanel').classList.contains('show') &&
      !document.getElementById('settingsPanel').classList.contains('show'))
     document.getElementById('mask').classList.remove('show');
@@ -3132,6 +3165,8 @@ function showTimer(){
   }
   document.getElementById('timerBox').classList.add('show');
   document.getElementById('mask').classList.add('show');
+  // V1.4.9：取消主页面滚动锁定
+  // try{document.body.classList.add('panel-open');}catch(e){}
 }
 
 /* ========== 弹层关闭 ========== */
@@ -3308,13 +3343,23 @@ function runAIReview(){
   // 保存历史
   try{
     var hist = JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');
-    hist.unshift({time:new Date().toLocaleString('zh-CN'), mode:STATE.mode, score:total, dims:{logic:logicScore,content:contentScore,express:expressScore,complete:completeScore,fluency:fluencyScore}});
+    hist.unshift({time:new Date().toLocaleString('zh-CN'), mode:STATE.mode, score:total, grade:grade, dims:{logic:logicScore,content:contentScore,express:expressScore,complete:completeScore,fluency:fluencyScore}});
     hist = hist.slice(0,30);
     localStorage.setItem(HISTORY_KEY, JSON.stringify(hist));
   }catch(e){}
 
   document.getElementById('reviewResult').innerHTML=h;
   document.getElementById('reviewResult').classList.add('show');
+  
+  // V1.3.7：评价完成后更新悬浮评分卡，1.2秒后自动收起面板显示悬浮卡
+  try{
+    document.getElementById('floatScore').textContent = total;
+    document.getElementById('floatGrade').textContent = grade;
+    setTimeout(function(){
+      // 自动收起底部面板，显示悬浮小卡
+      closeReview(false);
+    }, 1200);
+  }catch(e){}
 }
 
 function showHistory(){
@@ -3338,11 +3383,193 @@ function showHistory(){
 function clearHistory(){
   if(confirm('确定清空所有练习记录？')){ localStorage.removeItem(HISTORY_KEY); showHistory(); toast('已清空'); }
 }
+/* V1.4.5：AI评价弹层最小化（收起）/展开 */
+var _reviewPrevHeight = '';
+function resetReviewMin(){
+  var p=document.getElementById('reviewPanel');
+  if(!p) return;
+  p.classList.remove('minimized');
+  if(_reviewPrevHeight){ p.style.height=_reviewPrevHeight; _reviewPrevHeight=''; }
+  var btn=document.getElementById('reviewMinBtn'); if(btn) btn.textContent='▼';
+}
+function toggleReviewMin(){
+  var p=document.getElementById('reviewPanel');
+  if(!p) return;
+  var btn=document.getElementById('reviewMinBtn');
+  if(p.classList.contains('minimized')){
+    p.classList.remove('minimized');
+    if(_reviewPrevHeight){ p.style.height=_reviewPrevHeight; _reviewPrevHeight=''; }
+    if(btn) btn.textContent='▼';
+    setTimeout(function(){ try{_syncReviewPad();}catch(e){} try{_ensureTopicVisible();}catch(e){} },60);
+  }else{
+    _reviewPrevHeight = p.style.height || '';
+    p.classList.add('minimized');
+    if(btn) btn.textContent='▲';
+    setTimeout(function(){ try{_syncReviewPad();}catch(e){} },60);
+  }
+}
+function onReviewHeadClick(e){
+  var p=document.getElementById('reviewPanel');
+  if(!p || !p.classList.contains('minimized')) return;
+  if(e && e.target && e.target.closest && e.target.closest('button')) return;
+  toggleReviewMin();
+}
+/* V1.4.5：把主页面朗读稿（题目/稿件区）滚到弹层上方的可见区域，避免被弹层挡住 */
+function _ensureTopicVisible(){
+  var panel=document.getElementById('reviewPanel');
+  if(!panel || !panel.classList.contains('show')) return;
+  var panelTop = panel.getBoundingClientRect().top;
+  /* 取「朗读内容」各容器中最靠下的一条，避免内层元素比外层矮导致漏判 */
+  var ids=['topicDisplay','topicContent','reciteBody'];
+  var maxBottom=-1e9;
+  for(var i=0;i<ids.length;i++){
+    var el=document.getElementById(ids[i]);
+    if(!el) continue;
+    if(el.offsetHeight<=0) continue;
+    try{ if(getComputedStyle(el).display==='none') continue; }catch(e){}
+    var b=el.getBoundingClientRect().bottom;
+    if(b>maxBottom) maxBottom=b;
+  }
+  if(maxBottom < -1e8) return;
+  var need = Math.round(maxBottom - (panelTop - 12));
+  if(need <= 0) return;
+  /* 本页 body 是滚动容器（overflow-y:auto），优先滚 body，回退 window */
+  var sc = (document.body.scrollHeight - document.body.clientHeight > 4)
+            ? document.body
+            : (document.scrollingElement || document.documentElement);
+  var target = sc.scrollTop + need;
+  try{ sc.scrollTop = target; }
+  catch(e){ try{ window.scrollBy(0, need); }catch(e2){} }
+}
+/* V1.4.5：打开后连续对齐（短时轮询约2.4秒），兼容字体/内容延迟渲染导致的布局变化 */
+function _scheduleEnsureTopic(){
+  var n=0;
+  try{ _ensureTopicVisible(); }catch(e){}
+  var t=setInterval(function(){
+    n++;
+    try{ _ensureTopicVisible(); }catch(e){}
+    if(n>=16){ clearInterval(t); }
+  },150);
+  try{
+    if(document.fonts && document.fonts.ready && document.fonts.ready.then){
+      document.fonts.ready.then(function(){ try{_ensureTopicVisible();}catch(e){} });
+    }
+  }catch(e){}
+}
+/* V1.4.5：按弹层当前实际高度同步页面底部留白（拖拽/最小化后也保持一致） */
+function _syncReviewPad(){
+  var p=document.getElementById('reviewPanel');
+  if(!p) return;
+  if(!document.body.classList.contains('review-open')) return;
+  document.body.style.setProperty('--review-pad', Math.max(0, p.offsetHeight) + 'px');
+}
 function openReview(){
   document.getElementById('reviewPanel').classList.add('show');
+  // V1.4.9：取消主页面滚动锁定、模糊变暗
+  // try{document.body.classList.add('panel-open');}catch(e){}
   document.getElementById('mask').classList.add('show');
   document.getElementById('reviewResult').classList.remove('show');
-  setTimeout(function(){try{document.getElementById('reviewInput').focus();}catch(e){}},300);
+  // V1.3.7：打开面板时隐藏悬浮卡
+  document.getElementById('reviewFloatCard').classList.remove('show');
+  // V1.4.5：打开时把弹层内容滚回顶部
+  try{var _pb0=document.querySelector('#reviewPanel .panel-body'); if(_pb0)_pb0.scrollTop=0;}catch(e){}
+  // V1.4.5：恢复常规高度态；给页面预留底部空间，并自动把朗读稿顶到弹层上方
+  try{ resetReviewMin(); }catch(e){}
+  try{ document.body.classList.add('review-open'); }catch(e){}
+  setTimeout(function(){
+    try{_syncReviewPad();}catch(e){}
+    try{document.getElementById('reviewInput').focus();}catch(e){}
+  },60);
+  _scheduleEnsureTopic();
+}
+// V1.3.7：点击悬浮卡展开完整评价面板
+function showReviewPanel(){
+  document.getElementById('reviewPanel').classList.add('show');
+  // V1.4.9：取消主页面滚动锁定、模糊变暗
+  // try{document.body.classList.add('panel-open');}catch(e){}
+  document.getElementById('mask').classList.add('show');
+  document.getElementById('reviewFloatCard').classList.remove('show');
+  // V1.4.5：从这里展开时也把内容滚回顶部
+  try{var _pb1=document.querySelector('#reviewPanel .panel-body'); if(_pb1)_pb1.scrollTop=0;}catch(e){}
+  // V1.4.5：恢复常规高度态；给页面预留底部空间，并自动把朗读稿顶到弹层上方
+  try{ resetReviewMin(); }catch(e){}
+  try{ document.body.classList.add('review-open'); }catch(e){}
+  setTimeout(function(){ try{_syncReviewPad();}catch(e){} },60);
+  _scheduleEnsureTopic();
+}
+
+/* V1.4.5：拖拽调整AI评价弹层大小功能 */
+(function(){
+  var handle = document.getElementById('reviewResizeHandle');
+  var panel = document.getElementById('reviewPanel');
+  if(!handle || !panel) return;
+  var isDragging = false;
+  var startY = 0;
+  var startHeight = 0;
+  function onDragStart(e){
+    isDragging = true;
+    startY = e.touches ? e.touches[0].clientY : e.clientY;
+    startHeight = panel.offsetHeight;
+    handle.classList.add('dragging');
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  }
+  function onDragMove(e){
+    if(!isDragging) return;
+    var currentY = e.touches ? e.touches[0].clientY : e.clientY;
+    var deltaY = startY - currentY; // 向上拖变大，向下拖变小
+    var newHeight = startHeight + deltaY;
+    // 高度范围：最小40vh，最大95vh
+    var vh = window.innerHeight / 100;
+    var minH = 40 * vh;
+    var maxH = 95 * vh;
+    newHeight = Math.max(minH, Math.min(maxH, newHeight));
+    panel.style.height = newHeight + 'px';
+    panel.style.transition = 'none';
+    try{_syncReviewPad();}catch(err){}
+    e.preventDefault();
+  }
+  function onDragEnd(){
+    if(!isDragging) return;
+    isDragging = false;
+    handle.classList.remove('dragging');
+    document.body.style.userSelect = '';
+    panel.style.transition = '';
+  }
+  // 绑定鼠标和触摸事件
+  handle.addEventListener('mousedown', onDragStart);
+  handle.addEventListener('touchstart', onDragStart, {passive:false});
+  document.addEventListener('mousemove', onDragMove);
+  document.addEventListener('touchmove', onDragMove, {passive:false});
+  document.addEventListener('mouseup', onDragEnd);
+  document.addEventListener('touchend', onDragEnd);
+  document.addEventListener('touchcancel', onDragEnd);
+})();
+/* V1.3.7：关闭面板逻辑
+ * forceClose=true：完全关闭，同时隐藏悬浮卡
+ * forceClose=false/不传：仅收起面板，如果有评价结果则显示悬浮卡
+ */
+function closeReview(forceClose){
+  document.getElementById('reviewPanel').classList.remove('show');
+  try{document.body.classList.remove('panel-open');}catch(e){}
+  // V1.4.5：关闭弹层时收回页面底部留白
+  try{ document.body.classList.remove('review-open'); document.body.style.removeProperty('--review-pad'); }catch(e){}
+  if(!document.getElementById('timerBox').classList.contains('show') &&
+     !document.getElementById('settingsPanel').classList.contains('show'))
+    document.getElementById('mask').classList.remove('show');
+  
+  if(forceClose){
+    // 完全关闭，隐藏悬浮卡
+    document.getElementById('reviewFloatCard').classList.remove('show');
+  }else{
+    // 仅收起面板，如果有结果则显示悬浮卡
+    try{
+      var hasResult = document.getElementById('reviewResult').innerHTML.trim().length > 0;
+      if(hasResult){
+        document.getElementById('reviewFloatCard').classList.add('show');
+      }
+    }catch(e){}
+  }
 }
 
 /* ===== v8: 输入模式切换 & 语音识别 ===== */
@@ -3405,28 +3632,20 @@ function voiceKindAdvice(info){
 }
 function renderVoiceEnv(){
   var info=voiceEnvInfo();
-  var adv=voiceKindAdvice(info);
+  var adv=voiceKindAdvice(info.kind);
   var box=document.getElementById('voiceEnvBox');
   if(box){
-    box.className='voice-env '+(adv.cls==='ok'?'ok':(info.supported?'warn':'bad'));
-    var L=[];
-    L.push('<div class="ve-row"><span class="ve-k">打开方式<\/span><span>'+VOICE_KIND_TEXT[info.kind]+'<\/span><\/div>');
-    L.push('<div class="ve-row"><span class="ve-k">麦克风放行<\/span><span>'+(info.secure?'✅ 该方式允许调用麦克风':'❌ 该方式浏览器禁止调用麦克风')+'<\/span><\/div>');
-    L.push('<div class="ve-row"><span class="ve-k">语音识别<\/span><span>'+(info.supported?'✅ 当前浏览器支持':'❌ 当前浏览器不支持')+'<\/span><\/div>');
-    if(info.inWechat) L.push('<div class="ve-row"><span class="ve-k">环境<\/span><span>⚠️ 检测到微信 / QQ 内置浏览器<\/span><\/div>');
-    L.push('<div class="ve-row"><span class="ve-k">结论<\/span><span>'+(adv.cls==='ok'?'<b>语音模式可用<\/b>，点下面按钮开始':'<b>当前条件下语音用不了<\/b>，点下面「🔍 麦克风自检」看解决办法')+'<\/span><\/div>');
-    box.innerHTML=L.join('');
+    var color = adv.cls==='ok'?'#16a34a':(adv.cls==='bad'?'#dc2626':'#d97706');
+    var bg = adv.cls==='ok'?'#dcfce7':(adv.cls==='bad'?'#fee2e2':'#fef3c7');
+    box.style.cssText='font-size:.82rem;text-align:center;margin-bottom:10px;padding:6px 10px;border-radius:8px;background:'+bg+';color:'+color+';';
+    box.innerHTML=(adv.cls==='ok'?'✅ 语音环境正常，可直接开始录音':adv.head);
   }
+  var diagWrap=document.getElementById('micDiagWrap');
+  if(diagWrap) diagWrap.style.display=(adv.cls==='ok'?'none':'block');
   var lb=document.getElementById('micLight'), lt=document.getElementById('micLightText'), tb=document.getElementById('micTipBox');
   if(lb) lb.className='share-status '+(adv.cls==='ok'?'s-public':(adv.cls==='bad'?'s-none':'s-lan'));
   if(lt) lt.textContent=adv.head;
   if(tb){ tb.className='share-tip '+(adv.cls==='ok'?'ok':'warn'); tb.innerHTML=adv.tip; }
-  var hint=document.getElementById('micEnvHint');
-  if(hint){
-    if(info.isIOS) hint.innerHTML='📱 检测到 <b>iPhone / iPad<\/b>：iOS 系统不提供网页语音识别接口（Safari、Chrome、Edge 都一样），请改用 <b>⌨️ 文字模式<\/b> + 键盘语音输入。';
-    else if(info.isMobile) hint.innerHTML='📱 检测到手机：必须用 <b>https://<\/b> 网址打开（局域网 http://192.168.x.x 与手机上的 localhost 都不放行）；安卓还需在系统设置里给浏览器麦克风权限。';
-    else hint.innerHTML='需 Chrome / Edge 等现代浏览器；且必须以 <b>https://<\/b> 或 <b>http://localhost<\/b> 打开，浏览器才放行麦克风';
-  }
   return info;
 }
 var VOICE_ERR={
@@ -3498,7 +3717,8 @@ function switchInputMode(mode){
   document.querySelectorAll('.input-mode-tab').forEach(function(t){t.classList.toggle('active', t.dataset.input===mode);});
   document.getElementById('textInputBox').style.display = mode==='text'?'':'none';
   document.getElementById('voiceInputBox').style.display = mode==='voice'?'':'none';
-  document.getElementById('clearInputBtn').style.display = mode==='voice'?'':'none';
+  // V1.4.5：清空按钮在文字和语音模式下都显示
+  document.getElementById('clearInputBtn').style.display = '';
   STATE._inputMode = mode;
   if(mode==='voice'){
     document.getElementById('voiceTranscript').textContent = '';
@@ -3597,13 +3817,6 @@ function clearReviewInput(){
   document.getElementById('reviewResult').innerHTML='';
 }
 
-function closeReview(){
-  document.getElementById('reviewPanel').classList.remove('show');
-  if(!document.getElementById('timerBox').classList.contains('show') &&
-     !document.getElementById('settingsPanel').classList.contains('show'))
-    document.getElementById('mask').classList.remove('show');
-}
-
 /* ========== 设置 ========== */
 function toggleSettings(force){
   var p=document.getElementById('settingsPanel');
@@ -3626,8 +3839,11 @@ function toggleSettings(force){
     try{ if(typeof fbOnPanelOpen==='function') fbOnPanelOpen(); }catch(e){}
     p.classList.add('show');
     document.getElementById('mask').classList.add('show');
+    // V1.4.9：取消主页面滚动锁定
+    // try{document.body.classList.add('panel-open');}catch(e){}
   }else{
     p.classList.remove('show');
+    try{document.body.classList.remove('panel-open');}catch(e){}
     var t=document.getElementById('timerBox').classList.contains('show');
     var r=document.getElementById('reviewPanel').classList.contains('show');
     if(!t&&!r) document.getElementById('mask').classList.remove('show');
@@ -4645,7 +4861,6 @@ function initShortcuts(){
   });
 }
 
-
 /* ========== v2.0 说明书折叠 ========== */
 function toggleManual(el){
   var item = el.parentElement;
@@ -4657,7 +4872,6 @@ function toggleSettingGroup(headEl){
   var group = headEl.parentElement;
   group.classList.toggle('open');
 }
-
 
 /* ========== v2.0 辩论对抗：真人 VS AI，按新国辩赛制 ========== */
 /* 赛制（简化版新国辩）：
@@ -5300,7 +5514,6 @@ function __jxxFinalGuard(){
 setTimeout(__jxxFinalGuard, 800);
 setTimeout(__jxxFinalGuard, 2000);
 setTimeout(__jxxFinalGuard, 5000);
-
 
 /* ========== V3.0 英文朗诵：跟读/发音（事件委托版，修复长按无效bug） ========== */
 // 语音对象缓存
@@ -6458,7 +6671,7 @@ function reciteReadFull(variant){
 var _zhLongPlay = null;       // 中文朗读独立状态（和英文_longPlay彻底分离）
 var _zhAudio = null;          // 中文兜底Audio元素（和英文_longAudio互不干扰）
 var _zhLastConfig = null;     // 上次朗读配置，用于重播
-var _zhReciteRate = 1.0;      // 中文独立倍速，不影响英文倍速
+var _zhReciteRate = 1.0;      // 中文独立，不影响英文
 var _zhNativeMode = false;    // 是否正在使用原生神经语音模式
 var _zhUtter = null;          // 原生语音utterance实例
 
@@ -6690,14 +6903,14 @@ function zhReciteReplay(){
   if(_zhLastConfig){ zhRecitePlay(_zhLastConfig.text, _zhLastConfig.styleKey); }
 }
 
-// ========== 倍速切换 ==========
+// ========== 切换 ==========
 function zhSetRate(rate){
   _zhReciteRate = rate;
   if(_zhLongPlay && _zhNativeMode && _zhUtter){
     _zhUtter.rate = ZH_RECITE_STYLES[_zhLongPlay.styleKey].rate * rate;
   }
   var label = rate === 0.75 ? '慢速' : (rate === 1.0 ? '标准' : (rate === 1.25 ? '稍快' : '快速'));
-  toast('⏱️ 中文朗读倍速：' + label, 1500);
+  toast('⏱️ 中文朗读：' + label, 1500);
 }
 
 // ========== 百度翻译真人发音URL构造（稳定兜底方案） ==========
@@ -6797,7 +7010,7 @@ function _zhPlayNative(text, style, voice){
     var u = new SpeechSynthesisUtterance(text);
     u.lang = 'zh-CN';
     u.voice = voice;
-    // 应用风格语速 + 全局倍速
+    // 应用风格语速 + 全局
     u.rate = style.rate * (_zhReciteRate || 1.0);
     u.pitch = style.pitch;
     u.volume = 1.0;
@@ -6985,7 +7198,6 @@ function reciteToggleLineTrans(){
     'div[data-act]:active{background:#e0e7ff!important;}';
   document.head.appendChild(st);
 })();
-
 
 /* ======== V3.0.4 本页查词弹窗（有道 suggest JSONP） ======== */
 function _dictJsonp(url, cb){
@@ -7188,7 +7400,6 @@ function reciteShowWordDef(word){
   });
 }
 
-
 // V3.3：预热语音列表（某些浏览器需要触发一次才能拿到voices）
 if('speechSynthesis' in window){
   function loadVoices(){ try{ speechSynthesis.getVoices(); }catch(e){} }
@@ -7197,8 +7408,6 @@ if('speechSynthesis' in window){
     speechSynthesis.onvoiceschanged = loadVoices;
   }
 }
-
-
 
 /* ===================== 【发音 / 朗读引擎修复补丁 v5】 =====================
    本补丁在脚本末尾统一重写发声与整段朗读逻辑，覆盖此前残缺实现：
@@ -7560,17 +7769,16 @@ function speakEnglishBoth(text){
   setTimeout(function(){ speakEnglish(t,'uk',rate); }, dur);
 }
 
-
 /* ============================================================
    【V3.3.8 修复补丁】
    ① 点击小喇叭有延迟：预连接 + 音频元素池复用 + 后台预取 mp3，点击即响
    ② 「美式整段」后点小喇叭出现两种音频：单点发音前统一停掉整段/中文朗读，彻底互斥
-   ③ 新增「⚡倍速」控件：0.5× 0.75× 1.0× 1.25× 1.5×，
+   ③ 新增「⚡」控件：0.5× 0.75× 1.0× 1.25× 1.5×，
       单词、句子、美音整段、英音整段、中文整段、双语跟读全部跟随；
-      播放中切换倍速会从当前句按新速度继续
+      播放中切换会从当前句按新速度继续
    ============================================================ */
 
-/* ---- ③-a 倍速控件样式 ---- */
+/* ---- ③-a 控件样式 ---- */
 (function(){
   try{
     var st=document.createElement('style');
@@ -7723,7 +7931,7 @@ function _warmupAudio(){
   document.addEventListener('mouseover', function(e){ warmFrom(e.target); }, true);
 })();
 
-/* ---- ①-f 覆盖 speakEnglish：互斥停播 + 多音源兜底 + 倍速 + 预取备用音源 ---- */
+/* ---- ①-f 覆盖 speakEnglish：互斥停播 + 多音源兜底 +  + 预取备用音源 ---- */
 function speakEnglish(text, variant, rateArg){
   variant = variant||'us';
   var raw = String(text||'').trim();
@@ -7775,7 +7983,7 @@ function _speakOneSentence(text, variant, rate, onEnd){
   })(0);
 }
 
-/* ---- 覆盖 _speakLong：支持 startIdx（切倍速从当前句继续）+ 预取后续句 ---- */
+/* ---- 覆盖 _speakLong：支持 startIdx（切从当前句继续）+ 预取后续句 ---- */
 function _speakLong(text, variant, rate, opts){
   opts=opts||{};
   var sents=(typeof splitEnSentences==='function')?splitEnSentences(text):String(text||'').split(/\n+/);
@@ -7793,7 +8001,7 @@ function _speakLong(text, variant, rate, opts){
   _chainNext(_longPlay.idx);
 }
 
-/* ---- ③-b 倍速：设置 / 界面同步 / 播放中切换即从当前句继续 ---- */
+/* ---- ③-b ：设置 / 界面同步 / 播放中切换即从当前句继续 ---- */
 function _syncReciteRateUI(){
   try{
     var btns=document.querySelectorAll('.recite-rate-btn');
@@ -7812,7 +8020,7 @@ function reciteSetRate(r){
   _setReciteRate(nr);
   try{ localStorage.setItem('jxx_recite_rate', String(nr)); }catch(e){}
   _syncReciteRateUI();
-  try{ toast('\u26a1 朗读倍速：'+String(nr).replace(/\.0$/,'')+'\u00d7',1200); }catch(e){}
+  try{ toast('\u26a1 朗读：'+String(nr).replace(/\.0$/,'')+'\u00d7',1200); }catch(e){}
   if(!changed) return;
   var t=(typeof STATE!=='undefined')?STATE.currentTopic:null;
   if(_longPlay && !_longPlay._stopped && t && t.content){
@@ -7826,7 +8034,7 @@ function reciteSetRate(r){
   }
 }
 
-/* ---- 恢复上次选择的倍速 ---- */
+/* ---- 恢复上次选择的 ---- */
 (function(){
   try{
     var v=parseFloat(localStorage.getItem('jxx_recite_rate'));
@@ -7834,7 +8042,7 @@ function reciteSetRate(r){
   }catch(e){}
 })();
 
-/* ---- 朗诵卡片渲染后：同步倍速按钮高亮 + 预热本篇音频（点击即响） ---- */
+/* ---- 朗诵卡片渲染后：同步按钮高亮 + 预热本篇音频（点击即响） ---- */
 (function(){
   try{
     if(typeof initReciteWordEvents==='function'){
@@ -7847,7 +8055,6 @@ function reciteSetRate(r){
     }
   }catch(e){}
 })();
-
 
 /* ============================================================
    【V3.3.3 延迟专项修复 · 真正"点击即响"】
@@ -8111,7 +8318,6 @@ function _stopLongPlay(silent){
   try{ if(_fxPlayingEl){ _fxPlayingEl.pause(); } }catch(e){}
   try{ if('speechSynthesis' in window){ speechSynthesis.cancel(); } }catch(e){}
 }
-
 
 /* ============================================================
    【V3.3.4 根因修复 · 有道的长句音源本来就取不到，自动改用可靠音源】
@@ -8441,7 +8647,6 @@ function _stopLongPlay(silent){
   try{ if('speechSynthesis' in window){ speechSynthesis.cancel(); } }catch(e){}
 }
 
-
 /* ============================================================
    【V3.3.8 补丁 · 让"长句音源"真正可用（百度必须先无 Referer 预热）】
    浏览器实测结论：
@@ -8641,7 +8846,6 @@ function _chainNext(i){
     else{ attempt(); }
   })(0);
 }
-
 
 /* ============================================================
  * V3.3.8 补丁：解决两个核心问题
@@ -9304,7 +9508,6 @@ function _speakOneSentenceV339(text, variant, rate, onEnd){
 }
 window._speakOneSentence = _speakOneSentenceV339;
 
-
 /* ====================================================
    修复二：中英"相邻顺序"对齐算法（彻底解决错位）
    
@@ -9625,7 +9828,6 @@ try{ console.log('[JXX] '+PATCH_V339+' patch applied (no-double-speak state mach
 })();
 
 })();
-
 
 /* =====================================================
  * V3.3.11 修复：点单词本身默认发美音（不再必须点美/英按钮才响）
@@ -10134,7 +10336,6 @@ try{
 }catch(e){}
 try{ console.log('[JXX] V3.3.14 applied: true sentence splitter + per-sentence speaker buttons.'); }catch(e){}
 })();
-
 
 /* ============================================================
  * V3.3.14 续：抢跑预取（按下/悬停/触摸即拉）+ 点击即时反馈 + 失败音源重试
@@ -10704,7 +10905,6 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
 
   log('applied (per-sentence bilingual align + shorter gap).');
 })();
-
 
 </script>
 
@@ -13251,7 +13451,6 @@ window.LAW_OPEN=LAW_OPEN;
 
 window.findHint=findHint;
 
-
   /* 复制思路到剪贴板 */
   /* 展开/收起本题思路提示（V3.9.7修复：挂到window全局+按钮状态切换，手机端可正常点击） */
   function toggleOutline(btn){
@@ -15052,7 +15251,6 @@ window.findHint=findHint;
 })();
 </script>
 
-
 <script>
 /* =======================================================================
  * 即兴说 · V1.0.8 中文真人化朗读引擎（中英彻底隔离）
@@ -15065,7 +15263,7 @@ window.findHint=findHint;
  *   ① 系统中文真人语音（可控制语速/音调，最贴近真人风格）
  *   ② 百度翻译 TTS（联网即可用，带语速档位，稳定兜底）
  *   ③ 有道真人发音（短句兜底）
- *   中英文的状态、音频元素、倍速、停顿完全隔离，互不影响。
+ *   中英文的状态、音频元素、、停顿完全隔离，互不影响。
  * ======================================================================= */
 (function(){
 'use strict';
@@ -15635,7 +15833,7 @@ window.reciteReadChinese = function(){
   zhPlay(zh, key);
 };
 
-/* =================== 十、倍速：中英统一，互不干扰 =================== */
+/* =================== 十、：中英统一，互不干扰 =================== */
 window.reciteSetRate = function(r){
   var nr = parseFloat(r);
   if(isNaN(nr) || nr <= 0) nr = 1.0;
@@ -15654,7 +15852,7 @@ window.reciteSetRate = function(r){
       else btns[i].classList.remove('active');
     }
   }catch(e){}
-  try{ toast('⚡ 朗读倍速：' + String(nr).replace(/\.0$/,'') + '×', 1200); }catch(e){}
+  try{ toast('⚡ 朗读：' + String(nr).replace(/\.0$/,'') + '×', 1200); }catch(e){}
   // 正在朗读时实时生效
   if(Z.playing){
     if(Z.channel === 'system'){
@@ -16207,20 +16405,13 @@ try{ console.log('[JXX] V1.0.8 中文真人化朗读引擎已装载（三级通�
     DEFAULT_PLAN.forEach(function(d,i){
       var done = i<streak;
       var isToday = (i===streak);
-      var isFuture = i>streak;
-      var btnHtml = '';
-      if(done){
-        btnHtml = '<button class="btn btn-sm plan-day-btn" data-day="'+i+'" style="font-size:.75rem;padding:3px 10px;background:#e5e7eb;color:#4b5563;border:none;">复习</button>';
-      }else if(isToday){
-        btnHtml = '<button class="btn btn-primary btn-sm plan-day-btn" data-day="'+i+'" style="font-size:.75rem;padding:3px 10px;">开始</button>';
-      }
       html += '<div style="margin-bottom:8px;padding:10px;border-radius:10px;border:1px solid '+(done?'#10b981':isToday?'#667eea':'#e5e7eb')+';background:'+(done?'#f0fdf4':isToday?'#f5f3ff':'#f9fafb')+';">'+
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">'+
         '<div style="font-weight:600;font-size:.9rem;">Day '+d.day+' · '+d.title+(done?' ✓':'')+'</div>'+
-        btnHtml+'</div>'+
+        (isToday && !done?'<button class="btn btn-primary btn-sm plan-day-btn" data-day="'+i+'" style="font-size:.75rem;padding:3px 10px;">开始</button>':'')+'</div>'+
         '<div style="font-size:.78rem;color:#6b7280;">'+d.desc+'</div>'+
         '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">'+
-        d.topics.map(function(t){return '<button class="chip plan-topic-chip" style="font-size:.72rem;padding:3px 8px;background:#fff;border:1px solid #e5e7eb;cursor:pointer;" data-plan-day="'+i+'" data-plan-topic="'+escHtml(t)+'">'+escHtml(t.length>18?t.slice(0,18)+'…':t)+'</button>';}).join('')+
+        d.topics.map(function(t){return '<button class="chip" style="font-size:.72rem;padding:3px 8px;background:#fff;border:1px solid #e5e7eb;" data-plan-topic="'+escHtml(t)+'">'+escHtml(t.length>18?t.slice(0,18)+'…':t)+'</button>';}).join('')+
         '</div></div>';
     });
     var topW=getTopWeakness(3);
@@ -16241,178 +16432,20 @@ try{ console.log('[JXX] V1.0.8 中文真人化朗读引擎已装载（三级通�
     }
     return html;
   }
-  // 7天训练计划专属思路库，每道题独立匹配
-  var PLAN_HINTS = {
-    '用1分钟做一段精彩的自我介绍':{
-      open:'大家好，我想用三个标签来介绍我自己。',
-      points:['第一个标签：我是一个做事特别专注的人，认准一件事就会沉下心做到底。','第二个标签：我是一个喜欢不断尝试新东西的人，哪怕一开始做不好也愿意去学。','第三个标签：我是一个特别重感情的人，身边的人对我好我一定会记在心里。'],
-      example:'举个例子，我练口才一开始连开口都不敢，坚持每天练十分钟，三个月下来就敢在人前说话了，这就是专注和坚持的力量。',
-      close:'这就是我，一个专注、爱学习、重感情的普通人，希望今天能和大家成为朋友，谢谢。'
-    },
-    '介绍一下你的家乡和成长经历':{
-      open:'说到我的家乡，我脑子里第一个冒出来的是小时候放学回家路上闻到的饭菜香。',
-      points:['我的家乡是一个不大的小城，节奏慢，人情味特别浓，邻里之间就像一家人。','在那里长大，我养成了踏实、不张扬的性格，也学会了真诚待人。','后来我离开家乡出来读书工作，见过更大的世界，但家乡教给我的底色一直没变。'],
-      example:'每次回家一下车，闻到路边小店熟悉的味道，就知道我回来了，那种踏实感是哪里都比不了的。',
-      close:'家乡是我的根，不管走多远，它都在那里给我底气。'
-    },
-    '你最大的优点和缺点是什么':{
-      open:'说到优缺点，我最大的优点是靠谱，答应别人的事一定会做到；最大的缺点是有时候太较真。',
-      points:['优点是靠谱：领导交代的工作、朋友托的事，我都会提前做好，不拖沓不敷衍。','缺点是太较真：有时候一件事没做好我会跟自己较劲很久，给自己压力特别大。','我现在也在改这个缺点，学会接受不完美，尽力了就好。'],
-      example:'之前做项目为了一个细节熬了一整夜，后来发现其实没必要，但就是过不了自己心里那关。',
-      close:'人无完人，我接受自己的不完美，也会慢慢把优点保持、把缺点改得更好。'
-    },
-    '你认为努力和天赋哪个更重要？':{
-      open:'对于我们大多数普通人来说，努力比天赋重要一万倍。',
-      points:['第一，天赋决定上限，但努力决定下限，大多数人根本没到要拼天赋的程度。','第二，天赋是少数人的礼物，努力是每个人都能选的路，你不努力连入场券都拿不到。','第三，持续努力本身就是一种天赋，能坚持的人就已经赢过大多数人了。'],
-      example:'就像练口才，没有人天生会说话，都是每天开口练出来的，你练一百次肯定比练十次说得好。',
-      close:'与其纠结有没有天赋，不如从现在开始努力，时间不会辜负每一个认真的人。'
-    },
-    '年轻人应该尽早存钱还是及时行乐？':{
-      open:'我觉得年轻人不是二选一，而是要先存后花，手里有粮心里不慌。',
-      points:['第一，一定要存钱，存的不是钱，是你面对生活的底气，遇到事不用低声下气求别人。','第二，不用当守财奴，拿出收入的10%-20%投资自己、体验生活，这才是赚钱的意义。','第三，最蠢的是超前消费，为了一时爽背一屁股债，遇到风险一点抗风险能力都没有。'],
-      example:'我身边朋友每个月强制存工资的30%，剩下的钱该吃吃该玩玩，既不委屈自己，也攒下了第一桶金。',
-      close:'存钱是为了更好的生活，及时行乐是活在当下，两者平衡好，才是聪明的活法。'
-    },
-    '大学生应该先就业还是先创业？':{
-      open:'对于99%的大学生来说，我都建议先就业，再谈创业。',
-      points:['第一，刚毕业什么经验、资源、人脉都没有，创业大概率是交学费，成功率不到1%。','第二，先就业攒经验、攒资源、攒第一桶金，摸清楚一个行业的规则，再创业成功率高很多。','第三，不是所有人都适合创业，能把一份工作做到极致，也是一种成功。'],
-      example:'我认识一个学长毕业先去行业头部公司干了三年，摸清了供应链和客户，再出来创业，第一年就盈利了。',
-      close:'先就业不是认输，是为了攒够力量再出发，厚积才能薄发。'
-    },
-    '讲一件你曾经后悔的事':{
-      open:'说起来最后悔的一件事，是奶奶去世前我答应回去看她，结果因为忙工作没回去。',
-      points:['那时候总觉得工作忙，等忙完这阵子再回去，总觉得奶奶会一直在家里等我。','直到接到家里电话说奶奶走了，我才反应过来，有些人你以为会等你，其实一转身就是一辈子。','那件事之后我明白，什么工作什么应酬，都比不上陪在重要的人身边重要。'],
-      example:'我连夜赶回家，看到奶奶冰冰冷冷躺在那里，连最后一面都没见到，那种遗憾这辈子都补不上。',
-      close:'人生没有来日方长，想做的事现在就去做，想见的人现在就去见，别等。'
-    },
-    '描述一次改变你观点的经历':{
-      open:'以前我总觉得内向是缺点，直到工作后遇到我的领导，才彻底改变了这个想法。',
-      points:['以前我特别羡慕能说会道的人，觉得自己嘴笨不会来事，肯定混不好。','结果我的领导就是一个特别内向的人，话不多但每句都说到点子上，做事特别靠谱，全公司都服他。','那时候我才明白，性格没有好坏，你把自己的优势发挥到极致，就是最好的。'],
-      example:'他跟我说，话多不如话准，外向的人擅长社交，内向的人擅长深度思考，只是优势不同而已。',
-      close:'从那以后我再也不逼自己变成外向的人了，接纳自己，把擅长的事做好，就够了。'
-    },
-    '讲一个你最近读到的有意思的小故事':{
-      open:'前几天看到一个小故事，说一个小男孩在海边捡鱼，把被浪冲上岸的鱼一条条扔回海里。',
-      points:['有人路过笑话他，这么多鱼你捡得完吗？谁在乎呢？','小男孩捡起一条鱼扔回海里说：这条鱼在乎。又捡起一条：这条也在乎。','这个故事我看完特别触动，我们做不了拯救世界的英雄，但能帮到身边一个个具体的人，就很有意义。'],
-      example:'就像我们做公益，帮不了所有人，但你帮到的那个人，他的人生真的会不一样。',
-      close:'勿以善小而不为，你随手做的一件小事，对别人来说可能就是救命的光。'
-    },
-    '反驳「读书无用论」':{
-      open:'说读书无用的人，要么是没读过书，要么是根本没读懂书。',
-      points:['第一，他们总拿几个没读书赚大钱的个例说事，却忽略了没读书的人里，绝大多数都在做最底层的体力劳动。','第二，读书给你的不只是文凭，是思考能力、是眼界、是你选择人生的权利，这些是钱买不来的。','第三，你读过的书会融进你的骨子里，变成你的气质和格局，在你看不到的地方帮你做选择。'],
-      example:'同样是看到夕阳，读过书的人会说“落霞与孤鹜齐飞”，没读过书的人只会说“哇真好看”，这就是区别。',
-      close:'读书不是唯一的路，但一定是普通人最容易走的那条路，别拿个例当真理。'
-    },
-    '反驳「有钱就有一切」':{
-      open:'钱很重要，但钱绝对买不到一切，说这句话的人，要么太穷要么太有钱。',
-      points:['第一，钱能买得起房子，但买不来家；能买得起药，但买不来健康；能买得起礼物，但买不来真心。','第二，有钱确实能解决90%的烦恼，但剩下10%最珍贵的东西，钱根本买不到。','第三，把钱当成一切的人，最后要么被钱害死，要么活成钱的奴隶，根本感受不到幸福。'],
-      example:'我见过身价上亿的老板，每天睡不好觉，一身病，连陪孩子吃顿饭的时间都没有，他说他一点都不快乐。',
-      close:'钱是工具，不是目的，好好赚钱，但别把自己活成钱的工具。'
-    },
-    '反驳「颜值即正义」':{
-      open:'颜值确实是加分项，但说颜值即正义，就是把肤浅当真理。',
-      points:['第一，颜值是天生的，会随着时间贬值，但你的能力、人品、才华，会随着时间越来越值钱。','第二，看颜值是本能，看人品是选择，久处不厌靠的从来不是脸，是性格和三观。','第三，把颜值当正义的人，迟早会为自己的肤浅买单，好看的皮囊千篇一律，有趣的灵魂万里挑一。'],
-      example:'娱乐圈好看的人太多了，真正能走得远的，都是有作品有实力的人，只靠脸的火不过三年。',
-      close:'好看确实占便宜，但决定你能走多远的，永远是你的内在，别把运气当本事。'
-    },
-    '发表一段获奖感言':{
-      open:'今天拿到这个奖，我第一反应不是开心，是特别想感谢三个人。',
-      points:['第一个要感谢的是我的领导/老师，没有他当初给我机会，我根本站不到这里。','第二个要感谢的是我的团队/同学，这个奖不是我一个人的，是大家一起熬了无数个夜拼出来的。','最后要感谢我自己，谢谢我在最难的时候没放弃，咬着牙坚持下来了。'],
-      example:'记得项目最忙的时候我们连续一个月每天只睡四个小时，改了十几版方案，今天拿到这个奖，一切都值了。',
-      close:'这个奖不是终点，是新的起点，接下来我会继续努力，不辜负大家的信任，谢谢大家。'
-    },
-    '安慰一个情绪低落的朋友':{
-      open:'我知道你现在特别难受，别硬撑着，我就在这儿陪着你，想哭就哭出来。',
-      points:['我不劝你想开点，也不跟你讲大道理，我知道你现在真的很难，这种感受是真实的，不是你矫情。','你不用在我面前装坚强，想吐槽想骂人想发呆都可以，我一直都在。','等你好点了，我带你去吃你最爱的火锅，没有什么是一顿火锅解决不了的，不行就两顿。'],
-      example:'我知道你现在觉得天都塌了，但相信我，都会过去的，你比你自己想象的要坚强得多。',
-      close:'不管发生什么，我都在你身边，你不是一个人。'
-    },
-    '向帮助过你的人表达感谢':{
-      open:'张哥/姐，今天特意跟你说声谢谢，上次我最难的时候，真的多亏了你帮我。',
-      points:['那时候我都快撑不下去了，所有人都躲着我，只有你二话不说帮我想办法，我这辈子都记得。','你当时跟我说的那句话，我到现在都记在心里，在那之后我遇到难的事，一想到就有底气。','我嘴笨不会说什么漂亮话，以后你但凡有用得到我的地方，我随叫随到，绝不含糊。'],
-      example:'那时候我欠了钱急得团团转，你连欠条都没让我打就把钱借我了，这份信任我记一辈子。',
-      close:'真的谢谢你，遇到你是我的运气，这份情我记一辈子。'
-    },
-    '分析内卷现象的原因和对策':{
-      open:'内卷的本质不是大家太努力，是蛋糕不够分了，大家都在抢同一块蛋糕。',
-      points:['第一个原因是增量时代结束了，以前随便做都能赚钱，现在存量博弈，只能互相卷。','第二个原因是评价体系太单一，所有人都挤同一条路，千军万马过独木桥，当然卷。','破局的方法不是跟着一起卷，是找到自己的差异化优势，换一条赛道，或者把自己的长板做到极致。'],
-      example:'就像电影院里第一排站起来了，后面所有人都不得不站起来，其实大家都更累了，但谁也不敢坐下。',
-      close:'与其在别人的赛道里卷到死，不如找到自己的路，你不参与内卷，内卷就卷不到你。'
-    },
-    '为什么很多人越忙越穷？':{
-      open:'越忙越穷不是因为你不够努力，是你陷入了“穷忙陷阱”。',
-      points:['第一个陷阱：用时间换钱，你不干活就没钱，为了赚钱只能花更多时间干活，根本没时间提升自己，陷入死循环。','第二个陷阱：只做紧急的事，不做重要的事，每天被杂事填满，从来不为未来做积累。','第三个陷阱：赚多少花多少，甚至超前消费，没有抗风险能力，一旦出事就一夜回到解放前。'],
-      example:'很多打工人每天加班到十二点，下班就刷短视频放松，根本没时间学新东西，十年过去还是做最基础的工作，工资涨不上去。',
-      close:'别用战术上的勤奋掩盖战略上的懒惰，停下来想想方向，比瞎忙有用一百倍。'
-    },
-    '如何看待短视频对年轻人的影响':{
-      open:'短视频不是洪水猛兽，它是工具，关键看你怎么用它。',
-      points:['好处是它降低了学习门槛，你想学什么在上面都能找到免费教程，普通人也有机会被看见。','坏处是算法会不断给你推你喜欢看的内容，让你陷入信息茧房，不知不觉几个小时就过去了，注意力被切碎，根本沉不下心做深度思考。','最好的状态是把它当工具用，需要的时候搜东西看，而不是打开就刷个没完，被算法牵着鼻子走。'],
-      example:'有人用短视频学英语学技能，一年就逆袭了；有人天天刷美女段子，几年过去除了近视什么都没得到。',
-      close:'工具本身没有对错，你用它成长它就帮你，你沉迷它就害你，选择权在你自己手里。'
-    },
-    '我的梦想':{
-      open:'我的梦想不大，不是赚大钱当大老板，是成为一个能给别人带来光的人。',
-      points:['小时候我特别自卑，不敢说话，是我的老师一句鼓励的话，让我慢慢变得自信。','从那时候我就想，以后我也要做一个这样的人，在别人低谷的时候能拉一把，给别人一点力量。','现在我做口才训练，就是想帮更多像我一样不敢开口的人，找到自信，敢表达自己。'],
-      example:'之前有个学员跟我说，跟着我练了三个月，现在敢在公司会议上发言了，领导都对他刮目相看，那一刻我觉得一切都值了。',
-      close:'梦想不一定非要多么宏大，能帮到别人，能做自己觉得有意义的事，就是我最大的梦想。'
-    },
-    '我最敬佩的一个人':{
-      open:'我最敬佩的人不是什么名人明星，是我妈妈，一个普通的农村妇女。',
-      points:['我爸爸在我很小的时候就去世了，我妈一个人打三份工，把我和我哥拉扯大，再苦再难从来没在我们面前哭过。','她没读过什么书，但她教我做人要踏实、要善良、要知恩图报，这些道理我记一辈子。','她自己省吃俭用，但只要我读书需要钱，她从来没皱过一下眉，说只要你想读，妈砸锅卖铁都供你。'],
-      example:'我记得我高中交学费差两千块，我妈挨家挨户去借，回来笑着跟我说凑齐了，后来我才知道她把自己戴了二十年的银镯子卖了。',
-      close:'我妈没什么大本事，但她是我心里最了不起的人，我这辈子最大的愿望就是让她过上好日子。'
-    },
-    '如果可以给十年前的自己一句话':{
-      open:'如果能回到十年前，我会对那个自卑又敏感的小男孩说三句话。',
-      points:['第一，别害怕，你没那么差，不用总觉得自己不如别人，你比你想象的要优秀得多。','第二，大胆去做你想做的事，别害怕失败，哪怕做错了也比留遗憾强，年轻就是你最大的资本。','第三，多陪陪家里人，别总觉得以后有的是时间，有些人等不及你功成名就。'],
-      example:'那时候我因为不敢上台演讲躲在厕所里哭，要是我知道现在我能站在台上给几百人讲课，我肯定不会那么害怕。',
-      close:'回不去的十年就不纠结了，从现在开始，别让十年后的自己，再后悔今天的选择。'
-    }
-  };
-
-  function loadPlanTopic(day, topic){
-    try{
-      if(window.toggleGrowthPanel) window.toggleGrowthPanel(false);
-      window.STATE = window.STATE || {};
-      window.STATE.mode = 'speech';
-      window.STATE.currentCat = 'plan';
-      var topicObj = {text: topic, category: 'plan', _kind:'speech', planDay: day, _planHint: PLAN_HINTS[topic]||null};
-      window.STATE.currentTopic = topicObj;
-      window.CURRENT_TOPIC = topicObj;
-      // 设置题目文本
-      if(window.setTopicText){
-        window.setTopicText('📅 Day'+(day+1)+' '+DEFAULT_PLAN[day].title, topic, 'plan');
-      }
-      // 启用开始按钮
-      var sb = document.getElementById('startBtn');
-      if(sb){
-        sb.disabled = false;
-        sb.textContent = '▶️ 开始';
-      }
-      // 渲染题目和思路（传入正确的题目对象）
-      if(window.renderTopic) window.renderTopic(topicObj);
-      toast('✅ 已加载Day'+(day+1)+'训练题：'+topic.slice(0,12));
-    }catch(e){
-      console.error('加载训练题失败', e);
-      toast('❌ 加载题目失败：'+e.message);
-    }
-  }
   function bindPlanEvents(){
     var btn=$('planCheckinBtn');
     if(btn) btn.onclick=function(){doCheckin(); var gp=document.querySelector('.growth-card-tabs');if(gp){var t=qs('.gctab[data-tab=plan]',gp);if(t)t.click();}};
+    qsa('[data-plan-topic]').forEach(function(b){
+      b.onclick=function(){
+        var topic=b.getAttribute('data-plan-topic');
+        try{if(window.toggleGrowthPanel)window.toggleGrowthPanel(false);if(window.setTopicText)window.setTopicText('📅 训练计划',topic,'plan');else if(window.renderTopic){window.CURRENT_TOPIC={text:topic,category:'plan'};window.renderTopic();}toast('✅ 已选择训练题目');}catch(e){}
+      };
+    });
     qsa('.plan-day-btn').forEach(function(b){
       b.onclick=function(){
         var day=parseInt(b.getAttribute('data-day'),10);
         var topic=DEFAULT_PLAN[day].topics[0];
-        loadPlanTopic(day, topic);
-      };
-    });
-    qsa('.plan-topic-chip').forEach(function(b){
-      b.onclick=function(){
-        var day=parseInt(b.getAttribute('data-plan-day'),10);
-        var topic=b.getAttribute('data-plan-topic');
-        loadPlanTopic(day, topic);
+        try{if(window.toggleGrowthPanel)window.toggleGrowthPanel(false);if(window.setTopicText)window.setTopicText('📅 Day'+(day+1)+' '+DEFAULT_PLAN[day].title,topic,'plan');else if(window.renderTopic){window.CURRENT_TOPIC={text:topic,category:'plan'};window.renderTopic();}}catch(e){}
       };
     });
   }
