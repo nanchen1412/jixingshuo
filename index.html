@@ -18,7 +18,7 @@
      MINOR 满 10 同样进位到 MAJOR：V3.9.9 的下一个版本 = V4.0.0
    发版时只需改 APP_VERSION_ARRAY 这三个数字，展示字符串自动计算；
    也可以直接调用 window.bumpAppVersion() 按上述规则自动进一位。 */
-window.APP_VERSION_ARRAY = [1, 5, 0];   /* [MAJOR, MINOR, PATCH] V1.5.0 → AI评价弹层不再遮挡朗读内容：默认高度只占屏幕下半部分、可一键「最小化」收成底部细条、打开时自动把朗读稿顶到弹层上方；同时保留拖拽调大小、内容区滚动、文字/语音清空按钮，主页面可正常滑动 */
+window.APP_VERSION_ARRAY = [1, 5, 3];   /* [MAJOR, MINOR, PATCH] V1.5.4 */   /* [MAJOR, MINOR, PATCH] V1.5.0 → AI评价弹层不再遮挡朗读内容：默认高度只占屏幕下半部分、可一键「最小化」收成底部细条、打开时自动把朗读稿顶到弹层上方；同时保留拖拽调大小、内容区滚动、文字/语音清空按钮，主页面可正常滑动 */
 window.formatAppVersion = function(arr){
   var M = arr[0]|0, m = arr[1]|0, p = arr[2]|0;
   if(p >= 10){ m += Math.floor(p/10); p = p % 10; }
@@ -33,12 +33,12 @@ window.bumpAppVersion = function(){
   if(m >= 10){ M += Math.floor(m/10); m = m % 10; }
   p += 1;
   if(p >= 10){ m += 1; p = 0; if(m >= 10){ M += 1; m = 0; } }
-  window.APP_VERSION_ARRAY = [M, m, p];
+  window.APP_VERSION_ARRAY = [1, 5, 3];   /* [MAJOR, MINOR, PATCH] V1.5.4 */
   window.APP_VERSION = window.formatAppVersion(window.APP_VERSION_ARRAY);
   return window.APP_VERSION;
 };
 window.APP_VERSION = window.formatAppVersion(window.APP_VERSION_ARRAY);
-window.APP_BUILD = '2026-11-19 · V1.5.0：AI评价弹层不再遮挡朗读内容——默认高度只占屏幕下半部分、可一键最小化收起成底栏、打开时自动把朗读稿顶到弹层上方；保留拖拽调大小与内容区滚动，文字/语音模式都有清空按钮，主页面可正常滑动';
+window.APP_BUILD = '2026-11-23 · V1.5.4：AI辩论整合进辩论模块，PC端右侧并排主页面左移，移动端底部弹窗不透明，设置可滑动，所有按钮可点击';
 
 /* ===== PWA：内联 SVG 图标 + 内联 manifest（blob URL），零外部依赖 ===== */
 (function(){
@@ -11473,7 +11473,7 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
 
   /* ---------- 版本号统一（head 里 APP_VERSION_ARRAY 已升到 [3,6,3]） ---------- */
   window.APP_VERSION = window.APP_VERSION || (window.formatAppVersion ? window.formatAppVersion(window.APP_VERSION_ARRAY || [1,2,1]) : 'V1.2.0');
-  window.APP_BUILD = window.APP_BUILD || ('2026-10-31 · ' + window.APP_VERSION);
+  window.APP_BUILD = '2026-11-23 · V1.5.4：AI辩论整合进辩论模块，PC端右侧并排主页面左移，移动端底部弹窗不透明，设置可滑动，所有按钮可点击';
   function syncVer(){
     var V = window.APP_VERSION;
     try{
@@ -12685,7 +12685,7 @@ try{ console.log('[JXX] V3.3.14 applied: tap priority + slim priming + fast sour
     var APP_VERSION = window.APP_VERSION || 'V1.0.6';
     var APP_BUILD = window.APP_BUILD || ('2026-11-09 · ' + APP_VERSION);
     window.APP_VERSION = APP_VERSION;
-    window.APP_BUILD = APP_BUILD;
+    window.APP_BUILD = '2026-11-23 · V1.5.4：AI辩论整合进辩论模块，PC端右侧并排主页面左移，移动端底部弹窗不透明，设置可滑动，所有按钮可点击';
     var bs = document.querySelectorAll('.ver-badge,.version-badge,#verBadge,.badge');
     for(var i = 0; i < bs.length; i++){ if(bs[i].textContent && /V3\.\d\.\d/.test(bs[i].textContent)) bs[i].textContent = APP_VERSION; }
   /* [version-sync stripped] *//* 替换设置页版本信息 */
